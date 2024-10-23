@@ -1,0 +1,121 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
+  line-height: 1.5;
+  font-weight: 400;
+
+  color-scheme: light dark;
+  color: rgba(255, 255, 255, 0.87);
+  background-color: #242424;
+
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+a {
+  font-weight: 500;
+  text-decoration: inherit;
+}
+
+html,
+body {
+  width:100%;
+  height:100%;
+  overflow:auto;
+}
+
+h1 {
+  font-size: 3.2em;
+  line-height: 1.1;
+}
+
+button {
+  border-radius: 8px;
+  border: 1px solid transparent;
+  padding: 0.6em 1.2em;
+  font-size: 1em;
+  font-weight: 500;
+  font-family: inherit;
+  background-color: #1a1a1a;
+  cursor: pointer;
+  transition: border-color 0.25s;
+}
+button:hover {
+  border-color: #646cff;
+}
+button:focus,
+button:focus-visible {
+  outline: 4px auto -webkit-focus-ring-color;
+}
+
+@media (prefers-color-scheme: light) {
+  :root {
+    color: #213547;
+    background-color: #ffffff;
+  }
+  button {
+    background-color: #f9f9f9;
+  }
+}
+
+.swiper {
+  width: 100%;
+  height: 100%;
+  padding-top: 0;
+  padding-bottom: 0;
+}
+
+.swiper-slide {
+  background-position: center;
+  background-size: cover;
+  width: 350px;
+  height: 350px;
+  display: flex;
+  text-align:center;
+  align-items:center;
+  justify-content:center;
+}
+
+.swiper-slide img {
+  display: flex;
+  width: 100%;
+  height: 100%;
+  text-align:center;
+  align-items:center;
+  justify-content:center;
+}
+.swiper-button-prev,
+.swiper-button-next {
+  background-color: gray;
+  opacity: 0.5;
+  width : 45px;
+  height : 45px;
+  padding: 15px 5px;
+  border-radius: 50%;
+  color: white !important;
+}
+
+.swiper-button-prev:after,
+.swiper-button-next:after {
+  font-size: 0.9rem !important;
+  font-weight: 600 !important;
+}
+
+.swiper-pagination-bullet {
+  background: black !important;
+}
+
+.swiper-scrollbar {
+  background-color: rgb(243 244 246); /* 스크롤바 배경색 조정 */
+  border-radius: 10px; /* 스크롤바의 둥근 모서리 조정 */
+}
+
+.swiper-scrollbar-drag {
+  background-color: black; /* 드래그 중인 스크롤바의 색상 조정 */
+  height: 60%; /* 스크롤바의 배경 높이 조정 */
+}
