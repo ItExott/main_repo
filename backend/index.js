@@ -14,7 +14,7 @@ const db = mysql.createConnection({
     user     : 'root',
     port     : 3307,
     password : 'root',
-    database : 'itbookstore'
+    database : 'itsoftgym'
 });
 
 // MySQL 데이터베이스 연결
