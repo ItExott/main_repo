@@ -12,7 +12,7 @@ import 'swiper/css/effect-coverflow';
 import MainCard from "../components/MainCard.jsx";
 
 
-const Product_Main = () => {
+const Login = () => {
 
     return (
         <div className="flex flex-col h-full items-center justify-center mx-44  ">  {/*슬라이더 박스*/}
@@ -28,4 +28,4 @@ const Product_Main = () => {
     )
 }
 
-export default Product_Main;
+export default Login;
