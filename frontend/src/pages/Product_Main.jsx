@@ -19,8 +19,15 @@ const Home = () => {
             <div className="flex flex-row  h-14 w-[35rem] items-center justify-center bg-red-500">
                 검색 div
             </div>
-            <div className="flex-start flex-row w-[62rem] h-[22rem] mt-6 items-center justify-center bg-indigo-700">
-                광고
+            <div className="flex justify-start flex-row w-[62rem] h-[22rem] mt-6 items-center">
+                <div className="flex flex-row bg-indigo-700  w-[33rem] h-[22rem]">그림 부분</div>
+                <div className="flex flex-row bg-green-300  w-[29rem] h-[22rem]">운동 소개 부분</div>
+            </div>
+                <div className="flex flex-row justify-start bg-violet-300 w-[62rem] h-[35rem] mt-14 justify-start">
+
+
+
+
             </div>
 
         </div>
