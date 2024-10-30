@@ -12,7 +12,7 @@ import 'swiper/css/effect-coverflow';
 import MainCard from "../components/MainCard.jsx";
 
 
-const Home = () => {
+const Product_Main = () => {
 
     return (
         <div className="flex flex-col h-full items-center justify-center mx-44  ">  {/*슬라이더 박스*/}
@@ -35,4 +35,4 @@ const Home = () => {
     )
 }
 
-export default Home;
+export default Product_Main;
