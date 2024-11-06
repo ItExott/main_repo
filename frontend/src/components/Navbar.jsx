@@ -2,12 +2,22 @@
         import React, {useEffect, useState} from 'react';
         import {useRecoilValue} from "recoil";
         import {Button} from "@headlessui/react";
-
+        import { IoPersonOutline } from "react-icons/io5";
         const Navbar = () => {
             const navigate = useNavigate();
-
+            const [Login,setLogin] = useState("Login");
             const handleClick = () => {
                 navigate(`/`);
+            };
+
+            const changeLogin = () => {
+                if(Login == "Login"){
+                    setLogin("Logout")
+                }else if(Login == "Logout"){
+
+                }
+
+
             };
 
             return (
@@ -75,7 +85,8 @@
                                 </a>
                             </li>
                             <li><a className="font-bold">Settings</a></li>
-                            <li><a className="font-bold">Logout</a></li>
+
+                            <li><a className="font-bold">{Login}</a></li>
                         </ul>
                     </div>
                     </div>
