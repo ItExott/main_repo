@@ -2,6 +2,7 @@ import { Link, useNavigate } from "react-router-dom";
 import React, { useState } from 'react';
 import { Button } from "@headlessui/react";
 import { IoPersonOutline } from "react-icons/io5";
+import Login from "../popup/Login.jsx";
 
 const Navbar = () => {
     const navigate = useNavigate();
@@ -15,10 +16,13 @@ const Navbar = () => {
     // 로그인 상태를 토글하는 함수
     const changeLogin = () => {
         if (Login === "Login") {
-            setprofile("https://ifh.cc/g/bFHjG0.png")
-            setLogin("Logout");
-        } else if (Login === "Logout") {
             setprofile("https://ifh.cc/g/7ky5bT.jpg")
+            setLogin("Logout");
+            setTimeout(() => {
+                document.getElementById('my_modal').showModal();
+            }, 100);
+        } else if (Login === "Logout") {
+            setprofile("https://ifh.cc/g/bFHjG0.png")
             setLogin("Login");
         }
     };
@@ -27,7 +31,7 @@ const Navbar = () => {
         <div className="navbar bg-base-100">
             <div className="navbar-start">
                 <div className="drawer">
-                    <input id="my-drawer" type="checkbox" className="drawer-toggle" />
+                    <input id="my-drawer" type="checkbox" className="drawer-toggle"/>
                     <div className="drawer-content">
                         {/* 메뉴 버튼 */}
                         <label htmlFor="my-drawer" className="btn btn-square btn-ghost drawer-button">
@@ -52,14 +56,14 @@ const Navbar = () => {
                                     </svg>
                                 </label>
                                 <a><img className="mt-1 ml-2 w-28 mx-auto p-auto" alt="로고"
-                                        src="https://ifh.cc/g/VRak2k.png" /></a>
+                                        src="https://ifh.cc/g/VRak2k.png"/></a>
                             </div>
                             <li className="flex-row" onClick={handleClick}>
                                 <a>
                                     <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none"
                                          viewBox="0 0 24 24" stroke="currentColor">
                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2"
-                                              d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+                                              d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/>
                                     </svg>
                                     <p className="items-center font-normal ml-[0.8rem]">홈</p>
                                 </a>
@@ -70,14 +74,14 @@ const Navbar = () => {
             </div>
             <div className="navbar-center">
                 <a className="btn btn-ghost text-xl">
-                    <img alt="로고" src="https://ifh.cc/g/VRak2k.png" />
+                    <img alt="로고" src="https://ifh.cc/g/VRak2k.png"/>
                 </a>
             </div>
             <div className="navbar-end">
                 <div className="dropdown dropdown-end">
                     <div tabIndex={0} role="button" className="btn btn-ghost btn-circle avatar">
                         <div className="w-10 rounded-full">
-                            <img alt="프로필 사진" src={profile} />
+                            <img alt="프로필 사진" src={profile}/>
                         </div>
                     </div>
                     <ul tabIndex={0}
@@ -88,7 +92,8 @@ const Navbar = () => {
                             </a>
                         </li>
                         <li><a className="font-bold">Settings</a></li>
-                        <li><a onClick={changeLogin} className="font-bold">{Login}</a></li>
+                        <li><a onClick={changeLogin} className="font-bold">{Login}</a>
+                        </li>
                     </ul>
                 </div>
             </div>
