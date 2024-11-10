@@ -1,12 +1,11 @@
 import { Link, useNavigate } from "react-router-dom";
 import React, { useState } from 'react';
-import { Button } from "@headlessui/react";
-import { IoPersonOutline } from "react-icons/io5";
-import Login from "../popup/Login.jsx";
+import Login from "../popup/Login.jsx"
+
 
 const Navbar = () => {
     const navigate = useNavigate();
-    const [Login, setLogin] = useState("Login");
+    const [LoginState, setLoginState] = useState("LoginState");
     const [profile, setprofile] = useState("https://ifh.cc/g/bFHjG0.png");
     // 홈으로 이동하는 함수
     const handleClick = () => {
@@ -15,15 +14,12 @@ const Navbar = () => {
 
     // 로그인 상태를 토글하는 함수
     const changeLogin = () => {
-        if (Login === "Login") {
+        if (LoginState === "Login") {
             setprofile("https://ifh.cc/g/7ky5bT.jpg")
-            setLogin("Logout");
-            setTimeout(() => {
-                document.getElementById('my_modal').showModal();
-            }, 100);
-        } else if (Login === "Logout") {
+            setLoginState("Logout");
+        } else if (LoginState === "Logout") {
             setprofile("https://ifh.cc/g/bFHjG0.png")
-            setLogin("Login");
+            setLoginState("Login");
         }
     };
 
@@ -92,13 +88,17 @@ const Navbar = () => {
                             </a>
                         </li>
                         <li><a className="font-bold">Settings</a></li>
-                        <li><a onClick={changeLogin} className="font-bold">{Login}</a>
+                        <li><a onClick={() => document.getElementById('my_modal_3').showModal()}
+                               className="font-bold">Login</a>
                         </li>
                     </ul>
                 </div>
             </div>
+            <dialog id="my_modal_3" className="modal">
+                <Login></Login>
+            </dialog>
         </div>
-    );
+);
 };
 
 export default Navbar;
