@@ -13,7 +13,7 @@ import 'swiper/css/scrollbar';
 import MainCard from "../components/MainCard.jsx";
 
 const Home = () => {
-    // 상태 변수들
+        // 상태 변수들
     const [isFocused, setIsFocused] = useState(false); // 검색창 포커스 상태
     const [query, setQuery] = useState(""); // 검색어
     const [showSuggestions, setShowSuggestions] = useState(false); // 추천 검색어 박스 표시 여부

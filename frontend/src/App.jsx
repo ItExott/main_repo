@@ -10,7 +10,7 @@ import Find_Id from "./pages/Find_Id.jsx";
 import Find_Id_Check from "./pages/Find_Id_Check.jsx";
 import Find_Pw from "./pages/Find_Pw.jsx";
 import Find_Pw_Check from "./pages/Find_Pw_Check.jsx";
-
+import Product from "./pages/Product.jsx";
 
 function App() {
     return (
@@ -26,6 +26,7 @@ function App() {
                 <Route path="/Login/Agree_to_terms" element={<Agree_to_terms/>}/>
                 <Route path="/Login" element={<Login/>}/>
                 <Route path="/Product_Main" element={<Product_Main/>}/>
+                <Route path="/Product" element={<Product/>}/>
                 <Route path="/" element={<Home/>}/>
             </Routes>
         </>
