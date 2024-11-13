@@ -15,6 +15,10 @@ const Navbar = ({ loginStatus, setLoginStatus }) => {
     const changeLogin = () => {
         document.getElementById('my_modal_3').showModal();  // 로그인 모달을 띄운다
     };
+    const gohome = () => {
+        navigate('/')
+        
+    }
 
     // 로그아웃 처리 함수
     const handleLogout = () => {
@@ -50,7 +54,7 @@ const Navbar = ({ loginStatus, setLoginStatus }) => {
                                               d="M4 6h16M4 12h16M4 18h16"></path>
                                     </svg>
                                 </label>
-                                <a><img className="mt-1 ml-2 w-28 mx-auto p-auto" alt="로고"
+                                <a ><img className="mt-1 ml-2 w-28 mx-auto p-auto" alt="로고"
                                         src="https://ifh.cc/g/VRak2k.png" /></a>
                             </div>
                             <li className="flex-row" onClick={handleClick}>
@@ -69,7 +73,7 @@ const Navbar = ({ loginStatus, setLoginStatus }) => {
             </div>
 
             <div className="navbar-center">
-                <a className="btn btn-ghost text-xl">
+                <a onClick={gohome} className="btn btn-ghost text-xl">
                     <img alt="로고" src="https://ifh.cc/g/VRak2k.png" />
                 </a>
             </div>

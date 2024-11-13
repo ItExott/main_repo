@@ -14,10 +14,22 @@ import 'swiper/css/effect-coverflow';
 const Find_Id = () => {
 
     return (
+
         <div className="flex flex-col h-full items-center justify-center mx-44  ">  {/*슬라이더 박스*/}
-            <div className="flex items-center justify-center w-40 h-"></div>
-            <div className="flex justify-center flex-row w-[34rem] h-[23rem] mb-6 mt-20 items-center bg-violet-400">
-                <h1>로그인창</h1>
+
+            <div className="flex lfex-row w-max items-center justify-center mt-16 mb-10">
+                <span className="text-3xl font-bold">FIND ID</span>
+                <span className="text-3xl font-bold ml-7 mr-7">|</span>
+                <span className="text-3xl font-bold text-gray-400">FIND PW</span>
+            </div>
+
+            <div className="flex justify-start w-[34rem] h-[23rem] flex-col mb-6 items-center">
+                <div className="flex w-full justify-start flex-col ml-[12rem] h-6">
+                    <p>이름</p>
+                </div>
+                <div className="flex w-full justify-start flex-col h-6 ">
+                    <p>이름</p>
+                </div>
             </div>
 
         </div>
