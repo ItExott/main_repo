@@ -5,10 +5,10 @@ import {useRecoilValue} from "recoil";
 import { Swiper, SwiperSlide } from "swiper/react";
 import { Navigation, Pagination, A11y, Autoplay, EffectCoverflow } from "swiper";
 
-const MainCard = ({text}) => {
+const MainCard = ({text,sor}) => {
     return (
         <div className="w-56 rounded overflow-hidden shadow-lg m-4 bg-white">
-            <img className="flex w-max h-32" src="https://via.placeholder.com/400" alt="Card image"/>
+            <img className="flex w-max h-32" src={sor} alt="Card image"/>
             <div>
                 <div className="font-bold text-lg">{text}</div>
 

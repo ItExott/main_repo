@@ -113,7 +113,7 @@ const Home = () => {
                     className="flex w-full"
                 >
                     {/* MainCard 컴포넌트들 */}
-                    <SwiperSlide className="flex justify-center w-auto h-auto"><MainCard text="카드1" /></SwiperSlide>
+                    <SwiperSlide className="flex justify-center w-auto h-auto"><MainCard text="카드1" sor="https://ifh.cc/g/7ky5bT.jpg" /></SwiperSlide>
                     <SwiperSlide className="flex justify-center w-auto h-auto"><MainCard text="카드2" /></SwiperSlide>
                     <SwiperSlide className="flex justify-center w-auto h-auto"><MainCard text="카드3" /></SwiperSlide>
                     <SwiperSlide className="flex justify-center w-auto h-auto"><MainCard text="카드4" /></SwiperSlide>
