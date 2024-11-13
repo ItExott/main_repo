@@ -4,7 +4,7 @@ import { RiKakaoTalkFill } from "react-icons/ri";
 import { IoIosCloseCircleOutline } from "react-icons/io";
 import axios from 'axios';  // axios를 임포트합니다.
 
-const Login = (setLoginStatus) => {
+const Login = ({ setLoginStatus }) => {
     const [ID, GetId] = useState('');
     const [PW, GetPw] = useState('');
     const [error, setError] = useState(''); // 에러 메시지 상태 추가
@@ -24,21 +24,23 @@ const Login = (setLoginStatus) => {
     const handleLogin = async () => {
         try {
             // 여기에 실제 로그인 API를 호출합니다.
-            const response = await axios.post('/api/login', {
+            const response = await axios.post('http://localhost:8080/api/login', {
                 id: ID,
                 password: PW,
             });
 
             // 로그인 성공 시
             if (response.data.success) {
+
                 setLoginStatus(true);  // 로그인 상태를 true로 변경
+                console.log("여기옴")
                 closeModal();  // 모달 닫기
                 navigate('/');  // 로그인 후 홈 화면으로 이동
             } else {
-                setError('아이디 또는 비밀번호가 틀렸습니다.');  // 로그인 실패 시 오류 메시지 설정
+                alert('아이디 또는 비밀번호가 틀렸습니다.');  // 로그인 실패 시 오류 메시지 설정
             }
         } catch (error) {
-            setError('서버 오류가 발생했습니다. 다시 시도해주세요.');  // API 호출 오류 처리
+            alert('서버 오류가 발생했습니다. 다시 시도해주세요.');  // API 호출 오류 처리
         }
     };
 

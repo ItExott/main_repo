@@ -32,11 +32,11 @@ db.connect(err => {
 app.use(cors());
 app.use(bodyParser.json());
 
-app.post('/api/login', (req, res) => {
+app.post('http://localhost:8080/api/login', (req, res) => {
     const { id, password } = req.body;
 
     // 예시: 아이디와 비밀번호 검증
-    if (id === 'suhokym' && password === 'suhokym') {
+    if (id == 'suhokym' && password == 'suhokym') {
         return res.json({ success: true });
     } else {
         return res.json({ success: false });
