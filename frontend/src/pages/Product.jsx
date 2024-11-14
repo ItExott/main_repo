@@ -1,4 +1,4 @@
-import React, {useState, useEffect} from "react";
+import React, {useState, useEffect, useRef} from "react";
 import {Link} from "react-router-dom";
 import {useRecoilValue} from "recoil";
 import { FaLocationDot } from "react-icons/fa6";
@@ -12,13 +12,38 @@ import { PiLockersFill } from "react-icons/pi";
 import { FaCircleUser } from "react-icons/fa6";
 
 const Product= () => {
+    const PhotoSectionRef = useRef(null);
+    const ReviewSectionRef = useRef(null);
+    const RestSectionRef = useRef(null);
+
+
+    const scrollToPhotoSection = () => {
+
+        if (PhotoSectionRef.current) {
+            PhotoSectionRef.current.scrollIntoView({ behavior: 'smooth' });
+        }
+    };
+
+    const scrollToReviewSection = () => {
+
+        if (ReviewSectionRef.current) {
+            ReviewSectionRef.current.scrollIntoView({ behavior: 'smooth' });
+        }
+    };
+
+    const scrollToRestSection = () => {
+
+        if (RestSectionRef.current) {
+            RestSectionRef.current.scrollIntoView({ behavior: 'smooth' });
+        }
+    };
 
     return (
         <div className="flex flex-col h-full items-center justify-center mx-44">  {/*슬라이더 박스*/}
-            <div
-                className="flex justify-start flex-row rounded-3xl border-2 border-gray-950 w-[62rem] h-[22rem] mt-6 items-center">
-                <div className="flex flex-row items-center w-[42rem] h-[22rem]">그림 부분</div>
-                <div className="flex flex-col shadow-xl rounded-3xl items-center w-[20rem] h-[22rem]">
+            <div className="flex justify-start flex-row rounded-3xl border-2 border-gray-950 w-[62rem] h-[22rem] mt-6 items-center">
+                <div className="flex flex-row items-center w-[42rem] h-[22rem]">
+                    <img className="flex w-[42rem] h-[21.8rem] rounded-l-3xl" src="https://ifh.cc/g/0F7mtd.jpg"/></div>
+                <div className="flex flex-col shadow-xl rounded-r-3xl items-center w-[20rem] h-[22rem]">
                     <div className="flex w-[10rem] mt-[2rem] h-[10rem]"><img className="rounded-full"
                                                                              src="https://ifh.cc/g/XpkHf4.jpg"></img>
                     </div>
@@ -43,9 +68,20 @@ const Product= () => {
                     </div>
                 </div>
             </div>
-            <div className="flex flex-col bg-gray-200 w-[62rem] h-full mt-14 justify-start">
+            <div className="flex flex-col items-center bg-gray-200 w-[68rem] h-full mt-[2rem]">
                 <div
-                    className="flex flex-col bg-gray-300 ml-[2rem] mt-[2.5rem] shadow-xl rounded-xl w-[58rem] h-[10rem]"> {/*이용 금액 표시란*/}
+                    className="flex flex-row w-[30rem] mt-[1rem] mr-[38rem] h-[4rem] space-x-[3.5rem] justify-center items-center">
+                    <p className="text-gray-950 text-[1rem] font-medium">상품정보</p>
+                    <p className="text-gray-950 text-[1rem] hover:scale-125 transition-transform ease-in-out duration-500 font-medium cursor-pointer"
+                       onClick={scrollToPhotoSection}>시설사진</p>
+                    <p className="text-gray-950 text-[1rem] hover:scale-125 transition-transform ease-in-out duration-500 cursor-pointer font-medium" onClick={scrollToRestSection}>편의시설</p>
+                    <p className="text-gray-950 text-[1rem] font-medium cursor-pointer hover:scale-125 transition-transform ease-in-out duration-500"
+                       onClick={scrollToReviewSection}>리뷰</p>
+                </div>
+                <div className="flex flex-col items-center bg-indigo-500 mt-[1rem] h-[70rem] rounded-xl w-[58rem]">
+                    <img className="flex mt-[2rem] h-[50rem] w-[50rem]" src="https://ifh.cc/g/RCNYB3.jpg"/>
+                </div>
+                <div className="flex flex-col bg-gray-300 mt-[2rem] shadow-xl rounded-xl w-[58rem] h-[10rem]"> {/*이용 금액 표시란*/}
                     <a className="flex font-bold ml-[2rem] mt-[1.2rem]">회원가</a>
                     <div
                         className="flex flex-col bg-gray-200 shadow-xl ml-[2rem] border-[0.1rem] border-gray-600 mt-[1rem] rounded-lg w-[54rem] h-[5rem]">
@@ -57,9 +93,9 @@ const Product= () => {
                         </div>
                     </div>
                 </div>
-                <div className="flex divider divide-gray-600 ml-[1rem] w-[60rem]"></div>
+                <div className="flex divider divide-gray-600 ml-[4rem] w-[60rem]"></div>
                 <div
-                    className="flex flex-col bg-gray-300 ml-[2rem] shadow-xl rounded-xl w-[58rem] h-[10rem]"> {/*이용 금액 표시란*/}
+                    className="flex flex-col bg-gray-300 shadow-xl rounded-xl w-[58rem] h-[10rem]"> {/*이용 금액 표시란*/}
                     <a className="flex font-bold ml-[2rem] mt-[1.2rem]">비회원가</a>
                     <div
                         className="flex flex-col bg-gray-200 shadow-xl ml-[2rem] border-[0.1rem] border-gray-600 mt-[1rem] rounded-lg w-[54rem] h-[5rem]">
@@ -71,9 +107,9 @@ const Product= () => {
                         </div>
                     </div>
                 </div>
-                <div className="flex divider divide-gray-600 ml-[1rem] w-[60rem]"></div>
+                <div className="flex divider divide-gray-600 ml-[4rem] w-[60rem]"></div>
                 <div
-                    className="flex flex-col bg-gray-300 ml-[2rem] shadow-xl rounded-xl w-[58rem] h-[37rem]"> {/*개월권 표시란*/}
+                    className="flex flex-col bg-gray-300 shadow-xl rounded-xl w-[58rem] h-[37rem]"> {/*개월권 표시란*/}
                     <div
                         className="flex flex-col bg-gray-200 shadow-xl ml-[2rem] border-[0.1rem] border-gray-600 mt-[2rem] rounded-lg w-[54rem] h-[6rem]">
                         <a className="flex font-bold ml-[1.2rem] mt-[1rem]">1일권</a>
@@ -126,7 +162,7 @@ const Product= () => {
                         <a>Mining 클라이밍 짐에서 새로운 도전을 시작해 보세요!</a>
                     </div>
                 </div>
-                <div className="flex divider divide-gray-600 ml-[1rem] w-[60rem]"></div>
+                <div className="flex divider divide-gray-600 ml-[4rem] w-[60rem]"></div>
                 <div
                     className="flex mx-auto text-sm flex-col bg-gray-300 shadow-xl border-[0.1rem] border-gray-600 items-center justify-center rounded-lg w-[50rem] h-[9rem]">
                     <a className="font-bold text-lg">운영 시간 및 이용 안내</a>
@@ -144,17 +180,17 @@ const Product= () => {
                     <a className="mr-[9rem]">[ 주말 및 공휴일 ]</a>
                     <a className="mr-[9rem]">11:00~20:00</a>
                 </div>
-                <div className="flex divider divide-gray-600 ml-[1rem] w-[60rem]"></div>
-                <div
+                <div className="flex divider divide-gray-600 ml-[4rem] w-[60rem]"></div>
+                <div ref={RestSectionRef}
                     className="flex mx-auto flex-col bg-gray-300 shadow-xl border-[0.1rem] border-gray-600 items-center justify-center rounded-lg w-[50rem] h-[9rem]">
                     <a className="text-lg font-bold">운영 프로그램</a>
                     <a className="flex mt-[1rem]">안녕하세요! Mining 클라이밍짐를 소개합니다!</a>
                     <a>퍼즐처럼 예쁜 벽에서 등반하고 싶다면, 바로 여기 Mining 클라이밍짐으로 오시면 됩니다!</a>
                     <a>Mining 클라이밍 짐에서 새로운 도전을 시작해 보세요!</a>
                 </div>
-                <div className="flex divider divide-gray-600 ml-[1rem] w-[60rem]"></div>
+                <div className="flex divider divide-gray-600 ml-[4rem] w-[60rem]"></div>
                 <div
-                    className="flex mx-auto flex-col bg-gray-300 shadow-xl border-[0.1rem] border-gray-600 rounded-lg w-[50rem] h-[9rem]">
+                     className="flex mx-auto flex-col bg-gray-300 shadow-xl border-[0.1rem] border-gray-600 rounded-lg w-[50rem] h-[9rem]">
                     <a className="text-lg font-bold mt-[0.5rem] ml-[1rem]">편의 시설</a>
                     <div className="flex flex-row">
                         <div className="flex flex-col">
@@ -183,21 +219,28 @@ const Product= () => {
                         </div>
                     </div>
                 </div>
-                <div className="flex divider divide-gray-600 ml-[1rem] w-[60rem]"></div>
-                <a className="flex ml-[7rem] text-lg font-bold">시설사진</a>
-                <div className="flex flex-row space-x-7 ml-[6.2rem] mt-[1.5rem]">{/*시설사진*/}
-                    <div className="flex w-[11rem] h-[10rem] bg-indigo-500"></div>
-                    <div className="flex w-[11rem] h-[10rem] bg-indigo-500"></div>
-                    <div className="flex w-[11rem] h-[10rem] bg-indigo-500"></div>
-                    <div className="flex w-[11rem] h-[10rem] bg-indigo-500"></div>
+                <div ref={PhotoSectionRef} className="flex divider divide-gray-600 ml-[4rem] w-[60rem]"></div>
+                <a className="flex text-lg font-bold">시설사진</a>
+                <div className="flex flex-row space-x-7 mt-[1.5rem]">{/*시설사진*/}
+                    <div className="flex w-[11rem] h-[10rem] hover:scale-125 transition-transform ease-in-out duration-500"><img className="rounded-xl" src="https://ifh.cc/g/CoJTAC.png"/></div>
+                    <div className="flex w-[11rem] h-[10rem] hover:scale-125 transition-transform ease-in-out duration-500"><img className="rounded-xl"src="https://ifh.cc/g/ODqhnw.png"/>
+                    </div>
+                    <div className="flex w-[11rem] h-[10rem] hover:scale-125 transition-transform ease-in-out duration-500"><img className="rounded-xl" src="https://ifh.cc/g/fRFRkw.png"/>
+                    </div>
+                    <div className="flex w-[11rem] h-[10rem] hover:scale-125 transition-transform ease-in-out duration-500"><img className="rounded-xl" src="https://ifh.cc/g/Zf4TlH.png"/>
+                    </div>
                 </div>
-                <div className="flex flex-row space-x-7 ml-[6.2rem] mt-[1rem]">{/*시설사진*/}
-                    <div className="flex w-[11rem] h-[10rem] bg-indigo-500"></div>
-                    <div className="flex w-[11rem] h-[10rem] bg-indigo-500"></div>
-                    <div className="flex w-[11rem] h-[10rem] bg-indigo-500"></div>
-                    <div className="flex w-[11rem] h-[10rem] bg-indigo-500"></div>
+                <div className="flex flex-row space-x-7 mt-[1rem]">{/*시설사진*/}
+                    <div className="flex w-[11rem] h-[10rem] hover:scale-125 transition-transform ease-in-out duration-500"><img className="rounded-xl" src="https://ifh.cc/g/p8FalY.png"/>
+                    </div>
+                    <div className="flex w-[11rem] h-[10rem] hover:scale-125 transition-transform ease-in-out duration-500"><img className="rounded-xl" src="https://ifh.cc/g/yfCrXk.png"/>
+                    </div>
+                    <div className="flex w-[11rem] h-[10rem] hover:scale-125 transition-transform ease-in-out duration-500"><img className="rounded-xl" src="https://ifh.cc/g/4fpBhf.png"/>
+                    </div>
+                    <div className="flex w-[11rem] h-[10rem] hover:scale-125 transition-transform ease-in-out duration-500"><img className="rounded-xl" src="https://ifh.cc/g/oyVHYd.png"/>
+                    </div>
                 </div>
-                <div className="flex divider divide-gray-600 ml-[1rem] w-[60rem]"></div>
+                <div className="flex divider divide-gray-600 ml-[4rem] w-[60rem]"></div>
                 <div
                     className="flex mx-auto flex-col bg-gray-300 shadow-xl border-[0.1rem] border-gray-600 rounded-lg w-[50rem] h-[9rem]">
                     <a className="text-lg font-bold mt-[0.5rem] ml-[1rem]">이용 후기</a>
@@ -241,8 +284,8 @@ const Product= () => {
                         </div>
                     </div>
                 </div>
-                <div className="flex divider divide-gray-600 ml-[1rem] w-[60rem]"></div>
-                <a className="flex ml-[7rem] text-lg font-bold">사용자 리뷰</a>
+                <div ref={ReviewSectionRef} className="flex divider divide-gray-600 ml-[4rem] w-[60rem]"></div>
+                <a className="flex text-lg font-bold">사용자 리뷰</a>
                 <div
                     className="flex mx-auto flex-row mt-[1rem] bg-gray-300 shadow-xl border-[0.1rem] border-gray-600 rounded-lg w-[50rem] h-[9rem]">
                     <FaCircleUser className="ml-[1.5rem] mt-[1.4rem] h-[4rem] w-[4rem]"/>

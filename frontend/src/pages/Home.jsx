@@ -41,7 +41,8 @@ const Home = () => {
 
     return (
         <div className="flex flex-col h-full items-center justify-center mx-56">  {/*전체 틀*/}
-            <div className="flex flex-row h-14 w-[35rem] items-center justify-center shadow-xl rounded-xl relative"> {/*검색창*/}
+            <div
+                className="flex flex-row h-14 w-[35rem] items-center justify-center shadow-xl rounded-xl relative"> {/*검색창*/}
                 <FaLocationDot size="20" className="ml-3 cursor-pointer mt-[0.06rem]"/> {/* 로케이션 아이콘 */}
                 <div className="flex flex-row w-1/5 cursor-pointer"> {/* 로케이션 박스 */}
                     <p className="text-sm font-bold text-nowrap ml-[0.5rem]">송파구 마천동</p>
@@ -58,7 +59,8 @@ const Home = () => {
                         onChange={handleChange} // 텍스트 입력 시
                     />
                 </div>
-                <BiSearch size="20" className="mr-3 mt-1 cursor-pointer hover:scale-150 transition-transform ease-in-out duration-500"/>
+                <BiSearch size="20"
+                          className="mr-3 mt-1 cursor-pointer hover:scale-150 transition-transform ease-in-out duration-500"/>
                 {/* 검색 아이콘 */}
 
                 {/* 추천 검색어 박스 */}
@@ -93,9 +95,9 @@ const Home = () => {
                     }}
                     loop={true}
                 >
-                    <SwiperSlide>Slide 1</SwiperSlide>
-                    <SwiperSlide>Slide 2</SwiperSlide>
-                    <SwiperSlide>Slide 3</SwiperSlide>
+                    <SwiperSlide><img src="https://ifh.cc/g/jS0w0T.png"/></SwiperSlide>
+                    <SwiperSlide><img src="https://ifh.cc/g/PANybK.jpg"/></SwiperSlide>
+                    <SwiperSlide><img src="https://ifh.cc/g/fxBCJX.jpg"/></SwiperSlide>
                 </Swiper>
             </div>
 
@@ -113,11 +115,29 @@ const Home = () => {
                     className="flex w-full"
                 >
                     {/* MainCard 컴포넌트들 */}
-                    <SwiperSlide className="flex justify-center w-auto h-auto"><MainCard text="카드1" sor="https://ifh.cc/g/7ky5bT.jpg" /></SwiperSlide>
-                    <SwiperSlide className="flex justify-center w-auto h-auto"><MainCard text="카드2" /></SwiperSlide>
-                    <SwiperSlide className="flex justify-center w-auto h-auto"><MainCard text="카드3" /></SwiperSlide>
-                    <SwiperSlide className="flex justify-center w-auto h-auto"><MainCard text="카드4" /></SwiperSlide>
-                    <SwiperSlide className="flex justify-center w-auto h-auto"><MainCard text="카드5" /></SwiperSlide>
+                    <SwiperSlide className="flex ml-[5rem] justify-center w-auto h-auto"><MainCard text="카드1"
+                                                                                         sor="https://ifh.cc/g/QqVy3C.png"/></SwiperSlide>
+                    <SwiperSlide className="flex ml-[14rem] justify-center w-auto h-auto"><MainCard text="카드2"
+                                                                                         sor="https://ifh.cc/g/M0Yaqq.png"/></SwiperSlide>
+                </Swiper>
+            </div>
+            <div className="flex flex-row w-[60rem] h-[20rem] mt-6 items-center justify-center shadow-xl rounded-xl">
+                <Swiper
+                    slidesPerView="auto"
+                    spaceBetween={-120}
+                    centeredSlides={false}
+                    scrollbar={{
+                        hide: false,
+                        draggable: true,
+                        dragSize: 200,
+                    }}
+                    modules={[Scrollbar]}
+                    className="flex w-full"
+                >
+                    <SwiperSlide className="flex ml-[5rem] justify-center w-auto h-auto"><MainCard text="카드3"
+                                                                                         sor="https://ifh.cc/g/6l8LDF.jpg"/></SwiperSlide>
+                    <SwiperSlide className="flex ml-[14rem] justify-center w-auto h-auto"><MainCard text="카드4"
+                                                                                         sor="https://ifh.cc/g/9nDygD.png"/></SwiperSlide>
                 </Swiper>
             </div>
         </div>
