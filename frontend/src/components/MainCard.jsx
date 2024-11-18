@@ -7,7 +7,7 @@ import { Navigation, Pagination, A11y, Autoplay, EffectCoverflow } from "swiper"
 
 const MainCard = ({text,sor}) => {
     return (
-        <div className="w-56 rounded overflow-hidden shadow-lg m-4 bg-white">
+        <div className="w-[40rem] cursor-pointer hover:scale-110 transition-transform ease-in-out duration-500 rounded overflow-hidden shadow-lg m-4 bg-white">
             <img className="flex w-max h-32" src={sor} alt="Card image"/>
             <div>
                 <div className="font-bold text-lg">{text}</div>

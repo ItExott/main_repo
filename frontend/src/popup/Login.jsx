@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { BrowserRouter as Router, Route, Routes, useNavigate } from 'react-router-dom';
 import { RiKakaoTalkFill } from "react-icons/ri";
 import { IoIosCloseCircleOutline } from "react-icons/io";
-import axios from 'axios';  // axios를 임포트합니다.
+import axios from 'axios';
 
 const Login = ({ setLoginStatus }) => {
     const [ID, GetId] = useState('');
