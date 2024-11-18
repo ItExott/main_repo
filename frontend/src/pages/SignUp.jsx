@@ -4,15 +4,14 @@ import axios from "axios";
 
 const SignUp = () => {
     const [formData, setFormData] = useState({
-        userType: "individual",  // 기본값을 개인회원으로 설정
         userId: "",
         password: "",
         passwordConfirm: "",
         address: "",
         phoneNumber: "",
-        email: "",  // 이메일은 필수 항목에서 제외
+        email: "",
         name: "",
-        phonePrefix: "010", // 전화번호 앞자리 선택 초기화
+        phonePrefix: "010",
     });
 
     const [errors, setErrors] = useState({});
@@ -99,8 +98,8 @@ const SignUp = () => {
                 회원가입
             </div>
             <form onSubmit={handleSubmit}>
-                <div className="flex flex-col w-[60rem] h-auto mt-6 p-4 border border-gray-300">
-                    <div className="mb-4 border border-gray-300 p-4 items-start">
+                <div className="flex flex-col w-[60rem] h-auto mt-6 p-4">
+                    <div className="mb-4 p-4 items-start">
                         <div className="text-left">회원구분</div>
                         <div className="flex flex-row items-start mt-2">
                             <label className="mr-4">
@@ -134,7 +133,7 @@ const SignUp = () => {
                             value={formData.name}
                             onChange={handleChange}
                             required
-                            className="border border-gray-300 p-2 w-full"
+                            className="p-2 w-full"
                         />
                         {errors.name && <p className="text-red-500">{errors.name}</p>}
                     </div>
@@ -147,7 +146,7 @@ const SignUp = () => {
                             value={formData.userId}
                             onChange={handleChange}
                             required
-                            className="border border-gray-300 p-2 w-full"
+                            className="p-2 w-full"
                         />
                         {errors.userId && <p className="text-red-500">{errors.userId}</p>}
                     </div>
@@ -160,7 +159,7 @@ const SignUp = () => {
                             value={formData.password}
                             onChange={handleChange}
                             required
-                            className="border border-gray-300 p-2 w-full"
+                            className="p-2 w-full"
                         />
                         {errors.password && <p className="text-red-500">{errors.password}</p>}
                     </div>
@@ -173,7 +172,7 @@ const SignUp = () => {
                             value={formData.passwordConfirm}
                             onChange={handleChange}
                             required
-                            className="border border-gray-300 p-2 w-full"
+                            className="p-2 w-full"
                         />
                         {errors.passwordConfirm && <p className="text-red-500">{errors.passwordConfirm}</p>}
                     </div>
@@ -186,7 +185,7 @@ const SignUp = () => {
                             value={formData.address}
                             onChange={handleChange}
                             required
-                            className="border border-gray-300 p-2 w-full"
+                            className="p-2 w-full"
                         />
                         {errors.address && <p className="text-red-500">{errors.address}</p>}
                     </div>
@@ -198,7 +197,7 @@ const SignUp = () => {
                                 name="phonePrefix"
                                 value={formData.phonePrefix}
                                 onChange={handlePhonePrefixChange}
-                                className="border border-gray-300 p-2 w-24"
+                                className="p-2 w-24"
                             >
                                 <option value="010">010</option>
                                 <option value="011">011</option>
@@ -215,7 +214,7 @@ const SignUp = () => {
                                 required
                                 maxLength="13"
                                 placeholder="1234-5678"
-                                className="border border-gray-300 p-2 w-full ml-2"
+                                className="p-2 w-full ml-2"
                             />
                         </div>
                         {errors.phoneNumber && <p className="text-red-500">{errors.phoneNumber}</p>}
@@ -229,7 +228,7 @@ const SignUp = () => {
                             name="email"
                             value={formData.email}
                             onChange={handleChange}
-                            className="border border-gray-300 p-2 w-full"
+                            className="p-2 w-full"
                         />
                     </div>
                 </div>
