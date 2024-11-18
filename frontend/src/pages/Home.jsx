@@ -1,5 +1,5 @@
-import React, { useState, useRef, useEffect } from "react";
-import { useLocation } from "react-router-dom"; // useLocation 훅은 컴포넌트 맨 위에 두어야 합니다.
+import React, { useState, useEffect, useRef } from "react";
+import { useLocation } from "react-router-dom";
 import { BiSearch } from "react-icons/bi";
 import { FaLocationDot } from "react-icons/fa6";
 import { Swiper, SwiperSlide } from "swiper/react";
@@ -10,8 +10,8 @@ import 'swiper/css/pagination';
 import 'swiper/css/effect-coverflow';
 import 'swiper/css/scrollbar';
 import MainCard from "../components/MainCard.jsx";
-import Attendance from "../popup/Attendance"; // 출석 체크 컴포넌트 임포트
-import Login from "../popup/Login.jsx"; // 로그인 모달 컴포넌트 임포트
+import Attendance from "../popup/Attendance";
+import Login from "../popup/Login.jsx";
 
 const Home = () => {
     const [isFocused, setIsFocused] = useState(false); // 검색창 포커스 상태
@@ -19,11 +19,11 @@ const Home = () => {
     const [showSuggestions, setShowSuggestions] = useState(false); // 추천 검색어 박스 표시 여부
     const [isCalendarOpen, setIsCalendarOpen] = useState(false); // 출석체크 달력 팝업 상태
     const [isLoggedIn, setIsLoggedIn] = useState(false); // 로그인 상태 (로그인 여부)
+
     const location = useLocation();
-    const { openLoginModal = false } = location.state || {}; // state에서 openLoginModal 가져오기
-    // useLocation 훅을 통해 location 객체 가져오기
+    const { openLoginModal: locationOpenLoginModal = false } = location.state || {};
 
-
+    const [openLoginModal, setOpenLoginModal] = useState(locationOpenLoginModal); // 초기값을 locationOpenLoginModal로 설정
     const inputRef = useRef(null);
 
     // 검색어 입력 변화 처리
@@ -43,15 +43,18 @@ const Home = () => {
         console.log("선택된 날짜:", date); // 선택된 날짜 출력
     };
 
-    // 로그인 모달 띄우기
+    // 로그인 모달 띄우기 (useEffect로 처리)
     useEffect(() => {
-        const loginModal = document.getElementById('loginModal');
+
         if (openLoginModal) {
-            loginModal.showModal();  // 모달 열기
-        } else {
-            loginModal.close();  // 모달 닫기
+            document.getElementById('my_modal_3').showModal();  // 로그인 모달을 띄운다
         }
-    }, [openLoginModal]);
+    }, [openLoginModal]); // openLoginModal 값이 변경될 때마다 실행
+
+    // 로그인 모달을 강제로 표시하거나 닫을 때 사용 (새로고침 후 값을 강제로 설정)
+    useEffect(() => {
+        setOpenLoginModal(locationOpenLoginModal); // location에서 받은 값으로 openLoginModal 초기화
+    }, [locationOpenLoginModal]);
 
     return (
         <div className="flex flex-col h-full items-center justify-center mx-56">
@@ -70,17 +73,14 @@ const Home = () => {
             />
 
             {/* 로그인 모달 (dialog) */}
-            <dialog id="loginModal">
-                <Login />
-                <button onClick={() => document.getElementById('loginModal').close()}>닫기</button>
-            </dialog>
 
-            <div className="flex flex-row h-14 w-[35rem] items-center justify-center shadow-xl rounded-xl relative"> {/*검색창*/}
+            {/* 검색창 */}
+            <div className="flex flex-row h-14 w-[35rem] items-center justify-center shadow-xl rounded-xl relative">
                 <FaLocationDot size="20" className="ml-3 cursor-pointer mt-[0.06rem]" />
-                <div className="flex flex-row w-1/5 cursor-pointer"> {/* 로케이션 아이콘 */}
+                <div className="flex flex-row w-1/5 cursor-pointer">
                     <p className="text-sm font-bold text-nowrap ml-[0.5rem]">송파구 마천동</p>
                 </div>
-                <div className="flex flex-row w-4/5 ml-2"> {/* 검색 박스 */}
+                <div className="flex flex-row w-4/5 ml-2">
                     <input
                         ref={inputRef}
                         type="text"
@@ -90,17 +90,13 @@ const Home = () => {
                         onChange={handleChange} // 텍스트 입력 시
                     />
                 </div>
-                <BiSearch size="20"
-                          className="mr-3 mt-1 cursor-pointer hover:scale-150 transition-transform ease-in-out duration-500"
-                />
+                <BiSearch size="20" className="mr-3 mt-1 cursor-pointer hover:scale-150 transition-transform ease-in-out duration-500" />
             </div>
 
             {/* MainCard들 */}
             <div className="flex flex-row w-[60rem] h-[20rem] mt-6 items-center justify-center shadow-xl rounded-xl">
                 <Swiper
-                    pagination={{
-                        dynamicBullets: true,
-                    }}
+                    pagination={{ dynamicBullets: true }}
                     modules={[Pagination, Autoplay]}
                     className="shadow-xl rounded-xl"
                     autoplay={{
@@ -137,4 +133,4 @@ const Home = () => {
     );
 };
 
-export default Home
+export default Home;
