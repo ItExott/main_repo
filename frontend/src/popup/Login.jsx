@@ -33,7 +33,6 @@ const Login = ({ setLoginStatus }) => {
             if (response.data.success) {
 
                 setLoginStatus(true);  // 로그인 상태를 true로 변경
-                console.log("여기옴")
                 closeModal();  // 모달 닫기
                 navigate('/');  // 로그인 후 홈 화면으로 이동
             } else {

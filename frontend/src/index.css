@@ -22,6 +22,13 @@ a {
   text-decoration: inherit;
 }
 
+.progress::-webkit-progress-bar {
+  background-color: #E6E6E6; /* Tailwind's pink-200 */
+}
+.progress::-webkit-progress-value {
+  background-color: #000000
+}
+
 html,
 body {
   width:100%;
