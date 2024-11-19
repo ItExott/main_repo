@@ -50,6 +50,20 @@ const Home = () => {
             document.getElementById('my_modal_3').showModal();  // 로그인 모달을 띄운다
         }
     }, [openLoginModal]); // openLoginModal 값이 변경될 때마다 실행
+    useEffect(() => {
+        const handleBeforeUnload = () => {
+            // 새로고침 시 state에 { openLoginModal: false } 설정
+            window.history.replaceState({ openLoginModal: false }, '');
+        };
+
+        // beforeunload 이벤트 리스너 추가
+        window.addEventListener('beforeunload', handleBeforeUnload);
+
+        // 컴포넌트가 언마운트되거나 새로고침 후에는 이벤트 리스너 제거
+        return () => {
+            window.removeEventListener('beforeunload', handleBeforeUnload);
+        };
+    }, []); // 빈 배열을 두어 컴포넌트가 마운트될 때만 실행되게 함
 
     // 로그인 모달을 강제로 표시하거나 닫을 때 사용 (새로고침 후 값을 강제로 설정)
     useEffect(() => {
@@ -76,7 +90,7 @@ const Home = () => {
 
             {/* 검색창 */}
             <div className="flex flex-row h-14 w-[35rem] items-center justify-center shadow-xl rounded-xl relative">
-                <FaLocationDot size="20" className="ml-3 cursor-pointer mt-[0.06rem]" />
+                <FaLocationDot size="20" className="ml-3 cursor-pointer mt-[0.06rem]"/>
                 <div className="flex flex-row w-1/5 cursor-pointer">
                     <p className="text-sm font-bold text-nowrap ml-[0.5rem]">송파구 마천동</p>
                 </div>
@@ -90,13 +104,14 @@ const Home = () => {
                         onChange={handleChange} // 텍스트 입력 시
                     />
                 </div>
-                <BiSearch size="20" className="mr-3 mt-1 cursor-pointer hover:scale-150 transition-transform ease-in-out duration-500" />
+                <BiSearch size="20"
+                          className="mr-3 mt-1 cursor-pointer hover:scale-150 transition-transform ease-in-out duration-500"/>
             </div>
 
             {/* MainCard들 */}
             <div className="flex flex-row w-[60rem] h-[20rem] mt-6 items-center justify-center shadow-xl rounded-xl">
                 <Swiper
-                    pagination={{ dynamicBullets: true }}
+                    pagination={{dynamicBullets: true}}
                     modules={[Pagination, Autoplay]}
                     className="shadow-xl rounded-xl"
                     autoplay={{
@@ -105,9 +120,9 @@ const Home = () => {
                     }}
                     loop={true}
                 >
-                    <SwiperSlide><img src="https://ifh.cc/g/jS0w0T.png" /></SwiperSlide>
-                    <SwiperSlide><img src="https://ifh.cc/g/PANybK.jpg" /></SwiperSlide>
-                    <SwiperSlide><img src="https://ifh.cc/g/fxBCJX.jpg" /></SwiperSlide>
+                    <SwiperSlide><img src="https://ifh.cc/g/jS0w0T.png"/></SwiperSlide>
+                    <SwiperSlide><img src="https://ifh.cc/g/PANybK.jpg"/></SwiperSlide>
+                    <SwiperSlide><img src="https://ifh.cc/g/fxBCJX.jpg"/></SwiperSlide>
                 </Swiper>
             </div>
 
@@ -125,8 +140,29 @@ const Home = () => {
                     modules={[Scrollbar]}
                     className="flex w-full"
                 >
-                    <SwiperSlide className="flex ml-[5rem] justify-center w-auto h-auto"><MainCard text="카드1" sor="https://ifh.cc/g/QqVy3C.png" /></SwiperSlide>
-                    <SwiperSlide className="flex ml-[14rem] justify-center w-auto h-auto"><MainCard text="카드2" sor="https://ifh.cc/g/M0Yaqq.png" /></SwiperSlide>
+                    <SwiperSlide className="flex ml-[5rem] justify-center w-auto h-auto"><MainCard text="카드1"
+                                                                                                   sor="https://ifh.cc/g/QqVy3C.png"/></SwiperSlide>
+                    <SwiperSlide className="flex ml-[14rem] justify-center w-auto h-auto"><MainCard text="카드2"
+                                                                                                    sor="https://ifh.cc/g/M0Yaqq.png"/></SwiperSlide>
+                </Swiper>
+            </div>
+            <div className="flex flex-row w-[60rem] h-[20rem] mt-6 items-center justify-center shadow-xl rounded-xl">
+                <Swiper
+                    slidesPerView="auto"
+                    spaceBetween={-120}
+                    centeredSlides={false}
+                    scrollbar={{
+                        hide: false,
+                        draggable: true,
+                        dragSize: 200,
+                    }}
+                    modules={[Scrollbar]}
+                    className="flex w-full"
+                >
+                    <SwiperSlide className="flex ml-[5rem] justify-center w-auto h-auto"><MainCard text="카드3"
+                                                                                                   sor="https://ifh.cc/g/6l8LDF.jpg"/></SwiperSlide>
+                    <SwiperSlide className="flex ml-[14rem] justify-center w-auto h-auto"><MainCard text="카드4"
+                                                                                                    sor="https://ifh.cc/g/9nDygD.png"/></SwiperSlide>
                 </Swiper>
             </div>
         </div>
