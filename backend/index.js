@@ -1,18 +1,20 @@
 const express = require('express');
 const mysql = require('mysql');
-const cors = require('cors');
+
 const bodyParser = require('body-parser');
 const app = express();
 const port = 8080;
 
 // CORS 설정
+const cors = require('cors');
 app.use(cors());
+app.use(express.json());
 
 // MySQL 데이터베이스 연결 설정
 const db = mysql.createConnection({
     host     : 'localhost',
     user     : 'root',
-    port     : 3307,  // MySQL의 포트 번호 (기본 포트는 3306, 사용하는 포트에 맞게 수정)
+    port     : 3306,  // MySQL의 포트 번호 (기본 포트는 3306, 사용하는 포트에 맞게 수정)
     password : 'root',  // MySQL 비밀번호 (환경에 맞게 수정)
     database : 'itsoftgym'  // 사용하려는 데이터베이스 이름
 });
@@ -26,28 +28,23 @@ db.connect(err => {
     console.log('Connected to database.');
 });
 
-app.get('/Product/:id', (req, res) => {
-    const bookId = req.params.id; // req.params를 사용하여 id를 가져옴
-    const query = 'SELECT * FROM Product WHERE prodid = ?';
+app.get('/product/:id', (req, res) => {
+    const prodid = req.params.id;
+    const query = "SELECT * FROM Product WHERE prodid = ?";
 
-    db.query(query, [Prodid], (err, results) => {
+    db.query(query, [prodid], (err, results) => {
         if (err) {
-            console.error('Error fetching book data: ' + err.stack);
-            res.status(500).send('Internal server error');
-            return;
+            console.error("Error fetching product data:", err);
+            res.status(500).send("Internal server error");
+        } else if (results.length === 0) {
+            res.status(404).send("Product not found");
+        } else {
+            res.json(results[0]);
         }
-
-        if (results.length === 0) {
-            res.status(404).send('Book not found');
-            return;
-        }
-
-        res.json(results[0]);
     });
 });
 
 // Middleware 설정
-app.use(cors());
 app.use(bodyParser.json());  // JSON 파싱
 
 app.post('/api/signup', (req, res) => {
@@ -90,6 +87,6 @@ app.post('/api/login', (req, res) => {
 });
 
 // 서버 시작
-app.listen(port, () => {
-    console.log(`Server is running on port ${port}`);
+app.listen(PORT, () => {
+    console.log(`Server is running on http://localhost:${PORT}`);
 });

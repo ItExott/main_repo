@@ -12,6 +12,7 @@ import Find_Pw from "./pages/Find_Pw.jsx";
 import Find_Pw_Check from "./pages/Find_Pw_Check.jsx";
 import Product from "./pages/Product.jsx";
 
+
 function App() {
     const [loginStatus, setLoginStatus] = useState(false);
     return (
@@ -26,7 +27,7 @@ function App() {
                 <Route path="/Complete_SignUp" element={<Complete_SignUp/>}/>
                 <Route path="/Agree_to_terms" element={<Agree_to_terms/>}/>
                 <Route path="/Product_Main" element={<Product_Main/>}/>
-                <Route path="/Product" element={<Product />} />
+                <Route path="/product/:id" element={<Product />} />
                 <Route path="/" element={<Home/>}/>
             </Routes>
         </>

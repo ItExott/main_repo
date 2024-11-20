@@ -1,5 +1,5 @@
 import React, {useState, useEffect, useRef} from "react";
-import {Link} from "react-router-dom";
+import {Link, useParams} from "react-router-dom";
 import {useRecoilValue} from "recoil";
 import { FaLocationDot } from "react-icons/fa6";
 import { MdNavigateNext } from "react-icons/md";
@@ -19,6 +19,7 @@ import { LiaDumbbellSolid } from "react-icons/lia";
 import { FaAngleDown } from "react-icons/fa6";
 import { FaAngleUp } from "react-icons/fa6";
 import { FaCheckCircle } from "react-icons/fa";
+import axios from "axios";
 
 const Product= () => {
     const PhotoSectionRef = useRef(null);
@@ -34,6 +35,28 @@ const Product= () => {
     const toggleShowImages = () => {
         setShowFullImages(!showFullImages);
     };
+
+    const { id } = useParams(); // URL 파라미터에서 id를 가져옴
+
+    const [ProductData, setProductData] = useState({
+        prodid:"",
+        main_logo: ""
+    });
+
+    useEffect(() => {
+        // 데이터 요청
+        axios.get(`http://localhost:5173/product/${id}`)
+            .then(response => {
+                console.log(response.data); // 백엔드에서 받은 데이터를 로그로 확인
+                setProductData({
+                    main_logo: ProductData.main_logo,
+                    prodid: ProductData.prodid
+                });
+            })
+            .catch(error => {
+                console.error("Error fetching product data:", error);
+            });
+    }, [id]);
 
 
     const scrollToPhotoSection = () => {
@@ -70,8 +93,11 @@ const Product= () => {
                 <div className="flex flex-row items-center w-[42rem] h-[22rem]">
                     <img className="flex w-[42rem] h-[21.8rem] rounded-l-3xl" src="https://ifh.cc/g/0F7mtd.jpg"/></div>
                 <div className="flex flex-col shadow-xl rounded-r-3xl items-center w-[20rem] h-[22rem]">
-                    <div className="flex w-[10rem] mt-[2rem] h-[10rem]"><img className="rounded-full"
-                                                                                 src="https://ifh.cc/g/XpkHf4.jpg"></img>
+                    <div className="flex w-[10rem] mt-[2rem] h-[10rem]"> {ProductData.main_logo ? (
+                        <img className="rounded-full" src={ProductData.main_logo} alt="Product Logo" />
+                    ) : (
+                        <p>Loading...</p> // 데이터가 없을 때 보여줄 로더
+                    )}
                     </div>
                     <a className="text-lg mt-[1rem] font-bold">Mining 클라이밍</a>
                     <a className="text-sm">서울시 송파구 마천동에 위치한 실내 클라이밍 짐</a>

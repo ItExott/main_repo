@@ -17,6 +17,7 @@ import axios from "axios";
 
 const Product_Main = () => {
 
+
     const [isFocused, setIsFocused] = useState(false); // 검색창 포커스 상태
     const [query, setQuery] = useState(""); // 검색어
     const [showSuggestions, setShowSuggestions] = useState(false); // 추천 검색어 박스 표시 여부
@@ -30,6 +31,8 @@ const Product_Main = () => {
         setShowSuggestions(e.target.value.length > 0); // 입력이 있으면 추천 박스 표시
     };
 
+    const navigate = useNavigate();
+
     // 검색창에 포커스 처리
     const handleFocus = () => {
         setIsFocused(true); // 포커스 되면 추천 박스 보이기
@@ -40,6 +43,11 @@ const Product_Main = () => {
     const handleBlur = () => {
         setIsFocused(false); // 포커스를 벗어나면 추천 박스 숨기기
         setShowSuggestions(false);
+    };
+
+
+    const handleClick = (id) => {
+        navigate(`/product/${id}`);
     };
 
 
@@ -99,9 +107,9 @@ const Product_Main = () => {
                 </div>
             </div>
             <div className="flex flex-row w-[62rem] h-[35rem] mt-[3rem]">
-                <ProductCard sor="https://ifh.cc/g/wqrJYZ.jpg" text="Mining 클라이밍" address="서울시 송파구 마천동" price="130,000원" className="flex"/>
-                <ProductCard sor="https://ifh.cc/g/hjajLX.jpg" text="DOT 클라이밍" address="서울시 송파구 문정동" price="120,000원" className="flex"/>
-                <ProductCard sor="https://ifh.cc/g/xRlqBr.png" text="DAMJANG 클라이밍" address="서울시 서대문구 신촌동" price="140,000원" className="flex"/>
+                <ProductCard id="1" onClick={(id) => console.log("Clicked:", id)} text="Mining 클라이밍" address="서울시 송파구 마천동" price="130,000원" className="flex"/>
+                <ProductCard id="2" sor="https://ifh.cc/g/hjajLX.jpg" text="DOT 클라이밍" address="서울시 송파구 문정동" price="120,000원" className="flex"/>
+                <ProductCard id="3" sor="https://ifh.cc/g/xRlqBr.png" text="DAMJANG 클라이밍" address="서울시 서대문구 신촌동" price="140,000원" className="flex"/>
             </div>
         </div>
 

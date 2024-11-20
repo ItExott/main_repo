@@ -26,6 +26,22 @@ const Home = () => {
     const [openLoginModal, setOpenLoginModal] = useState(locationOpenLoginModal); // 초기값을 locationOpenLoginModal로 설정
     const inputRef = useRef(null);
 
+
+    useEffect(() => {
+        const handleBeforeUnload = () => {
+            // 새로고침 시 state에 { openLoginModal: false } 설정
+            window.history.replaceState({ openLoginModal: false }, '');
+        };
+
+        // beforeunload 이벤트 리스너 추가
+        window.addEventListener('beforeunload', handleBeforeUnload);
+
+        // 컴포넌트가 언마운트되거나 새로고침 후에는 이벤트 리스너 제거
+        return () => {
+            window.removeEventListener('beforeunload', handleBeforeUnload);
+        };
+    }, []); // 빈 배열을 두어 컴포넌트가 마운트될 때만 실행되게 함
+
     // 검색어 입력 변화 처리
     const handleChange = (e) => {
         setQuery(e.target.value);
