@@ -26,6 +26,26 @@ db.connect(err => {
     console.log('Connected to database.');
 });
 
+app.get('/Product/:id', (req, res) => {
+    const bookId = req.params.id; // req.params를 사용하여 id를 가져옴
+    const query = 'SELECT * FROM Product WHERE prodid = ?';
+
+    db.query(query, [Prodid], (err, results) => {
+        if (err) {
+            console.error('Error fetching book data: ' + err.stack);
+            res.status(500).send('Internal server error');
+            return;
+        }
+
+        if (results.length === 0) {
+            res.status(404).send('Book not found');
+            return;
+        }
+
+        res.json(results[0]);
+    });
+});
+
 // Middleware 설정
 app.use(cors());
 app.use(bodyParser.json());  // JSON 파싱

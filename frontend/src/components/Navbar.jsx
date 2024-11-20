@@ -73,8 +73,8 @@ const Navbar = ({ loginStatus, setLoginStatus }) => {
             </div>
 
             <div className="navbar-center">
-                <a onClick={gohome} className="btn btn-ghost w-[18rem] h-[17rem]text-xl">
-                    <img alt="로고" src="https://ifh.cc/g/R5vZVY.png" />
+                <a onClick={gohome} className="btn btn-ghost w-[13rem] h-[13rem]text-xl">
+                    <img alt="로고" src="https://ifh.cc/g/xrkNK1.png" />
                 </a>
             </div>
 

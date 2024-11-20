@@ -88,9 +88,6 @@ const Product= () => {
                             <input type="radio" name="rating-1" className="mask mask-star"/>
                         </div>
                         <a className="flex text-xs mt-[0.28rem] font-bold ml-[0.5em]">4.5 (19)</a>
-                        <a className="flex text-xs mt-[0.28rem] text-blue-500 font-bold ml-[0.9em] cursor-pointer">후기
-                            더보기</a>
-                        <MdNavigateNext className="flex mt-[0.28rem] fill-blue-500"/>
                     </div>
                 </div>
             </div>

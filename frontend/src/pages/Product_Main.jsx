@@ -1,5 +1,5 @@
 import React, {useState, useEffect, useRef} from "react";
-import {Link} from "react-router-dom";
+import {Link, useParams, useNavigate} from "react-router-dom";
 import {useRecoilValue} from "recoil";
 
 import { Swiper, SwiperSlide } from "swiper/react";
@@ -12,11 +12,11 @@ import 'swiper/css/effect-coverflow';
 import {FaLocationDot} from "react-icons/fa6";
 import {BiSearch} from "react-icons/bi";
 import ProductCard from "../components/ProductCard.jsx";
+import axios from "axios";
 
 
 const Product_Main = () => {
 
-    // 상태 변수들
     const [isFocused, setIsFocused] = useState(false); // 검색창 포커스 상태
     const [query, setQuery] = useState(""); // 검색어
     const [showSuggestions, setShowSuggestions] = useState(false); // 추천 검색어 박스 표시 여부
@@ -41,6 +41,7 @@ const Product_Main = () => {
         setIsFocused(false); // 포커스를 벗어나면 추천 박스 숨기기
         setShowSuggestions(false);
     };
+
 
     return (
         <div className="flex flex-col h-full items-center justify-center mx-56">  {/*전체 틀*/}
@@ -97,12 +98,11 @@ const Product_Main = () => {
                     </a>
                 </div>
             </div>
-            <div className="flex flex-row w-[62rem] h-[35rem] mt-[2rem]">
-                <ProductCard sor="https://ifh.cc/g/wqrJYZ.jpg" className="flex"/>
-                <ProductCard sor="https://ifh.cc/g/wqrJYZ.jpg" className="flex"/>
-                <ProductCard sor="https://ifh.cc/g/wqrJYZ.jpg" className="flex"/>
+            <div className="flex flex-row w-[62rem] h-[35rem] mt-[3rem]">
+                <ProductCard sor="https://ifh.cc/g/wqrJYZ.jpg" text="Mining 클라이밍" address="서울시 송파구 마천동" price="130,000원" className="flex"/>
+                <ProductCard sor="https://ifh.cc/g/hjajLX.jpg" text="DOT 클라이밍" address="서울시 송파구 문정동" price="120,000원" className="flex"/>
+                <ProductCard sor="https://ifh.cc/g/xRlqBr.png" text="DAMJANG 클라이밍" address="서울시 서대문구 신촌동" price="140,000원" className="flex"/>
             </div>
-
         </div>
 
     )
