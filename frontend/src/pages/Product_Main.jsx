@@ -11,6 +11,7 @@ import 'swiper/css/pagination';
 import 'swiper/css/effect-coverflow';
 import {FaLocationDot} from "react-icons/fa6";
 import {BiSearch} from "react-icons/bi";
+import ProductCard from "../components/ProductCard.jsx";
 
 
 const Product_Main = () => {
@@ -80,15 +81,26 @@ const Product_Main = () => {
                     </div>
                 )}
             </div>
-            <div className="flex justify-start flex-row w-[62rem] h-[22rem] mt-6 items-center">
-                <div className="flex flex-row bg-indigo-700  w-[33rem] h-[22rem]">그림 부분</div>
-                <div className="flex flex-row bg-green-300  w-[29rem] h-[22rem]">운동 소개 부분</div>
+            <div className="flex justify-start w-[62rem] h-[22rem] mt-[4rem] items-center">
+                <div className="flex items-center w-[24rem] h-[18rem] ml-[6rem]">
+                    <img className="rounded-3xl shadow-xl" src="https://ifh.cc/g/XGnqgV.jpg"/>
+                    </div>
+                <div
+                    className="flex flex-col border-[0.01rem] border-gray-100 justify-center rounded-r-full shadow-xl w-[29rem] h-[18rem]">
+                    <a className="text-[1.5rem] font-semibold ml-[2rem]">Climbing란?</a>
+                    <a className="text-[0.9rem] ml-[2rem] mt-[0.4rem]">등반의 한 종류로 자연암벽 또는 인공암벽을 타는 행위다.</a>
+                    <a className="text-[0.9rem] ml-[2rem]">스포츠의 일환으로 행해지는 암벽 등반은</a>
+                    <a className="text-[0.9rem] ml-[2rem]">'스포츠 클라이밍(sportsclimbing)'이라 한다.</a>
+                    <a className="text-[0.9rem] ml-[2rem]">수 십에서 수 백미터 절벽을 기어오르기 위해서 높은 육체적,</a>
+                    <a className="text-[0.9rem] ml-[2rem]">정신적 능력이 요구되는 익스트림 스포츠로,</a>
+                    <a className="text-[0.9rem] ml-[2rem] mb-[1rem]">충분한 교육과 적절한 장비, 알맞은 등반술이 없다면 위험해질 수 있다.
+                    </a>
+                </div>
             </div>
-                <div className="flex flex-row justify-start bg-violet-300 w-[62rem] h-[35rem] mt-14 justify-start">
-
-
-
-
+            <div className="flex flex-row w-[62rem] h-[35rem] mt-[2rem]">
+                <ProductCard sor="https://ifh.cc/g/wqrJYZ.jpg" className="flex"/>
+                <ProductCard sor="https://ifh.cc/g/wqrJYZ.jpg" className="flex"/>
+                <ProductCard sor="https://ifh.cc/g/wqrJYZ.jpg" className="flex"/>
             </div>
 
         </div>

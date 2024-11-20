@@ -18,6 +18,7 @@ import { PiSirenBold } from "react-icons/pi";
 import { LiaDumbbellSolid } from "react-icons/lia";
 import { FaAngleDown } from "react-icons/fa6";
 import { FaAngleUp } from "react-icons/fa6";
+import { FaCheckCircle } from "react-icons/fa";
 
 const Product= () => {
     const PhotoSectionRef = useRef(null);
@@ -325,7 +326,7 @@ const Product= () => {
                             </div>
                         </div>
                     </div>
-                    <div className="flex flex-row space-x-4 mt-[2.5rem] mr-[40rem] border-b w-[9rem] border-gray-300">
+                    <div className="flex flex-row space-x-4 mt-[2.5rem] mr-[40rem] border-b w-[8rem] border-gray-300">
                         <a
                             className={`text-sm font-bold pb-2 cursor-pointer transition-transform ease-in-out duration-500 ${
                                 activeTab === '전체 리뷰'
@@ -471,17 +472,33 @@ const Product= () => {
                                     </div>
                                 </div>
                                 {isExpanded && (
-                                    <div className="mt-2 bg-gray-50 border-[0.1rem] border-gray-300 rounded-lg p-4 w-[50rem] mx-auto shadow-md">
+                                    <div
+                                        className="mt-2 bg-gray-50 border-[0.1rem] border-gray-300 rounded-lg p-4 w-[50rem] mx-auto shadow-md">
                                         <p className="text-sm text-gray-700">
                                             안녕하세요, 고객님. 환불 관련 문의 사항에 대해 답변드립니다. 환불 절차는 구매일로부터 7일 이내에 신청 가능합니다.
                                         </p>
                                         <p className="text-sm text-gray-700 mt-2">
                                             자세한 내용은 고객센터로 문의해 주세요. 감사합니다.
                                         </p>
+                                        <div
+                                            className="mt-[1rem] bg-gray-50 border-[0.1rem] border-gray-300 rounded-lg p-4 w-[48rem] mx-auto shadow-md">
+                                            <div className="flex items-center flex-row">
+                                                <FaCheckCircle />
+                                            <a className="text-xm ml-[0.3rem] text-gray-700">답변 내용</a>
+                                            </div>
+                                            <p className="text-sm mt-2 text-gray-700">
+                                                안녕하세요, 고객님. 환불 관련 문의 사항에 대해 답변드립니다. 환불 절차는 구매일로부터 7일 이내에 신청 가능합니다.
+                                            </p>
+                                            <p className="text-sm text-gray-700">
+                                                자세한 내용은 고객센터로 문의해 주세요. 감사합니다.
+                                            </p>
+                                        </div>
                                     </div>
                                 )}
-                                <div  onClick={() => setIsExpanded1(!isExpanded1)} className="flex mx-auto flex-row items-center mt-[1rem] hover:bg-gray-200 cursor-pointer bg-gray-100 shadow-xl border-[0.1rem] border-gray-600 rounded-lg w-[50rem] h-[7rem]">
-                                    <div className="flex flex-col h-[6rem] border-r-[0.1rem] border-gray-400 items-center w-[10rem]">
+                                <div onClick={() => setIsExpanded1(!isExpanded1)}
+                                     className="flex mx-auto flex-row items-center mt-[1rem] hover:bg-gray-200 cursor-pointer bg-gray-100 shadow-xl border-[0.1rem] border-gray-600 rounded-lg w-[50rem] h-[7rem]">
+                                    <div
+                                        className="flex flex-col h-[6rem] border-r-[0.1rem] border-gray-400 items-center w-[10rem]">
                                         <FaCircleUser className="flex mt-[0.6rem] h-[4rem] w-[4rem]"/>
                                         <a className="flex font-bold mt-[0.5rem] items-center text-xs">김기사</a>
                                     </div>
