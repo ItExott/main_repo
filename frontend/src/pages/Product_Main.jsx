@@ -12,6 +12,7 @@ import 'swiper/css/effect-coverflow';
 import {FaLocationDot} from "react-icons/fa6";
 import {BiSearch} from "react-icons/bi";
 import ProductCard from "../components/ProductCard.jsx";
+import { FaCaretDown } from "react-icons/fa";
 import axios from "axios";
 
 
@@ -25,6 +26,7 @@ const Product_Main = () => {
     // useRef를 사용하여 검색창에 접근
     const inputRef = useRef(null);
 
+
     // 검색어 입력 변화 처리
     const handleChange = (e) => {
         setQuery(e.target.value);
@@ -32,6 +34,18 @@ const Product_Main = () => {
     };
 
     const navigate = useNavigate();
+
+    const [selectedOption, setSelectedOption] = useState("평점 순");
+
+    // 드롭다운 열고 닫는 상태
+    const [isOpen, setIsOpen] = useState(false);
+
+    // 항목을 선택했을 때 호출되는 함수
+    const handleSelect = (option) => {
+        setSelectedOption(option); // 선택한 옵션으로 상태 업데이트
+        setIsOpen(false); // 드롭다운 닫기
+    };
+
 
     // 검색창에 포커스 처리
     const handleFocus = () => {
@@ -53,7 +67,8 @@ const Product_Main = () => {
 
     return (
         <div className="flex flex-col h-full items-center justify-center mx-56">  {/*전체 틀*/}
-            <div className="flex flex-row h-14 w-[35rem] items-center justify-center shadow-xl rounded-xl relative"> {/*검색창*/}
+            <div
+                className="flex flex-row h-14 w-[35rem] items-center justify-center shadow-xl rounded-xl relative"> {/*검색창*/}
                 <FaLocationDot size="20" className="ml-3 cursor-pointer mt-[0.06rem]"/> {/* 로케이션 아이콘 */}
                 <div className="flex flex-row w-1/5 cursor-pointer"> {/* 로케이션 박스 */}
                     <p className="text-sm font-bold text-nowrap ml-[0.5rem]">송파구 마천동</p>
@@ -70,7 +85,8 @@ const Product_Main = () => {
                         onChange={handleChange} // 텍스트 입력 시
                     />
                 </div>
-                <BiSearch size="20" className="mr-3 mt-1 cursor-pointer hover:scale-150 transition-transform ease-in-out duration-500"/>
+                <BiSearch size="20"
+                          className="mr-3 mt-1 cursor-pointer hover:scale-150 transition-transform ease-in-out duration-500"/>
                 {/* 검색 아이콘 */}
 
                 {/* 추천 검색어 박스 */}
@@ -93,7 +109,7 @@ const Product_Main = () => {
             <div className="flex justify-start w-[62rem] h-[22rem] mt-[4rem] items-center">
                 <div className="flex items-center w-[24rem] h-[18rem] ml-[6rem]">
                     <img className="rounded-3xl shadow-xl" src="https://ifh.cc/g/XGnqgV.jpg"/>
-                    </div>
+                </div>
                 <div
                     className="flex flex-col border-[0.01rem] border-gray-100 justify-center rounded-r-full shadow-xl w-[29rem] h-[18rem]">
                     <a className="text-[1.5rem] font-semibold ml-[2rem]">Climbing란?</a>
@@ -106,14 +122,65 @@ const Product_Main = () => {
                     </a>
                 </div>
             </div>
-            <div className="flex flex-row w-[62rem] h-[35rem] mt-[3rem]">
-                <ProductCard id="1" onClick={(id) => console.log("Clicked:", id)} text="Mining 클라이밍" address="서울시 송파구 마천동" price="130,000원" className="flex"/>
-                <ProductCard id="2" sor="https://ifh.cc/g/hjajLX.jpg" text="DOT 클라이밍" address="서울시 송파구 문정동" price="120,000원" className="flex"/>
-                <ProductCard id="3" sor="https://ifh.cc/g/xRlqBr.png" text="DAMJANG 클라이밍" address="서울시 서대문구 신촌동" price="140,000원" className="flex"/>
+            <div className="flex items-center justify-end w-full ml-[12rem] mt-[3rem]">
+                <details
+                    className="dropdown shadow-xl hover:bg-gray-100 cursor-pointer hover:scale-110 transition-transform ease-in-out duration-500 items-center flex justify-center w-[6rem] rounded-xl h-[2rem] z-[2]"
+                    open={isOpen} // 드롭다운 상태 제어
+                    onClick={() => setIsOpen(!isOpen)} // 드롭다운 열기/닫기
+                >
+                    {/* 드롭다운 항목 */}
+                    <summary className="flex font-semibold items-center">
+                        {selectedOption} <FaCaretDown className="ml-[0.1rem]"/>
+                    </summary>
+
+                    {/* 드롭다운 리스트 */}
+                    {isOpen && (
+                        <div
+                            className="dropdown-content flex flex-col absolute left-0 bg-base-100 rounded-box h-[5rem] z-[10] w-[6rem] mt-[1rem] shadow">
+                            {/* "평점 순" 항목이 선택되지 않으면 표시 */}
+                            {selectedOption !== "평점 순" && (
+                                <a
+                                    className="p-2 flex flex-row items-center justify-center hover:rounded-xl cursor-pointer hover:bg-gray-200 font-semibold"
+                                    onClick={() => handleSelect("평점 순")} // "평점 순" 선택
+                                >
+                                    평점 순 <FaCaretDown className="ml-[0.1rem]"/>
+                                </a>
+                            )}
+                            {/* "가격 순" 항목 */}
+                            {selectedOption !== "가격 순" && (
+                                <a
+                                    className="p-2 flex flex-row items-center justify-center hover:rounded-xl cursor-pointer hover:bg-gray-200 font-semibold"
+                                    onClick={() => handleSelect("가격 순")} // "가격 순" 선택
+                                >
+                                    가격 순 <FaCaretDown className="ml-[0.1rem]"/>
+                                </a>
+                            )}
+                            {/* "조회 순" 항목 */}
+                            {selectedOption !== "조회 순" && (
+                                <a
+                                    className="p-2 flex flex-row items-center justify-center hover:rounded-xl cursor-pointer hover:bg-gray-200 font-semibold"
+                                    onClick={() => handleSelect("조회 순")} // "조회 순" 선택
+                                >
+                                    조회 순 <FaCaretDown className="ml-[0.1rem]"/>
+                                </a>
+                            )}
+                        </div>
+                    )}
+                </details>
+            </div>
+
+
+            {/* 제품 목록 */}
+            <div className="flex flex-row w-[62rem] h-[35rem] mt-[1rem]">
+                <ProductCard id="1" onClick={handleClick} text="Mining 클라이밍" address="서울시 송파구 마천동" price="130,000원"
+                             className="flex"/>
+                <ProductCard id="2" onClick={handleClick} text="DOT 클라이밍" address="서울시 송파구 문정동" price="120,000원"
+                             className="flex"/>
+                <ProductCard id="3" onClick={handleClick} text="DAMJANG 클라이밍" address="서울시 서대문구 신촌동" price="140,000원"
+                             className="flex"/>
             </div>
         </div>
-
-    )
-}
+    );
+};
 
 export default Product_Main;

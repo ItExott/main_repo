@@ -38,26 +38,28 @@ const Product= () => {
 
     const { id } = useParams(); // URL 파라미터에서 id를 가져옴
 
-    const [ProductData, setProductData] = useState({
-        prodid:"",
-        main_logo: ""
+    const [productData, setProductData] = useState({
+        iconpicture: "",
+        prodid: "",
+        prodtitle: ""
     });
 
     useEffect(() => {
         // 데이터 요청
-        axios.get(`http://localhost:5173/product/${id}`)
+        axios.get(`http://localhost:8080/product/${id}`)
             .then(response => {
                 console.log(response.data); // 백엔드에서 받은 데이터를 로그로 확인
                 setProductData({
-                    main_logo: ProductData.main_logo,
-                    prodid: ProductData.prodid
+                    prodid: response.data.prodid,      // 받은 데이터의 prodid로 설정
+                    iconpicture: response.data.iconpicture,  // 받은 데이터의 iconpicture로 설정
+                    prodtitle: response.data.prodtitle
                 });
+                console.log(productData.iconpicture);
             })
             .catch(error => {
                 console.error("Error fetching product data:", error);
             });
-    }, [id]);
-
+    }, [id]); // id가 변경될 때마다 데이터 요청
 
     const scrollToPhotoSection = () => {
 
@@ -93,13 +95,13 @@ const Product= () => {
                 <div className="flex flex-row items-center w-[42rem] h-[22rem]">
                     <img className="flex w-[42rem] h-[21.8rem] rounded-l-3xl" src="https://ifh.cc/g/0F7mtd.jpg"/></div>
                 <div className="flex flex-col shadow-xl rounded-r-3xl items-center w-[20rem] h-[22rem]">
-                    <div className="flex w-[10rem] mt-[2rem] h-[10rem]"> {ProductData.main_logo ? (
-                        <img className="rounded-full" src={ProductData.main_logo} alt="Product Logo" />
+                    <div className="flex w-[10rem] mt-[2rem] h-[10rem]"> {productData.iconpicture ? (
+                        <img className="rounded-full" src={productData.iconpicture} alt="Product Logo" />
                     ) : (
                         <p>Loading...</p> // 데이터가 없을 때 보여줄 로더
                     )}
                     </div>
-                    <a className="text-lg mt-[1rem] font-bold">Mining 클라이밍</a>
+                    <a className="text-lg mt-[1rem] font-bold">{productData.prodtitle}</a>
                     <a className="text-sm">서울시 송파구 마천동에 위치한 실내 클라이밍 짐</a>
                     <div className="flex mt-[1rem] flex-row"> {/*로고 하단 위치 박스*/}
                         <FaLocationDot/>

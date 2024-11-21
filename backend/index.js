@@ -87,6 +87,6 @@ app.post('/api/login', (req, res) => {
 });
 
 // 서버 시작
-app.listen(PORT, () => {
-    console.log(`Server is running on http://localhost:${PORT}`);
+app.listen(port, () => {
+    console.log(`Server is running on http://localhost:${port}`);
 });
