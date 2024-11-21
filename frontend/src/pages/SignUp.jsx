@@ -5,7 +5,7 @@ import axios from "axios";
 const SignUp = () => {
     const [formData, setFormData] = useState({
         userId: "",
-        password: "",
+        userpw: "",
         passwordConfirm: "",
         address: "",
         phoneNumber: "",
@@ -39,21 +39,21 @@ const SignUp = () => {
 
         // 필수 항목 체크
         if (!formData.userId) newErrors.userId = "아이디를 입력하세요.";
-        if (!formData.password) newErrors.password = "비밀번호를 입력하세요.";
+        if (!formData.userpw) newErrors.userpw = "비밀번호를 입력하세요.";
         if (!formData.passwordConfirm) newErrors.passwordConfirm = "비밀번호 확인을 입력하세요.";
         if (!formData.address) newErrors.address = "주소를 입력하세요.";
         if (!formData.phoneNumber) newErrors.phoneNumber = "휴대전화 번호를 입력하세요.";
         if (!formData.name) newErrors.name = "이름을 입력하세요.";
 
         // 비밀번호 확인
-        if (formData.password && formData.password !== formData.passwordConfirm) {
+        if (formData.userpw && formData.userpw !== formData.passwordConfirm) {
             newErrors.passwordConfirm = "비밀번호가 일치하지 않습니다.";
         }
 
         // 비밀번호 강도 체크 (대소문자, 숫자, 특수문자 포함 8자 이상)
         const passwordRegEx = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*])[A-Za-z\d!@#$%^&*]{8,}$/;
-        if (formData.password && !passwordRegEx.test(formData.password)) {
-            newErrors.password = "비밀번호는 대소문자, 숫자, 특수문자를 포함하여 8자 이상이어야 합니다.";
+        if (formData.userpw && !passwordRegEx.test(formData.userpw)) {
+            newErrors.userpw = "비밀번호는 대소문자, 숫자, 특수문자를 포함하여 8자 이상이어야 합니다.";
         }
 
         // 휴대폰 번호 체크 (010-xxxx-xxxx 형태)
@@ -172,13 +172,13 @@ const SignUp = () => {
                             <input
                                 placeholder="비밀번호"
                                 type="password"
-                                name="password"
-                                value={formData.password}
+                                name="userpw"
+                                value={formData.userpw}
                                 onChange={handleChange}
                                 required
                                 className="flex border-2 border-gray-400 text-sm font-normal w-[20rem] h-[3rem] mt-[0.2rem] placeholder-gray-300 "
                             />
-                            {errors.password && <p className="text-red-500">{errors.password}</p>}
+                            {errors.userpw && <p className="text-red-500">{errors.userpw}</p>}
                         </div>
 
                         <div className="mb-4">

@@ -25,8 +25,8 @@ const Login = ({ setLoginStatus }) => {
         try {
             // 여기에 실제 로그인 API를 호출합니다.
             const response = await axios.post('http://localhost:8080/api/login', {
-                id: ID,
-                password: PW,
+                userid: ID,
+                userpw: PW,
             });
 
             // 로그인 성공 시
