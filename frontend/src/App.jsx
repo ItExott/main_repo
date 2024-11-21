@@ -11,12 +11,12 @@ import Find_Id_Check from "./pages/Find_Id_Check.jsx";
 import Find_Pw from "./pages/Find_Pw.jsx";
 import Find_Pw_Check from "./pages/Find_Pw_Check.jsx";
 import Product from "./pages/Product.jsx";
-
+import "./app.css";  // app.css 파일을 import
 
 function App() {
     const [loginStatus, setLoginStatus] = useState(false);
     return (
-        <>
+        <div className="App">
             <Navbar loginStatus={loginStatus} setLoginStatus={setLoginStatus} />
             <Routes>
                 <Route path="/Find_Id" element={<Find_Id/>}/>
@@ -30,7 +30,7 @@ function App() {
                 <Route path="/product/:id" element={<Product />} />
                 <Route path="/" element={<Home/>}/>
             </Routes>
-        </>
+        </div>
     );
 }
 /*

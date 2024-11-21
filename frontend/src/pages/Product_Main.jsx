@@ -111,7 +111,7 @@ const Product_Main = () => {
                 </div>
             </div>
             {/* 제품 목록 */}
-            <div className="flex flex-row w-[62rem] h-[35rem] mt-[1rem]">
+            <div className="flex flex-row w-[62rem] h-[35rem] mt-[2rem]">
                 <ProductCard id="1" onClick={handleClick} text="Mining 클라이밍" address="서울시 송파구 마천동" price="130,000원"
                              className="flex"/>
                 <ProductCard id="2" onClick={handleClick} text="DOT 클라이밍" address="서울시 송파구 문정동" price="120,000원"
