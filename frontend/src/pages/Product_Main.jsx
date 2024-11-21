@@ -35,18 +35,6 @@ const Product_Main = () => {
 
     const navigate = useNavigate();
 
-    const [selectedOption, setSelectedOption] = useState("평점 순");
-
-    // 드롭다운 열고 닫는 상태
-    const [isOpen, setIsOpen] = useState(false);
-
-    // 항목을 선택했을 때 호출되는 함수
-    const handleSelect = (option) => {
-        setSelectedOption(option); // 선택한 옵션으로 상태 업데이트
-        setIsOpen(false); // 드롭다운 닫기
-    };
-
-
     // 검색창에 포커스 처리
     const handleFocus = () => {
         setIsFocused(true); // 포커스 되면 추천 박스 보이기
@@ -122,54 +110,6 @@ const Product_Main = () => {
                     </a>
                 </div>
             </div>
-            <div className="flex items-center justify-end w-full ml-[12rem] mt-[3rem]">
-                <details
-                    className="dropdown shadow-xl hover:bg-gray-100 cursor-pointer hover:scale-110 transition-transform ease-in-out duration-500 items-center flex justify-center w-[6rem] rounded-xl h-[2rem] z-[2]"
-                    open={isOpen} // 드롭다운 상태 제어
-                    onClick={() => setIsOpen(!isOpen)} // 드롭다운 열기/닫기
-                >
-                    {/* 드롭다운 항목 */}
-                    <summary className="flex font-semibold items-center">
-                        {selectedOption} <FaCaretDown className="ml-[0.1rem]"/>
-                    </summary>
-
-                    {/* 드롭다운 리스트 */}
-                    {isOpen && (
-                        <div
-                            className="dropdown-content flex flex-col absolute left-0 bg-base-100 rounded-box h-[5rem] z-[10] w-[6rem] mt-[1rem] shadow">
-                            {/* "평점 순" 항목이 선택되지 않으면 표시 */}
-                            {selectedOption !== "평점 순" && (
-                                <a
-                                    className="p-2 flex flex-row items-center justify-center hover:rounded-xl cursor-pointer hover:bg-gray-200 font-semibold"
-                                    onClick={() => handleSelect("평점 순")} // "평점 순" 선택
-                                >
-                                    평점 순 <FaCaretDown className="ml-[0.1rem]"/>
-                                </a>
-                            )}
-                            {/* "가격 순" 항목 */}
-                            {selectedOption !== "가격 순" && (
-                                <a
-                                    className="p-2 flex flex-row items-center justify-center hover:rounded-xl cursor-pointer hover:bg-gray-200 font-semibold"
-                                    onClick={() => handleSelect("가격 순")} // "가격 순" 선택
-                                >
-                                    가격 순 <FaCaretDown className="ml-[0.1rem]"/>
-                                </a>
-                            )}
-                            {/* "조회 순" 항목 */}
-                            {selectedOption !== "조회 순" && (
-                                <a
-                                    className="p-2 flex flex-row items-center justify-center hover:rounded-xl cursor-pointer hover:bg-gray-200 font-semibold"
-                                    onClick={() => handleSelect("조회 순")} // "조회 순" 선택
-                                >
-                                    조회 순 <FaCaretDown className="ml-[0.1rem]"/>
-                                </a>
-                            )}
-                        </div>
-                    )}
-                </details>
-            </div>
-
-
             {/* 제품 목록 */}
             <div className="flex flex-row w-[62rem] h-[35rem] mt-[1rem]">
                 <ProductCard id="1" onClick={handleClick} text="Mining 클라이밍" address="서울시 송파구 마천동" price="130,000원"

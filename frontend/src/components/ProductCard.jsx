@@ -17,7 +17,6 @@ const ProductCard = ({id, onClick, price, address}) => {
         prodid: "",
         prodtitle: "",
         prodprice: "",
-        prodview: "",
         prodrating: ""
     });
 
@@ -32,7 +31,6 @@ const ProductCard = ({id, onClick, price, address}) => {
                     iconpicture: response.data.iconpicture,  // 받은 데이터의 iconpicture로 설정
                     prodprice: response.data.prodprice,
                     prodrating: response.data.prodrating,
-                    prodview: response.data.prodview
                 });
                 console.log(productData.iconpicture);
             })
@@ -45,12 +43,7 @@ const ProductCard = ({id, onClick, price, address}) => {
         <div  onClick={() => onClick(id)} className="w-[20rem] h-[21.8rem] items-center flex flex-col cursor-pointer hover:scale-110 transition-transform ease-in-out duration-500 rounded overflow-hidden shadow-lg m-4 bg-white">
             <img className="flex w-[20rem] h-[15rem]" src={productData.iconpicture} alt="Card image"/>
             <div className="px-6 flex flex-col items-center pt-4 pb-2">
-                <div className="flex flex-row items-center justify-center">
-                    <a className="flex font-bold text-lg">{productData.prodtitle}</a>
-                    <a className="text-sm justify-center font-semibold items-center flex mt-[0.2rem] ml-[0.3rem]"><TbHandClick
-                        className="w-[1rem] h-[1rem]"/></a>
-                    <a className="text-xs items-center flex ml-[0.1rem] mt-[0.4rem]">{productData.prodview}</a>
-                </div>
+                <a className="flex font-bold text-lg">{productData.prodtitle}</a>
                 <div className="flex flex-row mt-[0.3rem] justify-center items-center">
                     <FaLocationDot/>
                     <a className="flex ml-[0.1rem] text-xs">{address}</a>
