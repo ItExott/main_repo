@@ -37,9 +37,14 @@ const Agree_to_terms = () => {
         <div className="flex flex-col h-full items-center justify-center mx-56 mt-6 ">
             {/* 약관 동의 제목 */}
             <div className="text-2xl font-bold mb-4">
-                <span>약관 동의</span>
+                <span>회원 가입</span>
             </div>
-
+            <ul className="w-[45rem] steps">
+                <li className=" step step-error">약관동의</li>
+                <li className="step">본인인증</li>
+                <li className="step">정보입력</li>
+                <li className="step">가입완료</li>
+            </ul>
             {/* 약관 본문 */}
             <div
                 className="flex flex-col w-full h-[60rem] mt-4 items-center justify-start bg-gray-300 rounded-lg p-6">

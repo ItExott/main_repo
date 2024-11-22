@@ -67,11 +67,11 @@ app.get('/product/:id', (req, res) => {
 
 // 회원가입 API
 app.post('/api/signup', (req, res) => {
-    const { userId, password, name, email, phoneNumber, address, userType } = req.body;
+    const { userId, userpw, name, email, phoneNumber, address, userType } = req.body;
 
     // SQL 쿼리로 데이터베이스에 회원 정보 삽입
-    const query = 'INSERT INTO users (userId, password, name, email, phoneNumber, address, userType) VALUES (?, ?, ?, ?, ?, ?, ?)';
-    db.query(query, [userId, password, name, email, phoneNumber, address, userType], (err, result) => {
+    const query = 'INSERT INTO users (userId, userpw, name, email, phoneNumber, address, userType) VALUES (?, ?, ?, ?, ?, ?, ?)';
+    db.query(query, [userId, userpw, name, email, phoneNumber, address, userType], (err, result) => {
         if (err) {
             console.error("Error inserting data into database:", err);
             return res.json({ success: false, message: '회원가입 실패' });
@@ -84,11 +84,11 @@ app.post('/api/signup', (req, res) => {
 
 // 로그인 API
 app.post('/api/login', (req, res) => {
-    const { id, password } = req.body;  // 클라이언트에서 보낸 id와 password를 받음
+    const { userid, userpw } = req.body;  // 클라이언트에서 보낸 id와 password를 받음
 
     // id와 password를 MySQL에서 확인
-    const query = 'SELECT * FROM users WHERE id = ? AND password = ?';
-    db.query(query, [id, password], (err, result) => {
+    const query = 'SELECT * FROM users WHERE userid = ? AND userpw = ?';
+    db.query(query, [userid, userpw], (err, result) => {
         if (err) {
             console.error('Database query error: ', err);
             return res.status(500).json({ success: false, message: 'Internal server error' });
