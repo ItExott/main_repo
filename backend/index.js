@@ -1,6 +1,5 @@
 const express = require('express');
 const mysql = require('mysql');
-
 const bodyParser = require('body-parser');
 const app = express();
 const port = 8080;
@@ -28,6 +27,28 @@ db.connect(err => {
     console.log('Connected to database.');
 });
 
+// 제품 목록 조회 (정렬 기준: 평점 또는 가격)
+app.get('/product_Main', (req, res) => {
+    const sortOption = req.query.sort || 'prodrating'; // 기본값은 'prodrating'
+    const sortOrder = 'DESC'; // 내림차순 정렬
+
+    let query = '';
+    if (sortOption === 'prodrating') {
+        query = `SELECT * FROM Product ORDER BY prodrating ${sortOrder}`;
+    } else if (sortOption === 'prodprice') {
+        query = `SELECT * FROM Product ORDER BY prodprice ${sortOrder}`;
+    }
+
+    // db.query()로 데이터베이스 쿼리 실행
+    db.query(query, (err, results) => {
+        if (err) {
+            return res.status(500).json({ error: 'Database query failed' });
+        }
+        res.json(results); // 쿼리 결과를 응답으로 반환
+    });
+});
+
+// 특정 제품 상세 조회
 app.get('/product/:id', (req, res) => {
     const prodid = req.params.id;
     const query = "SELECT * FROM Product WHERE prodid = ?";
@@ -39,14 +60,12 @@ app.get('/product/:id', (req, res) => {
         } else if (results.length === 0) {
             res.status(404).send("Product not found");
         } else {
-            res.json(results[0]);
+            res.json(results[0]); // 제품 데이터 응답
         }
     });
 });
 
-// Middleware 설정
-app.use(bodyParser.json());  // JSON 파싱
-
+// 회원가입 API
 app.post('/api/signup', (req, res) => {
     const { userId, password, name, email, phoneNumber, address, userType } = req.body;
 

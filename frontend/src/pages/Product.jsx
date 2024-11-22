@@ -41,7 +41,9 @@ const Product= () => {
     const [productData, setProductData] = useState({
         iconpicture: "",
         prodid: "",
-        prodtitle: ""
+        prodtitle: "",
+        prodrating: "",
+        address: ""
     });
 
     useEffect(() => {
@@ -52,7 +54,9 @@ const Product= () => {
                 setProductData({
                     prodid: response.data.prodid,      // 받은 데이터의 prodid로 설정
                     iconpicture: response.data.iconpicture,  // 받은 데이터의 iconpicture로 설정
-                    prodtitle: response.data.prodtitle
+                    prodtitle: response.data.prodtitle,
+                    prodrating: response.data.prodrating,
+                    address: response.data.address
                 });
                 console.log(productData.iconpicture);
             })
@@ -105,27 +109,44 @@ const Product= () => {
                     <a className="text-sm">서울시 송파구 마천동에 위치한 실내 클라이밍 짐</a>
                     <div className="flex mt-[1rem] flex-row"> {/*로고 하단 위치 박스*/}
                         <FaLocationDot/>
-                        <a className="text-sm font-bold">서울시 송파구 마천동 123-45 2층</a>
+                        <a className="text-sm font-bold">{productData.address}</a>
                     </div>
                     <div className="flex mt-[1rem] flex-row"> {/*로고 하단 후기 박스*/}
-                        <div className="rating">
-                            <input type="radio" name="rating-1" className="mask mask-star"/>
-                            <input type="radio" name="rating-1" className="mask mask-star"/>
-                            <input type="radio" name="rating-1" className="mask mask-star" checked="checked"/>
-                            <input type="radio" name="rating-1" className="mask mask-star"/>
-                            <input type="radio" name="rating-1" className="mask mask-star"/>
-                        </div>
-                        <a className="flex text-xs mt-[0.28rem] font-bold ml-[0.5em]">4.5 (19)</a>
+                        {/* 첫 번째 아이콘 */}
+                        <LiaDumbbellSolid
+                            className={`w-[2rem] h-[2rem] ${productData.prodrating >= 0 ? "fill-black" : "fill-gray-300"}`}
+                        />
+
+                        {/* 두 번째 아이콘 */}
+                        <LiaDumbbellSolid
+                            className={`w-[2rem] h-[2rem] ${productData.prodrating >= 3 ? "fill-black" : "fill-gray-300"}`}
+                        />
+
+                        {/* 세 번째 아이콘 */}
+                        <LiaDumbbellSolid
+                            className={`w-[2rem] h-[2rem] ${productData.prodrating >= 6 ? "fill-black" : "fill-gray-300"}`}
+                        />
+
+                        {/* 네 번째 아이콘 */}
+                        <LiaDumbbellSolid
+                            className={`w-[2rem] h-[2rem] ${productData.prodrating >= 9 ? "fill-black" : "fill-gray-300"}`}
+                        />
+                        <a className="text-lg mt-[0.3rem] font-bold items-center flex ml-[0.5rem]">{productData.prodrating}</a>
+                        <a className="text-xs items-center ml-[0.1rem] mt-[0.4rem] flex"> / 10</a>
                     </div>
                 </div>
             </div>
             <div className="flex flex-col items-center w-[68rem] h-full mt-[2rem]">
                 <div
                     className="flex flex-row w-[24rem] mt-[1rem] mr-[38rem] h-[4rem] shadow-lg justify-center items-center">
-                    <div className="flex w-[6rem] h-[4rem] rounded-l-lg items-center justify-center border-[0.1rem] border-gray-950 hover:bg-gray-100 hover:scale-125 transition-transform ease-in-out duration-500 cursor-pointer text-gray-950 font-semibold text-sm" onClick={scrollToInfoSection}>상품 정보</div>
+                    <div
+                        className="flex w-[6rem] h-[4rem] rounded-l-lg items-center justify-center border-[0.1rem] border-gray-950 hover:bg-gray-100 hover:scale-125 transition-transform ease-in-out duration-500 cursor-pointer text-gray-950 font-semibold text-sm"
+                        onClick={scrollToInfoSection}>상품 정보
+                    </div>
                     <p className="text-gray-950 flex w-[6rem] h-[4rem] items-center justify-center border-[0.1rem] border-gray-950 text-sm hover:bg-gray-100 hover:scale-125 transition-transform ease-in-out duration-500 font-semibold cursor-pointer"
                        onClick={scrollToPhotoSection}>시설 사진</p>
-                    <p className="text-gray-950 flex w-[6rem] h-[4rem] items-center justify-center border-[0.1rem] border-gray-950 text-sm hover:bg-gray-100 hover:scale-125 transition-transform ease-in-out duration-500 cursor-pointer font-semibold" onClick={scrollToRestSection}>편의 시설</p>
+                    <p className="text-gray-950 flex w-[6rem] h-[4rem] items-center justify-center border-[0.1rem] border-gray-950 text-sm hover:bg-gray-100 hover:scale-125 transition-transform ease-in-out duration-500 cursor-pointer font-semibold"
+                       onClick={scrollToRestSection}>편의 시설</p>
                     <p className="text-gray-950 flex w-[6rem] rounded-r-lg h-[4rem] items-center justify-center border-[0.1rem] hover:bg-gray-100 border-gray-950 text-sm font-semibold cursor-pointer hover:scale-125 transition-transform ease-in-out duration-500"
                        onClick={scrollToReviewSection}>리뷰</p>
                 </div>
@@ -191,7 +212,7 @@ const Product= () => {
                                     클라이밍</a>
                                 <div className="flex items-center justify-center flex-col w-1/2">
                                     <div className="flex w-[8rem] mt-[1rem] h-[8rem]"><img className="rounded-full"
-                                                                                           src="https://ifh.cc/g/XpkHf4.jpg"></img>
+                                                                                           src={productData.iconpicture}></img>
                                     </div>
                                     <div
                                         className="flex flex-col items-center justify-center bg-yellow-200 mt-[1rem] rounded-xl h-[5rem] w-[20rem]">
@@ -304,13 +325,28 @@ const Product= () => {
                             className="flex flex-row text-sm mx-auto mt-[1.2rem] bg-gray-100 shadow-xl border-[0.1rem] border-gray-600 items-center justify-center rounded-lg w-[28rem] h-[15rem]">
                             <div className="flex flex-col rounded-3xl items-center h-[15rem] w-[18rem]">
                                 <a className="font-semibold text-[1rem] mt-[1.2rem]">사용자 총점</a>
-                                <div className="flex flex-row">
-                                    <LiaDumbbellSolid className="w-[2rem] h-[2rem] mt-[0.4rem] fill-black"/>
-                                    <LiaDumbbellSolid className="w-[2rem] h-[2rem] mt-[0.4rem] fill-black"/>
-                                    <LiaDumbbellSolid className="w-[2rem] h-[2rem] mt-[0.4rem] fill-black"/>
-                                    <LiaDumbbellSolid className="w-[2rem] h-[2rem] mt-[0.4rem] fill-gray-300"/>
-                                    <a className="text-[1.3rem] mt-[0.3rem] font-bold items-center flex ml-[0.5rem]">8.0</a>
-                                    <a className="text-xs items-center ml-[0.3rem] mt-[0.7rem] flex"> /10</a>
+                                <div className="flex mt-[0.2rem] flex-row"> {/*로고 하단 후기 박스*/}
+                                    {/* 첫 번째 아이콘 */}
+                                    <LiaDumbbellSolid
+                                        className={`w-[2rem] h-[2rem] ${productData.prodrating >= 0 ? "fill-black" : "fill-gray-300"}`}
+                                    />
+
+                                    {/* 두 번째 아이콘 */}
+                                    <LiaDumbbellSolid
+                                        className={`w-[2rem] h-[2rem] ${productData.prodrating >= 3 ? "fill-black" : "fill-gray-300"}`}
+                                    />
+
+                                    {/* 세 번째 아이콘 */}
+                                    <LiaDumbbellSolid
+                                        className={`w-[2rem] h-[2rem] ${productData.prodrating >= 6 ? "fill-black" : "fill-gray-300"}`}
+                                    />
+
+                                    {/* 네 번째 아이콘 */}
+                                    <LiaDumbbellSolid
+                                        className={`w-[2rem] h-[2rem] ${productData.prodrating >= 9 ? "fill-black" : "fill-gray-300"}`}
+                                    />
+                                    <a className="text-lg mt-[0.3rem] font-bold items-center flex ml-[0.5rem]">{productData.prodrating}</a>
+                                    <a className="text-xs items-center ml-[0.1rem] mt-[0.4rem] flex"> / 10</a>
                                 </div>
                                 <div className="flex flex-row items-center mt-[0.6rem]">
                                     <LiaDumbbellSolid className="w-[1.7rem] h-[1.7rem] mt-[0.2rem] fill-black"/>

@@ -1,31 +1,59 @@
-import React, {useState, useEffect, useRef} from "react";
-import {Link, useParams, useNavigate} from "react-router-dom";
-import {useRecoilValue} from "recoil";
-
-import { Swiper, SwiperSlide } from "swiper/react";
-import { Navigation, Pagination, A11y, Autoplay, EffectCoverflow } from "swiper";
-
-import 'swiper/css';
-import 'swiper/css/navigation';
-import 'swiper/css/pagination';
-import 'swiper/css/effect-coverflow';
-import {FaLocationDot} from "react-icons/fa6";
-import {BiSearch} from "react-icons/bi";
-import ProductCard from "../components/ProductCard.jsx";
+import React, { useState, useEffect, useRef } from "react";
+import { useNavigate } from "react-router-dom";
+import { FaLocationDot } from "react-icons/fa6";
+import { BiSearch } from "react-icons/bi";
 import { FaCaretDown } from "react-icons/fa";
+import ProductCard from "../components/ProductCard.jsx";
 import axios from "axios";
 
-
 const Product_Main = () => {
-
-
     const [isFocused, setIsFocused] = useState(false); // 검색창 포커스 상태
     const [query, setQuery] = useState(""); // 검색어
     const [showSuggestions, setShowSuggestions] = useState(false); // 추천 검색어 박스 표시 여부
-
-    // useRef를 사용하여 검색창에 접근
+    const [selectedOption, setSelectedOption] = useState('평점 순');
+    const [products, setProducts] = useState([]);
+    const [loading, setLoading] = useState(true);
     const inputRef = useRef(null);
 
+    const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+
+    const toggleDropdown = () => {
+        setIsDropdownOpen(!isDropdownOpen); // 현재 드롭다운 상태 반전
+    };
+
+    // 백엔드에서 제품 목록을 가져오는 함수
+    const fetchProducts = async (option) => {
+        setLoading(true); // 로딩 시작
+        try {
+            const response = await fetch(`http://localhost:8080/product_Main?sort=${option === '평점 순' ? 'prodrating' : 'prodprice'}`);
+
+            if (!response.ok) {
+                throw new Error(`HTTP error! Status: ${response.status}`);
+            }
+
+            const data = await response.json();
+
+            if (!Array.isArray(data)) {
+                throw new Error('응답 데이터가 배열 형식이 아닙니다.');
+            }
+
+            setProducts(data); // 제품 목록 업데이트
+        } catch (error) {
+            console.error('제품을 가져오는 데 실패했습니다:', error.message);
+        } finally {
+            setLoading(false); // 로딩 종료
+        }
+    };
+
+    // 페이지 로드 시 기본 제품 목록을 가져옴
+    useEffect(() => {
+        fetchProducts(selectedOption);
+    }, [selectedOption]);
+
+    const handleSelectOption = (option) => {
+        setSelectedOption(option);  // 선택된 옵션으로 상태 변경
+        setIsDropdownOpen(false);   // 드롭다운 닫기
+    };
 
     // 검색어 입력 변화 처리
     const handleChange = (e) => {
@@ -47,16 +75,13 @@ const Product_Main = () => {
         setShowSuggestions(false);
     };
 
-
     const handleClick = (id) => {
         navigate(`/product/${id}`);
     };
 
-
     return (
-        <div className="flex flex-col h-full items-center justify-center mx-56">  {/*전체 틀*/}
-            <div
-                className="flex flex-row h-14 w-[35rem] items-center justify-center shadow-xl rounded-xl relative"> {/*검색창*/}
+        <div className="flex flex-col h-full items-center mt-[1rem] justify-center mx-56">  {/*전체 틀*/}
+            <div className="flex flex-row h-14 w-[35rem] items-center justify-center shadow-xl rounded-xl relative"> {/*검색창*/}
                 <FaLocationDot size="20" className="ml-3 cursor-pointer mt-[0.06rem]"/> {/* 로케이션 아이콘 */}
                 <div className="flex flex-row w-1/5 cursor-pointer"> {/* 로케이션 박스 */}
                     <p className="text-sm font-bold text-nowrap ml-[0.5rem]">송파구 마천동</p>
@@ -94,30 +119,77 @@ const Product_Main = () => {
                     </div>
                 )}
             </div>
+
             <div className="flex justify-start w-[62rem] h-[22rem] mt-[4rem] items-center">
                 <div className="flex items-center w-[24rem] h-[18rem] ml-[6rem]">
                     <img className="rounded-3xl shadow-xl" src="https://ifh.cc/g/XGnqgV.jpg"/>
                 </div>
-                <div
-                    className="flex flex-col border-[0.01rem] border-gray-100 justify-center rounded-r-full shadow-xl w-[29rem] h-[18rem]">
+                <div className="flex flex-col border-[0.01rem] border-gray-100 justify-center rounded-r-full shadow-xl w-[29rem] h-[18rem]">
                     <a className="text-[1.5rem] font-semibold ml-[2rem]">Climbing란?</a>
                     <a className="text-[0.9rem] ml-[2rem] mt-[0.4rem]">등반의 한 종류로 자연암벽 또는 인공암벽을 타는 행위다.</a>
                     <a className="text-[0.9rem] ml-[2rem]">스포츠의 일환으로 행해지는 암벽 등반은</a>
                     <a className="text-[0.9rem] ml-[2rem]">'스포츠 클라이밍(sportsclimbing)'이라 한다.</a>
                     <a className="text-[0.9rem] ml-[2rem]">수 십에서 수 백미터 절벽을 기어오르기 위해서 높은 육체적,</a>
                     <a className="text-[0.9rem] ml-[2rem]">정신적 능력이 요구되는 익스트림 스포츠로,</a>
-                    <a className="text-[0.9rem] ml-[2rem] mb-[1rem]">충분한 교육과 적절한 장비, 알맞은 등반술이 없다면 위험해질 수 있다.
-                    </a>
+                    <a className="text-[0.9rem] ml-[2rem]">충분한 교육과 적절한 장비, 알맞은 등반술이 없다면 위험해질 수 있다.</a>
                 </div>
             </div>
-            {/* 제품 목록 */}
-            <div className="flex flex-row w-[62rem] h-[35rem] mt-[2rem]">
-                <ProductCard id="1" onClick={handleClick} text="Mining 클라이밍" address="서울시 송파구 마천동" price="130,000원"
-                             className="flex"/>
-                <ProductCard id="2" onClick={handleClick} text="DOT 클라이밍" address="서울시 송파구 문정동" price="120,000원"
-                             className="flex"/>
-                <ProductCard id="3" onClick={handleClick} text="DAMJANG 클라이밍" address="서울시 서대문구 신촌동" price="140,000원"
-                             className="flex"/>
+
+            <div className="flex mt-[3rem] items-center justify-end w-[56rem] h-[2rem]">
+                <div className="relative">
+                    <div
+                        className="flex flex-row border-[0.1rem] rounded-xl h-[2.5rem] w-[7rem] items-center justify-center border-gray-950 cursor-pointer"
+                        onClick={toggleDropdown}
+                    >
+                        <a className="mt-[0.1rem]">{selectedOption}</a>
+                        <FaCaretDown className="ml-[0.1rem]"/>
+                    </div>
+
+                    {isDropdownOpen && (
+                        <div
+                            className="absolute top-full right-0 w-[7rem] bg-white border border-gray-300 rounded-xl shadow-lg z-10">
+                            {selectedOption === '평점 순' && (
+                                <div
+                                    className="p-2 hover:bg-gray-100 flex flex-row items-center justify-center rounded-xl cursor-pointer"
+                                    onClick={() => handleSelectOption('가격 순')}
+                                >
+                                    가격 순
+                                    <FaCaretDown className="ml-[0.1rem]"/>
+                                </div>
+                            )}
+
+                            {selectedOption === '가격 순' && (
+                                <div
+                                    className="p-2 hover:bg-gray-100 flex flex-row items-center justify-center rounded-xl cursor-pointer"
+                                    onClick={() => handleSelectOption('평점 순')}
+                                >
+                                    평점 순
+                                    <FaCaretDown className="ml-[0.1rem]"/>
+                                </div>
+                            )}
+                        </div>
+                    )}
+                </div>
+            </div>
+
+            <div className="flex flex-row w-[62rem] h-[35rem]">
+                {loading ? (
+                    <div>로딩 중...</div>  // 로딩 중일 때 표시
+                ) : (
+                    products.map((product) => (
+                        <ProductCard
+                            key={product.prodid}
+                            id={product.prodid}
+                            prodtitle={product.prodtitle}
+                            prodprice={product.prodprice}
+                            prodaddress={product.prodaddress}
+                            prodrating={product.prodrating}
+                            iconpicture={product.iconpicture}
+                            onClick={handleClick}
+                            className="flex"
+                        />
+                    ))
+                )}
             </div>
         </div>
     );
