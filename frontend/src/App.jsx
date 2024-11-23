@@ -11,8 +11,6 @@ import Find_Id_Check from "./pages/Find_Id_Check.jsx";
 import Find_Pw from "./pages/Find_Pw.jsx";
 import Find_Pw_Check from "./pages/Find_Pw_Check.jsx";
 import Product from "./pages/Product.jsx";
-import Buyform from "./pages/Buyform.jsx";
-import Cart from "./pages/Cart.jsx";
 import "./app.css";  // app.css 파일을 import
 
 function App() {
@@ -21,8 +19,6 @@ function App() {
         <div className="App">
             <Navbar loginStatus={loginStatus} setLoginStatus={setLoginStatus} />
             <Routes>
-                <Route path="/Buyform" element={<Buyform/>}/>
-                <Route path="/Cart" element={<Cart/>}/>
                 <Route path="/Find_Id" element={<Find_Id/>}/>
                 <Route path="/Find_Id_Check" element={<Find_Id_Check/>}/>
                 <Route path="/Find_Pw" element={<Find_Pw/>}/>
@@ -30,7 +26,7 @@ function App() {
                 <Route path="/Agree_to_terms/SignUp" element={<SignUp/>}/>
                 <Route path="/Complete_SignUp" element={<Complete_SignUp/>}/>
                 <Route path="/Agree_to_terms" element={<Agree_to_terms/>}/>
-                <Route path="/Product_Main" element={<Product_Main />} />
+                <Route path="/Product_Main" element={<Product_Main/>}/>
                 <Route path="/product/:id" element={<Product />} />
                 <Route path="/" element={<Home/>}/>
             </Routes>
