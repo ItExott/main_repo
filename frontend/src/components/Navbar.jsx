@@ -2,6 +2,7 @@ import React, { useState,useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import Login from "../popup/Login.jsx";
 import { FaMoneyCheckDollar } from "react-icons/fa6";
+import axios from "axios";
 
 
 const Navbar = ({ loginStatus, setLoginStatus }) => {
@@ -21,9 +22,6 @@ const Navbar = ({ loginStatus, setLoginStatus }) => {
         }, 300); // 300ms 지연 (필요에 따라 조정 가능)
     };
 
-    const handleLogout = () => {
-        setLoginStatus(false);
-    };
 
     const gocliming = () => {
         navigate("/product_Main");
@@ -31,6 +29,17 @@ const Navbar = ({ loginStatus, setLoginStatus }) => {
 
     const gohome = () => {
         navigate("/");
+    };
+    const handleLogout = async () => {
+        try {
+            const response = await axios.post('http://localhost:8080/api/logout', {}, { withCredentials: true });
+            if (response.data.success) {
+                setLoginStatus(false); // 로그인 상태 해제
+                alert('Logged out successfully');
+            }
+        } catch (error) {
+            alert('로그아웃에 실패했습니다.');
+        }
     };
 
     return (
