@@ -23,8 +23,12 @@ const Navbar = ({ loginStatus, setLoginStatus }) => {
     };
 
 
-    const gocliming = () => {
-        navigate("/product_Main");
+    const goclimbing = () => {
+        navigate("/product_Main/climbing");
+    };
+
+    const goswim = () => {
+        navigate("/product_Main/swim");
     };
 
     const gohome = () => {
@@ -41,6 +45,20 @@ const Navbar = ({ loginStatus, setLoginStatus }) => {
             alert('로그아웃에 실패했습니다.');
         }
     };
+
+    const goweight = () => {
+        navigate("/product_Main/weight");
+    };
+
+    const gocrossfit = () => {
+        navigate("/product_Main/crossfit");
+    };
+
+    const gopilates = () => {
+        navigate("/product_Main/pilates");
+    };
+
+
 
     return (
         <div className="navbar bg-base-100">
@@ -67,18 +85,27 @@ const Navbar = ({ loginStatus, setLoginStatus }) => {
                     >
                         <div className="ml-[18rem]">
                             <ul>
-                                <li>헬스</li>
-                                <li>수영</li>
-                                <li className="cursor-pointer hover:scale-11    0 transition-transform ease-in-out duration-500" onClick={gocliming}>클라이밍</li>
-                                <li>필라테스</li>
-                                <li>크로스핏</li>
+                                <li className="cursor-pointer hover:scale-110 transition-transform ease-in-out duration-500"
+                                    onClick={goweight}>헬스
+                                </li>
+                                <li className="cursor-pointer hover:scale-110 transition-transform ease-in-out duration-500"
+                                    onClick={goswim}>수영
+                                </li>
+                                <li className="cursor-pointer hover:scale-110 transition-transform ease-in-out duration-500"
+                                    onClick={goclimbing}>클라이밍
+                                </li>
+                                <li className="cursor-pointer hover:scale-110 transition-transform ease-in-out duration-500"
+                                    onClick={gopilates}>필라테스
+                                </li>
+                                <li className="cursor-pointer hover:scale-110 transition-transform ease-in-out duration-500"
+                                    onClick={gocrossfit}>크로스핏
+                                </li>
                             </ul>
                         </div>
                         <div className="ml-[6rem]">
                             <ul>
                                 <li>NOTICE</li>
                                 <li>Q&A</li>
-                                <li>출석체크</li>
                                 <li>제휴/협력문의</li>
                             </ul>
                         </div>

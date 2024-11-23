@@ -171,7 +171,7 @@ const Product= () => {
                                 className={`flex flex-col items-center ${showFullImages ? '' : 'h-[350px] overflow-hidden'}`}>
                                 {/* 첫 번째 이미지 */}
                                 <img
-                                    className="flex mt-[2rem] rounded-xl bg-teal-700 h-full w-[50rem]"
+                                    className="flex mt-[2rem] rounded-xl h-full w-[50rem]"
                                     src={productData.prodcontent1}
                                     alt="First"
                                 />

@@ -26,7 +26,7 @@ function App() {
                 <Route path="/Agree_to_terms/SignUp" element={<SignUp/>}/>
                 <Route path="/Complete_SignUp" element={<Complete_SignUp/>}/>
                 <Route path="/Agree_to_terms" element={<Agree_to_terms/>}/>
-                <Route path="/Product_Main/:category" element={<Product_Main/>}/>
+                <Route path="/Product_Main" element={<Product_Main/>}/>
                 <Route path="/product/:id" element={<Product />} />
                 <Route path="/" element={<Home/>}/>
             </Routes>

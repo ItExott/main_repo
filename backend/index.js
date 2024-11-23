@@ -6,7 +6,10 @@ const port = 8080;
 const session = require('express-session');
 // CORS 설정
 const cors = require('cors');
-app.use(cors());
+app.use(cors({
+    origin: 'http://localhost:5173',  // Specify the exact origin of your frontend
+    credentials: true                // Allow credentials to be sent
+}));
 app.use(express.json());
 
 // MySQL 데이터베이스 연결 설정
@@ -26,26 +29,33 @@ db.connect(err => {
     }
     console.log('Connected to database.');
 });
+
+app.use(express.json());
 app.use(session({
-    secret: 'your-secret-key',  // 세션 암호화 키
-    resave: false,  // 세션이 수정되지 않았을 경우에도 저장할지 여부
-    saveUninitialized: false,  // 초기화되지 않은 세션을 저장할지 여부
-    cookie: {
-        maxAge: 3600000,  // 세션 만료 시간: 1시간
-        httpOnly: true,    // 클라이언트에서 JavaScript로 쿠키 접근 불가
-    }
+    secret: 'your_secret_key',
+    resave: false,
+    saveUninitialized: true
 }));
 
-// 제품 목록 조회 (정렬 기준: 평점 또는 가격)
 app.get('/product_Main', (req, res) => {
     const sortOption = req.query.sort || 'prodrating'; // 기본값은 'prodrating'
     const sortOrder = 'DESC'; // 내림차순 정렬
 
     let query = '';
     if (sortOption === 'prodrating') {
-        query = `SELECT * FROM Product ORDER BY prodrating ${sortOrder}`;
+        query = `
+            SELECT p.* 
+            FROM Product p
+            JOIN divisionsport d ON p.category = d.category
+            ORDER BY p.prodrating ${sortOrder}
+        `;
     } else if (sortOption === 'prodprice') {
-        query = `SELECT * FROM Product ORDER BY prodprice ${sortOrder}`;
+        query = `
+            SELECT p.* 
+            FROM Product p
+            JOIN divisionsport d ON p.category = d.category
+            ORDER BY p.prodprice ${sortOrder}
+        `;
     }
 
     // db.query()로 데이터베이스 쿼리 실행
@@ -74,6 +84,22 @@ app.get('/product/:id', (req, res) => {
     });
 });
 
+app.get('/product_Main/:category', (req, res) => {
+    const prodcategory = req.params.category;
+    const query = "SELECT * FROM divisionsport WHERE category = ?";
+
+    db.query(query, [prodcategory], (err, results) => {
+        if (err) {
+            console.error("Error fetching category data:", err);
+            res.status(500).send("Internal server error");
+        } else if (results.length === 0) {
+            res.status(404).send("category not found");
+        } else {
+            res.json(results[0]); // 제품 데이터 응답
+        }
+    });
+});
+
 // 회원가입 API
 app.post('/api/signup', (req, res) => {
     const { userId, userpw, name, email, phoneNumber, address, userType } = req.body;
@@ -93,27 +119,36 @@ app.post('/api/signup', (req, res) => {
 
 // 로그인 API
 app.post('/api/login', (req, res) => {
-    const { userid, userpw } = req.body;  // 클라이언트에서 보낸 id와 password를 받음
+    const { userid, userpw } = req.body;
 
-    // id와 password를 MySQL에서 확인
-    const query = 'SELECT * FROM users WHERE userid = ? AND userpw = ?';
-    db.query(query, [userid, userpw], (err, result) => {
+    // Check if both fields are provided
+    if (!userid || !userpw) {
+        return res.json({ success: false, message: 'Both fields are required.' });
+    }
+
+    // Query the database for the user
+    db.query('SELECT * FROM users WHERE userid = ?', [userid], (err, result) => {
         if (err) {
-            console.error('Database query error: ', err);
-            return res.status(500).json({ success: false, message: 'Internal server error' });
+            return res.status(500).json({ success: false, message: 'Database error' });
+        }
+        if (result.length === 0) {
+            return res.json({ success: false, message: 'Invalid username or password' });
         }
 
-        // 사용자가 존재하고 로그인 정보가 일치하면
-        if (result.length > 0) {
-            // 로그인 성공, 세션에 id 저장
-            req.session.userId = id;  // 세션에 사용자 id 저장
-            req.session.name = result[0].name;  // 추가로 이름도 저장 가능
+        const user = result[0];
+        // Compare password with stored hashed password
+        bcrypt.compare(userpw, user.userpw, (err, isMatch) => {
+            if (err) {
+                return res.status(500).json({ success: false, message: 'Error comparing passwords' });
+            }
+            if (!isMatch) {
+                return res.json({ success: false, message: 'Invalid username or password' });
+            }
 
-            res.json({ success: true, name: result[0].name, message: 'Login successful' });
-        } else {
-            // 로그인 실패
-            res.json({ success: false, message: 'Invalid username or password' });
-        }
+            // Set session or token if needed
+            req.session.user = user;
+            return res.json({ success: true, name: user.name });
+        });
     });
 });
 
@@ -127,6 +162,8 @@ app.post('/api/logout', (req, res) => {
         res.json({ success: true, message: 'Logged out successfully' });
     });
 });
+
+
 
 // 서버 시작
 app.listen(port, () => {

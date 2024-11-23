@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { FaLocationDot } from "react-icons/fa6";
 import { BiSearch } from "react-icons/bi";
 import { FaCaretDown } from "react-icons/fa";
@@ -21,11 +21,20 @@ const Product_Main = () => {
         setIsDropdownOpen(!isDropdownOpen); // 현재 드롭다운 상태 반전
     };
 
+    const { category } = useParams(); // URL 파라미터에서 category를 가져옴
+
+    const [categoryData, setcategoryData] = useState({
+        category: "",
+        sportlogo: "",
+        sporttitle: "",
+        sportdetail: ""
+    });
+
     // 백엔드에서 제품 목록을 가져오는 함수
-    const fetchProducts = async (option) => {
+    const fetchProducts = async (option, category) => {
         setLoading(true); // 로딩 시작
         try {
-            const response = await fetch(`http://localhost:8080/product_Main?sort=${option === '평점 순' ? 'prodrating' : 'prodprice'}`);
+            const response = await fetch(`http://localhost:8080/product_Main?sort=${option === '평점 순' ? 'prodrating' : 'prodprice'}&category=${category}`);
 
             if (!response.ok) {
                 throw new Error(`HTTP error! Status: ${response.status}`);
@@ -47,8 +56,10 @@ const Product_Main = () => {
 
     // 페이지 로드 시 기본 제품 목록을 가져옴
     useEffect(() => {
-        fetchProducts(selectedOption);
-    }, [selectedOption]);
+        if (category) {
+            fetchProducts(selectedOption, category); // 카테고리에 맞는 제품 목록을 가져옴
+        }
+    }, [selectedOption, category]);
 
     const handleSelectOption = (option) => {
         setSelectedOption(option);  // 선택된 옵션으로 상태 변경
@@ -78,6 +89,22 @@ const Product_Main = () => {
     const handleClick = (id) => {
         navigate(`/product/${id}`);
     };
+
+    useEffect(() => {
+        // 데이터 요청
+        axios.get(`http://localhost:8080/product_Main/${category}`)
+            .then(response => {
+                setcategoryData({
+                    category: response.data.category,
+                    sportlogo: response.data.sportlogo,
+                    sporttitle: response.data.sporttitle,
+                    sportdetail: response.data.sportdetail
+                });
+            })
+            .catch(error => {
+                console.error("Error fetching category data:", error);
+            });
+    }, [category]); // id가 변경될 때마다 데이터 요청
 
     return (
         <div className="flex flex-col h-full items-center mt-[1rem] justify-center mx-56">  {/*전체 틀*/}
@@ -122,16 +149,11 @@ const Product_Main = () => {
 
             <div className="flex justify-start w-[62rem] h-[22rem] mt-[4rem] items-center">
                 <div className="flex items-center w-[24rem] h-[18rem] ml-[6rem]">
-                    <img className="rounded-3xl shadow-xl" src="https://ifh.cc/g/XGnqgV.jpg"/>
+                    <img className="rounded-3xl shadow-xl" src={categoryData.sportlogo}/>
                 </div>
                 <div className="flex flex-col border-[0.01rem] border-gray-100 justify-center rounded-r-full shadow-xl w-[29rem] h-[18rem]">
-                    <a className="text-[1.5rem] font-semibold ml-[2rem]">Climbing란?</a>
-                    <a className="text-[0.9rem] ml-[2rem] mt-[0.4rem]">등반의 한 종류로 자연암벽 또는 인공암벽을 타는 행위다.</a>
-                    <a className="text-[0.9rem] ml-[2rem]">스포츠의 일환으로 행해지는 암벽 등반은</a>
-                    <a className="text-[0.9rem] ml-[2rem]">'스포츠 클라이밍(sportsclimbing)'이라 한다.</a>
-                    <a className="text-[0.9rem] ml-[2rem]">수 십에서 수 백미터 절벽을 기어오르기 위해서 높은 육체적,</a>
-                    <a className="text-[0.9rem] ml-[2rem]">정신적 능력이 요구되는 익스트림 스포츠로,</a>
-                    <a className="text-[0.9rem] ml-[2rem]">충분한 교육과 적절한 장비, 알맞은 등반술이 없다면 위험해질 수 있다.</a>
+                    <a className="text-[1.5rem] font-semibold">{categoryData.sporttitle}</a>
+                    <a className="text-[0.9rem] text-balance mt-[0.4rem]">{categoryData.sportdetail}</a>
                 </div>
             </div>
 

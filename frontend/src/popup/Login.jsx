@@ -5,14 +5,16 @@ import { IoIosCloseCircleOutline } from "react-icons/io";
 import axios from 'axios';
 
 const Login = ({ setLoginStatus }) => {
-    const [ID, GetId] = useState('');
-    const [PW, GetPw] = useState('');
-    const [error, setError] = useState(''); // 에러 메시지 상태 추가
+    const [ID, setID] = useState(''); // For user ID
+    const [PW, setPW] = useState(''); // For user password
+    const [error, setError] = useState(''); // Error message state
+    const [isLoading, setIsLoading] = useState(false); // Loading state to show a spinner
+
     const navigate = useNavigate();
 
     const closeModal = () => {
         const modal = document.getElementById('my_modal_3');
-        modal.close(); // dialog.close()로 모달을 닫음
+        modal.close(); // Close the modal
     };
 
     const JoinUs = () => {
@@ -20,30 +22,31 @@ const Login = ({ setLoginStatus }) => {
         closeModal();
     };
 
-
-// 로그인 요청 함수
+    // Login request function
     const handleLogin = async () => {
+        setIsLoading(true); // Set loading to true while the request is being processed
         try {
-            const response = await axios.post('http://localhost:8080/api/login', {
-                userid: ID,
-                userpw: PW,
-            }, { withCredentials: true }); // 쿠키 포함 설정
+            const response = await axios.post(
+                'http://localhost:8080/api/login',
+                { userid: ID, userpw: PW },
+                { withCredentials: true } // Include cookies for session handling
+            );
 
             if (response.data.success) {
-                setLoginStatus(true);  // 로그인 상태 갱신
-                alert(`Welcome, ${response.data.name}`);
-                navigate('/'); // 홈으로 이동
+                setLoginStatus(true);  // Update login status
+                alert(`Welcome, ${response.data.name}`); // Welcome message
+                closeModal(); // Close the modal after successful login
+                navigate('/'); // Navigate to home page
             } else {
-                alert(response.data.message); // 오류 메시지 표시
+                setError(response.data.message); // Set error message if login fails
             }
         } catch (error) {
-            console.log(error);
-            alert('서버 오류가 발생했습니다. 다시 시도해주세요.');
+            console.error(error);
+            setError('서버 오류가 발생했습니다. 다시 시도해주세요.'); // Server error message
+        } finally {
+            setIsLoading(false); // Set loading to false after the request is complete
         }
     };
-
-// 로그아웃 요청 함수
-
 
     return (
         <div className="flex flex-col h-[34rem] bg-white items-center justify-center">
@@ -62,20 +65,20 @@ const Login = ({ setLoginStatus }) => {
                     <input
                         type="text"
                         value={ID}
-                        onChange={(e) => GetId(e.target.value)}
+                        onChange={(e) => setID(e.target.value)}  // Update ID state directly
                         className="flex border-2 border-gray-400 text-sm font-normal w-[24rem] h-[3rem] mt-[0.8rem] placeholder-gray-300"
                         placeholder="아이디"
                     />
                     <input
                         type="password"
                         value={PW}
-                        onChange={(e) => GetPw(e.target.value)}
+                        onChange={(e) => setPW(e.target.value)}  // Update PW state directly
                         className="flex border-2 border-gray-400 text-sm font-normal w-[24rem] h-[3rem] mt-[0.2rem] placeholder-gray-300"
                         placeholder="비밀번호"
                     />
                 </div>
             </div>
-            {error && <p className="text-red-500 mt-2">{error}</p>} {/* 로그인 실패 시 오류 메시지 표시 */}
+            {error && <p className="text-red-500 mt-2">{error}</p>} {/* Show error message if login fails */}
             <div className="flex flex-row mb-[1rem]">
                 <input type="checkbox" className="checkbox rounded-none w-[1rem] h-[1rem]" />
                 <a className="flex text-xs font-black ml-[0.3rem]">아이디 저장</a>
@@ -85,8 +88,12 @@ const Login = ({ setLoginStatus }) => {
                 <div
                     className="flex w-[16rem] h-[3rem] cursor-pointer hover:scale-105 transition-transform ease-in-out duration-500 bg-gray-950 border-[0.1rem] border-blue-400 items-center justify-center"
                 >
-                    <a onClick={handleLogin} className=" bg-black text-white text-[1rem]">
-                        LOGIN
+                    <a
+                        onClick={handleLogin}
+                        className="bg-black text-white text-[1rem]"
+                        disabled={isLoading} // Disable button while loading
+                    >
+                        {isLoading ? 'Logging in...' : 'LOGIN'}
                     </a>
                 </div>
 
