@@ -27,7 +27,7 @@ const Agree_to_terms = () => {
     // '다음' 버튼 클릭 시 처리
     const handleNext = () => {
         if (isAgreeTerms1 && isAgreeTerms2) {
-            navigate("/agree_to_terms/SignUp"); // 회원가입 페이지로 이동
+            navigate("/agree_to_terms/MBL_CRTFC"); // 회원가입 페이지로 이동
         } else {
             alert("모든 약관에 동의해야 합니다.");
         }
@@ -101,7 +101,7 @@ const Agree_to_terms = () => {
                 <button
                     onClick={handleNext}
                     type="button"
-                    className="w-40 h-12 bg-black text-white font-semibold rounded-lg hover:bg-gray-800 transition"
+                    className="w-40 h-12 bg-[rgb(230,123,123)] text-white font-semibold rounded-lg transition "
                 >
                     다음
                 </button>

@@ -14,8 +14,14 @@ const Complete_SignUp = () => {
     return (
         <div className="flex flex-col h-full items-center justify-center mx-44">
             <div className="flex flex-col justify-start w-[28rem] h-[27rem] mb-6 mt-40 items-center">
+                <ul className="w-[45rem] steps">
+                    <li className=" step step-error">약관동의</li>
+                    <li className="step step-error">본인인증</li>
+                    <li className="step step-error">정보입력</li>
+                    <li className="step step-error">가입완료</li>
+                </ul>
                 <h2 className="mb-9 font-bold font-sans text-3xl">Complete</h2>
-                <CiCircleCheck size="150" className="ml-3 cursor-pointer mt-[0.06rem]" />
+                <CiCircleCheck size="150" className="ml-3 cursor-pointer mt-[0.06rem]"/>
                 <h2 className="flex mt-4 mb-2 font-bold text-2xl">회원가입이 완료 되었습니다.</h2>
                 <h2 className="mb-14">{name}님 가입을 축하드립니다</h2>
                 <button

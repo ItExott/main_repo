@@ -11,7 +11,8 @@ import Find_Id_Check from "./pages/Find_Id_Check.jsx";
 import Find_Pw from "./pages/Find_Pw.jsx";
 import Find_Pw_Check from "./pages/Find_Pw_Check.jsx";
 import Product from "./pages/Product.jsx";
-import "./app.css";  // app.css 파일을 import
+import "./app.css";
+import MBL_CRTFC from "./pages/MBL_CRTFC.jsx";  // app.css 파일을 import
 
 function App() {
     const [loginStatus, setLoginStatus] = useState(false);
@@ -19,11 +20,12 @@ function App() {
         <div className="App">
             <Navbar loginStatus={loginStatus} setLoginStatus={setLoginStatus} />
             <Routes>
+                <Route path="/Agree_to_terms/MBL_CRTFC" element={<MBL_CRTFC/>}/>
                 <Route path="/Find_Id" element={<Find_Id/>}/>
                 <Route path="/Find_Id_Check" element={<Find_Id_Check/>}/>
                 <Route path="/Find_Pw" element={<Find_Pw/>}/>
                 <Route path="/Find_Pw_Check" element={<Find_Pw_Check/>}/>
-                <Route path="/Agree_to_terms/SignUp" element={<SignUp/>}/>
+                <Route path="/Agree_to_terms/MBL_CRTFC/SignUp" element={<SignUp/>}/>
                 <Route path="/Complete_SignUp" element={<Complete_SignUp/>}/>
                 <Route path="/Agree_to_terms" element={<Agree_to_terms/>}/>
                 <Route path="/Product_Main" element={<Product_Main/>}/>
