@@ -41,7 +41,7 @@ const Login = ({ setLoginStatus }) => {
                 setError(response.data.message); // Set error message if login fails
             }
         } catch (error) {
-            console.error(error);
+            console.error('오류내용',error);
             setError('서버 오류가 발생했습니다. 다시 시도해주세요.'); // Server error message
         } finally {
             setIsLoading(false); // Set loading to false after the request is complete

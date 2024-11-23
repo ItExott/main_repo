@@ -6,11 +6,11 @@ const port = 8080;
 const session = require('express-session');
 // CORS 설정
 const cors = require('cors');
-app.use(cors({
-    origin: 'http://localhost:5173',  // Specify the exact origin of your frontend
-    credentials: true                // Allow credentials to be sent
-}));
 app.use(express.json());
+app.use(cors({
+    origin: 'http://localhost:5173',  // React 앱이 호스트되는 주소
+    credentials: true,  // 쿠키와 인증 정보를 포함한 요청을 허용
+}));
 
 // MySQL 데이터베이스 연결 설정
 const db = mysql.createConnection({
@@ -29,33 +29,27 @@ db.connect(err => {
     }
     console.log('Connected to database.');
 });
-
-app.use(express.json());
 app.use(session({
-    secret: 'your_secret_key',
-    resave: false,
-    saveUninitialized: true
+    secret: 'your-secret-key',  // 세션 암호화 키
+    resave: false,  // 세션이 수정되지 않았을 경우에도 저장할지 여부
+    saveUninitialized: false,  // 초기화되지 않은 세션을 저장할지 여부
+    cookie: {
+        maxAge: 3600000,  // 세션 만료 시간: 1시간
+        httpOnly: true,    // 클라이언트에서 JavaScript로 쿠키 접근 불가
+        sameSite: 'None',  // cross-origin 요청을 허용하려면 'None'으로 설정
+    }
 }));
 
+// 제품 목록 조회 (정렬 기준: 평점 또는 가격)
 app.get('/product_Main', (req, res) => {
     const sortOption = req.query.sort || 'prodrating'; // 기본값은 'prodrating'
     const sortOrder = 'DESC'; // 내림차순 정렬
 
     let query = '';
     if (sortOption === 'prodrating') {
-        query = `
-            SELECT p.* 
-            FROM Product p
-            JOIN divisionsport d ON p.category = d.category
-            ORDER BY p.prodrating ${sortOrder}
-        `;
+        query = `SELECT * FROM Product ORDER BY prodrating ${sortOrder}`;
     } else if (sortOption === 'prodprice') {
-        query = `
-            SELECT p.* 
-            FROM Product p
-            JOIN divisionsport d ON p.category = d.category
-            ORDER BY p.prodprice ${sortOrder}
-        `;
+        query = `SELECT * FROM Product ORDER BY prodprice ${sortOrder}`;
     }
 
     // db.query()로 데이터베이스 쿼리 실행
@@ -84,22 +78,6 @@ app.get('/product/:id', (req, res) => {
     });
 });
 
-app.get('/product_Main/:category', (req, res) => {
-    const prodcategory = req.params.category;
-    const query = "SELECT * FROM divisionsport WHERE category = ?";
-
-    db.query(query, [prodcategory], (err, results) => {
-        if (err) {
-            console.error("Error fetching category data:", err);
-            res.status(500).send("Internal server error");
-        } else if (results.length === 0) {
-            res.status(404).send("category not found");
-        } else {
-            res.json(results[0]); // 제품 데이터 응답
-        }
-    });
-});
-
 // 회원가입 API
 app.post('/api/signup', (req, res) => {
     const { userId, userpw, name, email, phoneNumber, address, userType } = req.body;
@@ -119,36 +97,24 @@ app.post('/api/signup', (req, res) => {
 
 // 로그인 API
 app.post('/api/login', (req, res) => {
+    console.log('Request body:', req.body);
     const { userid, userpw } = req.body;
 
-    // Check if both fields are provided
-    if (!userid || !userpw) {
-        return res.json({ success: false, message: 'Both fields are required.' });
-    }
-
-    // Query the database for the user
-    db.query('SELECT * FROM users WHERE userid = ?', [userid], (err, result) => {
+    const query = 'SELECT * FROM users WHERE userid = ? AND userpw = ?';
+    db.query(query, [userid, userpw], (err, result) => {
         if (err) {
-            return res.status(500).json({ success: false, message: 'Database error' });
-        }
-        if (result.length === 0) {
-            return res.json({ success: false, message: 'Invalid username or password' });
+            console.error('Database query error: ', err);  // 여기서 자세한 에러 정보를 출력
+            return res.status(500).json({ success: false, message: 'Internal server error', error: err });
         }
 
-        const user = result[0];
-        // Compare password with stored hashed password
-        bcrypt.compare(userpw, user.userpw, (err, isMatch) => {
-            if (err) {
-                return res.status(500).json({ success: false, message: 'Error comparing passwords' });
-            }
-            if (!isMatch) {
-                return res.json({ success: false, message: 'Invalid username or password' });
-            }
+        if (result.length > 0) {
+            req.session.userId = userid;
+            req.session.name = result[0].name;
 
-            // Set session or token if needed
-            req.session.user = user;
-            return res.json({ success: true, name: user.name });
-        });
+            res.json({ success: true, name: result[0].name, message: 'Login successful' });
+        } else {
+            res.json({ success: false, message: 'Invalid username or password' });
+        }
     });
 });
 
@@ -162,8 +128,6 @@ app.post('/api/logout', (req, res) => {
         res.json({ success: true, message: 'Logged out successfully' });
     });
 });
-
-
 
 // 서버 시작
 app.listen(port, () => {
