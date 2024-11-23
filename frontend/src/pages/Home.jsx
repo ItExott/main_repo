@@ -136,9 +136,9 @@ const Home = () => {
                     }}
                     loop={true}
                 >
-                    <SwiperSlide><img src="https://ifh.cc/g/jS0w0T.png"/></SwiperSlide>
-                    <SwiperSlide><img src="https://ifh.cc/g/PANybK.jpg"/></SwiperSlide>
-                    <SwiperSlide><img src="https://ifh.cc/g/fxBCJX.jpg"/></SwiperSlide>
+                    <SwiperSlide><img src="https://ifh.cc/g/xNoK4m.jpg"/></SwiperSlide>
+                    <SwiperSlide><img src="https://ifh.cc/g/LjaSk8.jpg"/></SwiperSlide>
+                    <SwiperSlide><img src="https://ifh.cc/g/bfjzx2.jpg"/></SwiperSlide>
                 </Swiper>
             </div>
 

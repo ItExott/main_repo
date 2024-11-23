@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import Login from "../popup/Login.jsx";
 import { FaMoneyCheckDollar } from "react-icons/fa6";
 
+
 const Navbar = ({ loginStatus, setLoginStatus }) => {
     const navigate = useNavigate();
     const [isDropdownVisible, setDropdownVisible] = useState(false);
@@ -22,6 +23,10 @@ const Navbar = ({ loginStatus, setLoginStatus }) => {
 
     const handleLogout = () => {
         setLoginStatus(false);
+    };
+
+    const gocliming = () => {
+        navigate("/product_Main");
     };
 
     const gohome = () => {
@@ -47,16 +52,15 @@ const Navbar = ({ loginStatus, setLoginStatus }) => {
 
                 {isDropdownVisible && (
                     <div
-                        className="absolute top-[2rem] rounded-xl mt-[0.5rem] left-1/2 transform -translate-x-1/2 w-[80rem] flex items-center bg-gray-100 shadow-md p-5 z-10"
+                        className="absolute top-[2rem] border-[0.1rem] border-gray-950 rounded-xl mt-[0.5rem] left-1/2 transform -translate-x-1/2 w-[80rem] flex items-center bg-gray-100 shadow-md p-5 z-10"
                         onMouseEnter={showDropdown} // 드롭다운 영역에 마우스가 진입하면 유지
                         onMouseLeave={hideDropdown} // 드롭다운 영역을 떠나면 숨김
                     >
                         <div className="ml-[18rem]">
                             <ul>
-                                <li>웨이트</li>
+                                <li>헬스</li>
                                 <li>수영</li>
-                                <li>클라이밍</li>
-                                <li>요가</li>
+                                <li className="cursor-pointer hover:scale-11    0 transition-transform ease-in-out duration-500" onClick={gocliming}>클라이밍</li>
                                 <li>필라테스</li>
                                 <li>크로스핏</li>
                             </ul>

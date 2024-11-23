@@ -20,6 +20,7 @@ import { FaAngleDown } from "react-icons/fa6";
 import { FaAngleUp } from "react-icons/fa6";
 import { FaCheckCircle } from "react-icons/fa";
 import axios from "axios";
+import BottomBox from "../components/BottomBox.jsx";
 
 const Product= () => {
     const PhotoSectionRef = useRef(null);
@@ -43,7 +44,12 @@ const Product= () => {
         prodid: "",
         prodtitle: "",
         prodrating: "",
-        address: ""
+        address: "",
+        prodpicture: "",
+        prodcontent1: "",
+        prodcontent2: "",
+        prodcontent3: "",
+        prodcontent4: ""
     });
 
     useEffect(() => {
@@ -56,7 +62,12 @@ const Product= () => {
                     iconpicture: response.data.iconpicture,  // 받은 데이터의 iconpicture로 설정
                     prodtitle: response.data.prodtitle,
                     prodrating: response.data.prodrating,
-                    address: response.data.address
+                    address: response.data.address,
+                    prodpicture: response.data.prodpicture,
+                    prodcontent1: response.data.prodcontent1,
+                    prodcontent2: response.data.prodcontent2,
+                    prodcontent3: response.data.prodcontent3,
+                    prodcontent4: response.data.prodcontent4
                 });
                 console.log(productData.iconpicture);
             })
@@ -95,9 +106,10 @@ const Product= () => {
 
     return (
         <div className="flex flex-col h-full items-center justify-center mx-28">  {/*슬라이더 박스*/}
+            <BottomBox/>
             <div className="flex justify-start flex-row rounded-3xl border-2 border-gray-950 w-[62rem] h-[22rem] mt-6 items-center">
                 <div className="flex flex-row items-center w-[42rem] h-[22rem]">
-                    <img className="flex w-[42rem] h-[21.8rem] rounded-l-3xl" src="https://ifh.cc/g/0F7mtd.jpg"/></div>
+                    <img className="flex w-[42rem] h-[21.8rem] rounded-l-3xl" src={productData.prodpicture}/></div>
                 <div className="flex flex-col shadow-xl rounded-r-3xl items-center w-[20rem] h-[22rem]">
                     <div className="flex w-[10rem] mt-[2rem] h-[10rem]"> {productData.iconpicture ? (
                         <img className="rounded-full" src={productData.iconpicture} alt="Product Logo" />
@@ -159,15 +171,15 @@ const Product= () => {
                                 className={`flex flex-col items-center ${showFullImages ? '' : 'h-[350px] overflow-hidden'}`}>
                                 {/* 첫 번째 이미지 */}
                                 <img
-                                    className="flex mt-[2rem] rounded-xl bg-teal-700 h-[15rem] w-[50rem]"
-                                    src="https://ifh.cc/g/wp3Na2.jpg"
+                                    className="flex mt-[2rem] rounded-xl bg-teal-700 h-full w-[50rem]"
+                                    src={productData.prodcontent1}
                                     alt="First"
                                 />
 
                                 {/* 두 번째 이미지 */}
                                 <img
-                                    className="flex mt-[2rem] rounded-xl h-[15rem] w-[50rem]"
-                                    src="https://ifh.cc/g/NHBB1m.png"
+                                    className="flex mt-[2rem] rounded-xl h-full w-[50rem]"
+                                    src={productData.prodcontent2}
                                     alt="Second"
                                 />
 
@@ -175,13 +187,13 @@ const Product= () => {
                                 {showFullImages && (
                                     <>
                                         <img
-                                            className="flex rounded-xl mt-[2rem] h-[55rem] w-[50rem]"
-                                            src="https://ifh.cc/g/F4OQvG.jpg"
+                                            className="flex rounded-xl mt-[2rem] h-full w-[50rem]"
+                                            src={productData.prodcontent3}
                                             alt="Third"
                                         />
                                         <img
-                                            className="flex rounded-xl mt-[2rem] h-[55rem] w-[50rem]"
-                                            src="https://ifh.cc/g/V2Mo6W.png"
+                                            className="flex rounded-xl mt-[2rem] h-full w-[50rem]"
+                                            src={productData.prodcontent4}
                                             alt="Fourth"
                                         />
                                     </>
@@ -208,8 +220,7 @@ const Product= () => {
                             className="flex flex-row text-sm mx-auto mt-[2rem] bg-gray-100 shadow-xl border-[0.1rem] border-gray-600 items-center justify-center rounded-lg w-[50rem] h-[20rem]">
                             <div
                                 className="flex flex-col rounded-3xl bg-white justify-center items-center h-[18rem] w-[18rem]">
-                                <a className="flex text-sm bg-yellow-200 border-[0.2rem] border-yellow-200 items-center justify-center rounded-xl w-[12rem] font-bold mt-[1.2rem]">Mining
-                                    클라이밍</a>
+                                <a className="flex text-sm bg-yellow-200 border-[0.2rem] border-yellow-200 items-center justify-center rounded-xl w-[12rem] font-bold mt-[1.2rem]">{productData.prodtitle}</a>
                                 <div className="flex items-center justify-center flex-col w-1/2">
                                     <div className="flex w-[8rem] mt-[1rem] h-[8rem]"><img className="rounded-full"
                                                                                            src={productData.iconpicture}></img>
