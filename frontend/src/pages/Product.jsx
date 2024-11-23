@@ -456,7 +456,7 @@ const Product= () => {
                                     </div>
                                 </div>
                                 <div
-                                     className="flex mx-auto flex-row items-center mt-[1rem] bg-gray-100 shadow-xl border-[0.1rem] border-gray-600 rounded-lg w-[50rem] h-[9rem]">
+                                    className="flex mx-auto flex-row items-center mt-[1rem] bg-gray-100 shadow-xl border-[0.1rem] border-gray-600 rounded-lg w-[50rem] h-[9rem]">
                                     <div
                                         className="flex flex-col h-[8rem] border-r-[0.1rem] border-gray-400 items-center w-[10rem]">
                                         <FaCircleUser className="flex mt-[1.4rem] h-[4rem] w-[4rem]"/>
@@ -485,7 +485,7 @@ const Product= () => {
                                     </div>
                                 </div>
                                 <div
-                                     className="flex mx-auto flex-row items-center mt-[1rem] bg-gray-100 shadow-xl border-[0.1rem] border-gray-600 rounded-lg w-[50rem] h-[9rem]">
+                                    className="flex mx-auto flex-row items-center mt-[1rem] bg-gray-100 shadow-xl border-[0.1rem] border-gray-600 rounded-lg w-[50rem] h-[9rem]">
                                     <div
                                         className="flex flex-col h-[8rem] border-r-[0.1rem] border-gray-400 items-center w-[10rem]">
                                         <FaCircleUser className="flex mt-[1.4rem] h-[4rem] w-[4rem]"/>
@@ -556,7 +556,7 @@ const Product= () => {
                                             className="mt-[1rem] bg-gray-50 border-[0.1rem] border-gray-300 rounded-lg p-4 w-[48rem] mx-auto shadow-md">
                                             <div className="flex items-center flex-row">
                                                 <FaCheckCircle />
-                                            <a className="text-xm ml-[0.3rem] text-gray-700">답변 내용</a>
+                                                <a className="text-xm ml-[0.3rem] text-gray-700">답변 내용</a>
                                             </div>
                                             <p className="text-sm mt-2 text-gray-700">
                                                 안녕하세요, 고객님. 환불 관련 문의 사항에 대해 답변드립니다. 환불 절차는 구매일로부터 7일 이내에 신청 가능합니다.

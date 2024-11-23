@@ -1,50 +1,71 @@
-import React, { useState } from 'react';
-import { BrowserRouter as Router, Route, Routes, useNavigate } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { RiKakaoTalkFill } from "react-icons/ri";
 import { IoIosCloseCircleOutline } from "react-icons/io";
 import axios from 'axios';
+import Cookies from 'js-cookie'; // js-cookie 라이브러리 임포트
 
 const Login = ({ setLoginStatus }) => {
-    const [ID, setID] = useState(''); // For user ID
-    const [PW, setPW] = useState(''); // For user password
-    const [error, setError] = useState(''); // Error message state
-    const [isLoading, setIsLoading] = useState(false); // Loading state to show a spinner
+    const [ID, setID] = useState(''); // 사용자 아이디
+    const [PW, setPW] = useState(''); // 사용자 비밀번호
+    const [error, setError] = useState(''); // 에러 메시지 상태
+    const [isLoading, setIsLoading] = useState(false); // 로딩 상태
 
     const navigate = useNavigate();
 
+    // 컴포넌트가 마운트될 때 로그인 상태 확인 (쿠키에서 토큰 확인)
+    useEffect(() => {
+        const token = Cookies.get('auth_token'); // 쿠키에서 토큰 가져오기
+        if (token) {
+            setLoginStatus(true); // 토큰이 있으면 로그인 상태로 설정
+        }
+    }, [setLoginStatus, navigate]);
+
+    // 로그인 모달 닫기
     const closeModal = () => {
         const modal = document.getElementById('my_modal_3');
-        modal.close(); // Close the modal
+        modal.close(); // 모달 닫기
     };
 
+    // 회원가입 화면으로 이동
     const JoinUs = () => {
         navigate('/Agree_to_terms');
         closeModal();
     };
 
-    // Login request function
+    // 로그인 요청 함수
     const handleLogin = async () => {
-        setIsLoading(true); // Set loading to true while the request is being processed
+        setIsLoading(true); // 로그인 처리 중 로딩 상태 활성화
         try {
             const response = await axios.post(
                 'http://localhost:8080/api/login',
                 { userid: ID, userpw: PW },
-                { withCredentials: true } // Include cookies for session handling
+                { withCredentials: true } // 쿠키를 포함한 요청
             );
 
             if (response.data.success) {
-                setLoginStatus(true);  // Update login status
-                alert(`Welcome, ${response.data.name}`); // Welcome message
-                closeModal(); // Close the modal after successful login
+                // 로그인 성공 시 토큰을 쿠키에 저장
+                Cookies.set('auth_token', response.data.token, { expires: 7, path: '/' }); // 7일 동안 쿠키 저장
+
+                setLoginStatus(true);  // 로그인 상태 업데이트
+                alert(`Welcome, ${response.data.name}`); // 환영 메시지
+                closeModal(); // 모달 닫기
             } else {
-                setError(response.data.message); // Set error message if login fails
+                setError(response.data.message); // 로그인 실패 시 에러 메시지
             }
         } catch (error) {
-            console.error('오류내용',error);
-            setError('서버 오류가 발생했습니다. 다시 시도해주세요.'); // Server error message
+            console.error('오류:', error);
+            setError('서버 오류가 발생했습니다. 다시 시도해주세요.'); // 서버 오류 메시지
         } finally {
-            setIsLoading(false); // Set loading to false after the request is complete
+            setIsLoading(false); // 로딩 상태 해제
         }
+    };
+
+    // 로그아웃 함수
+    const handleLogout = () => {
+        Cookies.remove('auth_token'); // 쿠키에서 토큰 삭제
+        setLoginStatus(false); // 로그인 상태를 false로 설정
+        navigate('/login'); // 로그인 페이지로 리다이렉트
     };
 
     return (
@@ -58,26 +79,26 @@ const Login = ({ setLoginStatus }) => {
                 <div className="flex flex-col w-full h-full items-center">
                     <a className="flex font-bold text-xl text-black items-center justify-center">LOGIN</a>
                     <a className="flex text-gray-400 text-sm whitespace-nowrap mt-[0.4rem] items-center justify-center">
-                        로그인하시면 다양하고 특별한 혜택을 이용할 수 있습니다
+                        로그인하시면 다양한 혜택을 이용할 수 있습니다
                     </a>
 
                     <input
                         type="text"
                         value={ID}
-                        onChange={(e) => setID(e.target.value)}  // Update ID state directly
+                        onChange={(e) => setID(e.target.value)}  // 아이디 상태 업데이트
                         className="flex border-2 border-gray-400 text-sm font-normal w-[24rem] h-[3rem] mt-[0.8rem] placeholder-gray-300"
                         placeholder="아이디"
                     />
                     <input
                         type="password"
                         value={PW}
-                        onChange={(e) => setPW(e.target.value)}  // Update PW state directly
+                        onChange={(e) => setPW(e.target.value)}  // 비밀번호 상태 업데이트
                         className="flex border-2 border-gray-400 text-sm font-normal w-[24rem] h-[3rem] mt-[0.2rem] placeholder-gray-300"
                         placeholder="비밀번호"
                     />
                 </div>
             </div>
-            {error && <p className="text-red-500 mt-2">{error}</p>} {/* Show error message if login fails */}
+            {error && <p className="text-red-500 mt-2">{error}</p>} {/* 로그인 실패 시 에러 메시지 출력 */}
             <div className="flex flex-row mb-[1rem]">
                 <input type="checkbox" className="checkbox rounded-none w-[1rem] h-[1rem]" />
                 <a className="flex text-xs font-black ml-[0.3rem]">아이디 저장</a>
@@ -90,7 +111,7 @@ const Login = ({ setLoginStatus }) => {
                     <a
                         onClick={handleLogin}
                         className="bg-black text-white text-[1rem]"
-                        disabled={isLoading} // Disable button while loading
+                        disabled={isLoading} // 로딩 중에는 버튼 비활성화
                     >
                         {isLoading ? 'Logging in...' : 'LOGIN'}
                     </a>

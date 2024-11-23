@@ -13,6 +13,7 @@
     "@headlessui/react": "^2.0.3",
     "@tailwindcss/forms": "^0.5.7",
     "axios": "^1.7.3",
+    "js-cookie": "^3.0.5",
     "mysql": "^2.18.1",
     "prop-types": "^15.8.1",
     "react": "^18.2.0",
