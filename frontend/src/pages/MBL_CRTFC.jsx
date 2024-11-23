@@ -41,16 +41,28 @@ const MBL_CRTFC = () => {
     const handleVerifyCode = () => {
         const inputCodeNumber = Number(formData.inputCode); // 문자열을 숫자로 변환
         const verificationCodeNumber = Number(formData.verificationCode); // 문자열을 숫자로 변환
+        if(formData.phoneNumber == '' || validatePhoneNumber(formData.phoneNumber) !== true  ){
+            if(validatePhoneNumber(formData.phoneNumber) !== true){
+                alert("전화번호를 올바르게 입력하십시오 전화번호 양식01000000000");
+            }else{
+                alert("전화번호를 입력하십시오.");
+            }
 
+        }else if(formData.verificationCode == ''){
 
+            alert("인증번호가 입력되지않았습니다");
 
-        if (inputCodeNumber == verificationCodeNumber) {
-            setIsCodeVerified(true);
-            setErrors({ ...errors, inputCode: "인증되었습니다" });
-        } else {
-            setIsCodeVerified(false);
-            setErrors({ ...errors, inputCode: "인증번호가 일치하지 않습니다." });
+        }else{
+            if (inputCodeNumber == verificationCodeNumber) {
+                setIsCodeVerified(true);
+                setErrors({ ...errors, inputCode: "인증되었습니다" });
+            } else {
+                setIsCodeVerified(false);
+                setErrors({ ...errors, inputCode: "인증번호가 일치하지 않습니다." });
+            }
         }
+
+
 
     };
 
@@ -113,21 +125,30 @@ const MBL_CRTFC = () => {
     const backpage = () => {
         navigate(-1);
     }
-    const handleSubmit = (e) => {
-        e.preventDefault();
+    const handleSubmit = () => {
 
-        if (!validateForm()) {
-            alert("전화번호를 입력해주세요")
-            return;
+
+        if(validatePhoneNumber(formData.phoneNumber) == false || isCodeVerified == false){
+            if(validatePhoneNumber(formData.phoneNumber) == false){
+                    alert("전화번호를 올바르게 입력하십시오.");
+            }else if(isCodeVerified == false){
+                    alert("인증되지 않았습니다 다시 인증해주십시오.")
+            }
+
+        }else{
+            if (isCodeVerified) {
+                navigate('/Agree_to_terms/MBL_CRTFC/SignUp', { state: { phoneNumber: formData.phoneNumber } });
+            }else {
+                alert("인증번호를 다시 확인해주십시오");
+            }
         }
+
+
+
 
         // 여기서 회원가입 API 호출
 
-                if (isCodeVerified) {
-                    navigate('/Agree_to_terms/MBL_CRTFC/SignUp', { state: { phoneNumber: formData.phoneNumber } });
-                } else {
-                    alert("인증번호를 다시 확인해주십시오");
-                }
+
 
     };
 
@@ -196,7 +217,6 @@ const MBL_CRTFC = () => {
                                 onClick={backpage}>&lt; 이전</button>
                         <button
                             className="flex bg-red-500 justify-center w-[9rem] text-white rounded"
-                            disabled={!isCodeVerified}
                             onClick={handleSubmit}
                         >
                             다음 &gt;

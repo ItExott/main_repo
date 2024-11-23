@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useLocation } from "react-router-dom";
 import axios from "axios";
 
 const SignUp = () => {
@@ -13,7 +14,8 @@ const SignUp = () => {
         name: "",
         phonePrefix: "010",
     });
-
+    const location = useLocation()
+    const { phoneNumber } = location.state || {};
     const [errors, setErrors] = useState({});
     const navigate = useNavigate();  // useNavigate 훅을 사용해 페이지 이동 처리
 
