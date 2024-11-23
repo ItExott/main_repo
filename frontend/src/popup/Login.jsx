@@ -20,28 +20,30 @@ const Login = ({ setLoginStatus }) => {
         closeModal();
     };
 
-    // 로그인 요청 함수
+
+// 로그인 요청 함수
     const handleLogin = async () => {
         try {
-            // 여기에 실제 로그인 API를 호출합니다.
             const response = await axios.post('http://localhost:8080/api/login', {
                 userid: ID,
                 userpw: PW,
-            });
+            }, { withCredentials: true }); // 쿠키 포함 설정
 
-            // 로그인 성공 시
             if (response.data.success) {
-
-                setLoginStatus(true);  // 로그인 상태를 true로 변경
-                closeModal();  // 모달 닫기
-                navigate('/');  // 로그인 후 홈 화면으로 이동
+                setLoginStatus(true);  // 로그인 상태 갱신
+                alert(`Welcome, ${response.data.name}`);
+                navigate('/'); // 홈으로 이동
             } else {
-                alert('아이디 또는 비밀번호가 틀렸습니다.');  // 로그인 실패 시 오류 메시지 설정
+                alert(response.data.message); // 오류 메시지 표시
             }
         } catch (error) {
-            alert('서버 오류가 발생했습니다. 다시 시도해주세요.');  // API 호출 오류 처리
+            console.log(error);
+            alert('서버 오류가 발생했습니다. 다시 시도해주세요.');
         }
     };
+
+// 로그아웃 요청 함수
+
 
     return (
         <div className="flex flex-col h-[34rem] bg-white items-center justify-center">

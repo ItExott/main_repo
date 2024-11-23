@@ -3,7 +3,7 @@ const mysql = require('mysql');
 const bodyParser = require('body-parser');
 const app = express();
 const port = 8080;
-
+const session = require('express-session');
 // CORS 설정
 const cors = require('cors');
 app.use(cors());
@@ -26,6 +26,15 @@ db.connect(err => {
     }
     console.log('Connected to database.');
 });
+app.use(session({
+    secret: 'your-secret-key',  // 세션 암호화 키
+    resave: false,  // 세션이 수정되지 않았을 경우에도 저장할지 여부
+    saveUninitialized: false,  // 초기화되지 않은 세션을 저장할지 여부
+    cookie: {
+        maxAge: 3600000,  // 세션 만료 시간: 1시간
+        httpOnly: true,    // 클라이언트에서 JavaScript로 쿠키 접근 불가
+    }
+}));
 
 // 제품 목록 조회 (정렬 기준: 평점 또는 가격)
 app.get('/product_Main', (req, res) => {
@@ -96,12 +105,26 @@ app.post('/api/login', (req, res) => {
 
         // 사용자가 존재하고 로그인 정보가 일치하면
         if (result.length > 0) {
-            // 로그인 성공
-            res.json({ success: true, name: result[0].name });  // 사용자의 이름을 응답에 포함
+            // 로그인 성공, 세션에 id 저장
+            req.session.userId = id;  // 세션에 사용자 id 저장
+            req.session.name = result[0].name;  // 추가로 이름도 저장 가능
+
+            res.json({ success: true, name: result[0].name, message: 'Login successful' });
         } else {
             // 로그인 실패
             res.json({ success: false, message: 'Invalid username or password' });
         }
+    });
+});
+
+// 로그아웃 API (세션 종료)
+app.post('/api/logout', (req, res) => {
+    req.session.destroy(err => {
+        if (err) {
+            return res.status(500).json({ success: false, message: 'Logout failed' });
+        }
+        res.clearCookie('connect.sid');  // 세션 쿠키 삭제
+        res.json({ success: true, message: 'Logged out successfully' });
     });
 });
 
