@@ -36,7 +36,6 @@ const Login = ({ setLoginStatus }) => {
                 setLoginStatus(true);  // Update login status
                 alert(`Welcome, ${response.data.name}`); // Welcome message
                 closeModal(); // Close the modal after successful login
-                navigate('/'); // Navigate to home page
             } else {
                 setError(response.data.message); // Set error message if login fails
             }

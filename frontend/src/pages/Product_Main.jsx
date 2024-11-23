@@ -23,30 +23,40 @@ const Product_Main = () => {
 
     const { category } = useParams(); // URL 파라미터에서 category를 가져옴
 
-    const [categoryData, setcategoryData] = useState({
+    // 카테고리 정보와 로고를 가져오는 함수
+    const [categoryData, setCategoryData] = useState({
         category: "",
         sportlogo: "",
         sporttitle: "",
         sportdetail: ""
     });
 
+    const fetchCategoryData = async (category) => {
+        try {
+            const response = await axios.get(`http://localhost:8080/product_Main/${category}`);
+            setCategoryData({
+                category: response.data.category,
+                sportlogo: response.data.sportlogo,
+                sporttitle: response.data.sporttitle,
+                sportdetail: response.data.sportdetail
+            });
+        } catch (error) {
+            console.error("Error fetching category data:", error);
+        }
+    };
+
     // 백엔드에서 제품 목록을 가져오는 함수
     const fetchProducts = async (option, category) => {
         setLoading(true); // 로딩 시작
         try {
-            const response = await fetch(`http://localhost:8080/product_Main?sort=${option === '평점 순' ? 'prodrating' : 'prodprice'}&category=${category}`);
+            const sortOption = option === '평점 순' ? 'prodrating' : 'prodprice'; // Sorting option
+            const response = await axios.get(`http://localhost:8080/product_Main/${category}?sort=${sortOption}`);
 
-            if (!response.ok) {
-                throw new Error(`HTTP error! Status: ${response.status}`);
-            }
-
-            const data = await response.json();
-
-            if (!Array.isArray(data)) {
+            if (!response.data || !Array.isArray(response.data)) {
                 throw new Error('응답 데이터가 배열 형식이 아닙니다.');
             }
 
-            setProducts(data); // 제품 목록 업데이트
+            setProducts(response.data); // 제품 목록 업데이트
         } catch (error) {
             console.error('제품을 가져오는 데 실패했습니다:', error.message);
         } finally {
@@ -54,9 +64,10 @@ const Product_Main = () => {
         }
     };
 
-    // 페이지 로드 시 기본 제품 목록을 가져옴
+    // 페이지 로드 시 카테고리 정보와 제품 목록을 가져옴
     useEffect(() => {
         if (category) {
+            fetchCategoryData(category); // 카테고리 정보 가져오기
             fetchProducts(selectedOption, category); // 카테고리에 맞는 제품 목록을 가져옴
         }
     }, [selectedOption, category]);
@@ -90,25 +101,11 @@ const Product_Main = () => {
         navigate(`/product/${id}`);
     };
 
-    useEffect(() => {
-        // 데이터 요청
-        axios.get(`http://localhost:8080/product_Main/${category}`)
-            .then(response => {
-                setcategoryData({
-                    category: response.data.category,
-                    sportlogo: response.data.sportlogo,
-                    sporttitle: response.data.sporttitle,
-                    sportdetail: response.data.sportdetail
-                });
-            })
-            .catch(error => {
-                console.error("Error fetching category data:", error);
-            });
-    }, [category]); // id가 변경될 때마다 데이터 요청
-
     return (
         <div className="flex flex-col h-full items-center mt-[1rem] justify-center mx-56">  {/*전체 틀*/}
-            <div className="flex flex-row h-14 w-[35rem] items-center justify-center shadow-xl rounded-xl relative"> {/*검색창*/}
+
+            {/* 검색창 */}
+            <div className="flex flex-row h-14 w-[35rem] items-center justify-center shadow-xl rounded-xl relative">
                 <FaLocationDot size="20" className="ml-3 cursor-pointer mt-[0.06rem]"/> {/* 로케이션 아이콘 */}
                 <div className="flex flex-row w-1/5 cursor-pointer"> {/* 로케이션 박스 */}
                     <p className="text-sm font-bold text-nowrap ml-[0.5rem]">송파구 마천동</p>
@@ -147,9 +144,10 @@ const Product_Main = () => {
                 )}
             </div>
 
+            {/* 카테고리 정보 */}
             <div className="flex justify-start w-[62rem] h-[22rem] mt-[4rem] items-center">
                 <div className="flex items-center w-[24rem] h-[18rem] ml-[6rem]">
-                    <img className="rounded-3xl shadow-xl" src={categoryData.sportlogo}/>
+                    <img className="rounded-3xl shadow-xl" src={categoryData.sportlogo} />
                 </div>
                 <div className="flex flex-col border-[0.01rem] border-gray-100 justify-center rounded-r-full shadow-xl w-[29rem] h-[18rem]">
                     <a className="text-[1.5rem] font-semibold">{categoryData.sporttitle}</a>
@@ -157,6 +155,7 @@ const Product_Main = () => {
                 </div>
             </div>
 
+            {/* 정렬 옵션 */}
             <div className="flex mt-[3rem] items-center justify-end w-[56rem] h-[2rem]">
                 <div className="relative">
                     <div
@@ -164,36 +163,31 @@ const Product_Main = () => {
                         onClick={toggleDropdown}
                     >
                         <a className="mt-[0.1rem]">{selectedOption}</a>
-                        <FaCaretDown className="ml-[0.1rem]"/>
+                        <FaCaretDown className="ml-[0.1rem]" />
                     </div>
 
                     {isDropdownOpen && (
-                        <div
-                            className="absolute top-full right-0 w-[7rem] bg-white border border-gray-300 rounded-xl shadow-lg z-10">
-                            {selectedOption === '평점 순' && (
-                                <div
-                                    className="p-2 hover:bg-gray-100 flex flex-row items-center justify-center rounded-xl cursor-pointer"
-                                    onClick={() => handleSelectOption('가격 순')}
-                                >
-                                    가격 순
-                                    <FaCaretDown className="ml-[0.1rem]"/>
-                                </div>
-                            )}
-
-                            {selectedOption === '가격 순' && (
-                                <div
-                                    className="p-2 hover:bg-gray-100 flex flex-row items-center justify-center rounded-xl cursor-pointer"
-                                    onClick={() => handleSelectOption('평점 순')}
-                                >
-                                    평점 순
-                                    <FaCaretDown className="ml-[0.1rem]"/>
-                                </div>
-                            )}
+                        <div className="absolute top-full right-0 w-[7rem] bg-white border border-gray-300 rounded-xl shadow-lg z-10">
+                            <div
+                                className="p-2 hover:bg-gray-100 flex flex-row items-center justify-center rounded-xl cursor-pointer"
+                                onClick={() => handleSelectOption('가격 순')}
+                            >
+                                가격 순
+                                <FaCaretDown className="ml-[0.1rem]" />
+                            </div>
+                            <div
+                                className="p-2 hover:bg-gray-100 flex flex-row items-center justify-center rounded-xl cursor-pointer"
+                                onClick={() => handleSelectOption('평점 순')}
+                            >
+                                평점 순
+                                <FaCaretDown className="ml-[0.1rem]" />
+                            </div>
                         </div>
                     )}
                 </div>
             </div>
 
+            {/* 제품 목록 */}
             <div className="flex flex-row w-[62rem] h-[35rem]">
                 {loading ? (
                     <div>로딩 중...</div>  // 로딩 중일 때 표시

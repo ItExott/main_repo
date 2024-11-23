@@ -1,9 +1,8 @@
-import React, { useState,useRef } from "react";
+import React, { useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import Login from "../popup/Login.jsx";
 import { FaMoneyCheckDollar } from "react-icons/fa6";
 import axios from "axios";
-
 
 const Navbar = ({ loginStatus, setLoginStatus }) => {
     const navigate = useNavigate();
@@ -22,7 +21,6 @@ const Navbar = ({ loginStatus, setLoginStatus }) => {
         }, 300); // 300ms 지연 (필요에 따라 조정 가능)
     };
 
-
     const goclimbing = () => {
         navigate("/product_Main/climbing");
     };
@@ -34,6 +32,8 @@ const Navbar = ({ loginStatus, setLoginStatus }) => {
     const gohome = () => {
         navigate("/");
     };
+
+    // 로그아웃 핸들러
     const handleLogout = async () => {
         try {
             const response = await axios.post('http://localhost:8080/api/logout', {}, { withCredentials: true });
@@ -58,13 +58,11 @@ const Navbar = ({ loginStatus, setLoginStatus }) => {
         navigate("/product_Main/pilates");
     };
 
-
-
     return (
         <div className="navbar bg-base-100">
             <div className="navbar-start">
-                <a onClick={gohome} className="btn btn-ghost w-[13rem]  text-xl">
-                    <img alt="로고" src="https://ifh.cc/g/xrkNK1.png"/>
+                <a onClick={gohome} className="btn btn-ghost w-[13rem] text-xl">
+                    <img alt="로고" src="https://ifh.cc/g/xrkNK1.png" />
                 </a>
             </div>
 
@@ -85,21 +83,11 @@ const Navbar = ({ loginStatus, setLoginStatus }) => {
                     >
                         <div className="ml-[18rem]">
                             <ul>
-                                <li className="cursor-pointer hover:scale-110 transition-transform ease-in-out duration-500"
-                                    onClick={goweight}>헬스
-                                </li>
-                                <li className="cursor-pointer hover:scale-110 transition-transform ease-in-out duration-500"
-                                    onClick={goswim}>수영
-                                </li>
-                                <li className="cursor-pointer hover:scale-110 transition-transform ease-in-out duration-500"
-                                    onClick={goclimbing}>클라이밍
-                                </li>
-                                <li className="cursor-pointer hover:scale-110 transition-transform ease-in-out duration-500"
-                                    onClick={gopilates}>필라테스
-                                </li>
-                                <li className="cursor-pointer hover:scale-110 transition-transform ease-in-out duration-500"
-                                    onClick={gocrossfit}>크로스핏
-                                </li>
+                                <li className="cursor-pointer hover:scale-110 transition-transform ease-in-out duration-500" onClick={goweight}>헬스</li>
+                                <li className="cursor-pointer hover:scale-110 transition-transform ease-in-out duration-500" onClick={goswim}>수영</li>
+                                <li className="cursor-pointer hover:scale-110 transition-transform ease-in-out duration-500" onClick={goclimbing}>클라이밍</li>
+                                <li className="cursor-pointer hover:scale-110 transition-transform ease-in-out duration-500" onClick={gopilates}>필라테스</li>
+                                <li className="cursor-pointer hover:scale-110 transition-transform ease-in-out duration-500" onClick={gocrossfit}>크로스핏</li>
                             </ul>
                         </div>
                         <div className="ml-[6rem]">
@@ -141,7 +129,7 @@ const Navbar = ({ loginStatus, setLoginStatus }) => {
                         </li>
                         <li>
                             <div className="h-[4rem] items-center justify-center flex flex-row border-[0.1rem]">
-                                <FaMoneyCheckDollar className="h-[1.5rem] w-[1.5rem]"/>
+                                <FaMoneyCheckDollar className="h-[1.5rem] w-[1.5rem]" />
                                 <a className="whitespace-nowrap">보유 머니 : 5000원</a>
                                 <a className="text-xs w-[1rem] h-[1rem] border-[0.1rem] whitespace-nowrap">충전</a>
                             </div>
@@ -154,8 +142,7 @@ const Navbar = ({ loginStatus, setLoginStatus }) => {
                             </li>
                         ) : (
                             <li className="mt-[0.2rem]">
-                                <a onClick={() => document.getElementById("my_modal_3").showModal()}
-                                   className="font-bold">
+                                <a onClick={() => document.getElementById("my_modal_3").showModal()} className="font-bold">
                                     Login
                                 </a>
                             </li>
@@ -165,7 +152,7 @@ const Navbar = ({ loginStatus, setLoginStatus }) => {
             </div>
 
             <dialog id="my_modal_3" className="modal">
-                <Login setLoginStatus={setLoginStatus}/>
+                <Login setLoginStatus={setLoginStatus} />
             </dialog>
         </div>
     );
