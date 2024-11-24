@@ -1,7 +1,5 @@
+{/*모듈 import문*/}
 import React, { useState, useEffect, useRef } from "react";
-import { useLocation } from "react-router-dom";
-import { BiSearch } from "react-icons/bi";
-import { FaLocationDot } from "react-icons/fa6";
 import { Swiper, SwiperSlide } from "swiper/react";
 import { Pagination, Autoplay, Scrollbar } from "swiper";
 import 'swiper/css';
@@ -9,10 +7,16 @@ import 'swiper/css/navigation';
 import 'swiper/css/pagination';
 import 'swiper/css/effect-coverflow';
 import 'swiper/css/scrollbar';
+import axios from "axios";
+{/*아이콘 import문*/}
+import { useLocation } from "react-router-dom";
+import { BiSearch } from "react-icons/bi";
+import { FaLocationDot } from "react-icons/fa6";
+{/*컴포넌트 동기화문*/}
 import MainCard from "../components/MainCard.jsx";
 import Attendance from "../popup/Attendance";
 import Login from "../popup/Login.jsx";
-import axios from "axios";
+
 
 const Home = () => {
     const [isFocused, setIsFocused] = useState(false); // 검색창 포커스 상태
@@ -21,17 +25,15 @@ const Home = () => {
     const [isCalendarOpen, setIsCalendarOpen] = useState(false); // 출석체크 달력 팝업 상태
     const [isLoggedIn, setIsLoggedIn] = useState(false); // 로그인 상태 (로그인 여부)
 
-
     const location = useLocation();
     const { openLoginModal: locationOpenLoginModal = false } = location.state || {};
 
     const [openLoginModal, setOpenLoginModal] = useState(locationOpenLoginModal); // 초기값을 locationOpenLoginModal로 설정
     const inputRef = useRef(null);
 
-
+    // 로그인 상태 확인 db문
     const [userId, setUserId] = useState(null);
     useEffect(() => {
-        // 로그인 상태 확인
         const checkLoginStatus = async () => {
             try {
                 const response = await axios.get('http://localhost:8080/api/userinfo', {
@@ -104,9 +106,7 @@ const Home = () => {
         return () => {
             window.removeEventListener('beforeunload', handleBeforeUnload);
         };
-    }, []); // 빈 배열을 두어 컴포넌트가 마운트될 때만 실행되게 함
-
-    // 로그인 모달을 강제로 표시하거나 닫을 때 사용 (새로고침 후 값을 강제로 설정)
+    }, []);
     useEffect(() => {
         setOpenLoginModal(locationOpenLoginModal); // location에서 받은 값으로 openLoginModal 초기화
     }, [locationOpenLoginModal]);
@@ -127,12 +127,10 @@ const Home = () => {
                 onDateSelect={handleDateSelect} // 날짜 선택 시 처리 함수
             />
 
-            {/* 로그인 모달 (dialog) */}
-
             {/* 검색창 */}
             <div className="flex flex-row h-14 w-[35rem] items-center justify-center shadow-xl rounded-xl relative">
-                <FaLocationDot size="20" className="ml-3 cursor-pointer mt-[0.06rem]"/>
                 <div className="flex flex-row w-1/5 cursor-pointer">
+                    <FaLocationDot size="20" className="ml-3 cursor-pointer mt-[0.06rem]"/>
                     <p className="text-sm font-bold text-nowrap ml-[0.5rem]">송파구 마천동</p>
                 </div>
                 <div className="flex flex-row w-4/5 ml-2">

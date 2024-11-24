@@ -1,8 +1,9 @@
 import React, {useState, useEffect, useRef} from "react";
 import {Link, useParams} from "react-router-dom";
 import {useRecoilValue} from "recoil";
+import axios from "axios";
+{/*아이콘 import문*/}
 import { FaLocationDot } from "react-icons/fa6";
-import { MdNavigateNext } from "react-icons/md";
 import { GiTowel } from "react-icons/gi";
 import { FaShower } from "react-icons/fa6";
 import { FaHandsWash } from "react-icons/fa";
@@ -13,13 +14,12 @@ import { FaCircleUser } from "react-icons/fa6";
 import { TiArrowSortedDown } from "react-icons/ti";
 import { TiArrowSortedUp } from "react-icons/ti";
 import { MdDateRange } from "react-icons/md";
-import BuyBox from "../components/BuyBox.jsx";
 import { PiSirenBold }   from "react-icons/pi";
 import { LiaDumbbellSolid } from "react-icons/lia";
 import { FaAngleDown } from "react-icons/fa6";
 import { FaAngleUp } from "react-icons/fa6";
 import { FaCheckCircle } from "react-icons/fa";
-import axios from "axios";
+{/*컴포넌트 동기화문*/}
 import BottomBox from "../components/BottomBox.jsx";
 
 const Product= () => {
@@ -35,8 +35,8 @@ const Product= () => {
     const [isLoggedIn, setIsLoggedIn] = useState(false);
     const [userId, setUserId] = useState(null);
 
+    // 로그인 정보 불러오는 db문
     useEffect(() => {
-        // 로그인 상태 확인
         const checkLoginStatus = async () => {
             try {
                 const response = await axios.get('http://localhost:8080/api/userinfo', {
@@ -57,13 +57,8 @@ const Product= () => {
         checkLoginStatus();
     }, []);
 
-
-    const toggleShowImages = () => {
-        setShowFullImages(!showFullImages);
-    };
-
-    const { id } = useParams(); // URL 파라미터에서 id를 가져옴
-
+    // 상품 정보 가져오는 db문
+    const { id } = useParams();
     const [productData, setProductData] = useState({
         iconpicture: "",
         prodid: "",
@@ -74,17 +69,18 @@ const Product= () => {
         prodcontent1: "",
         prodcontent2: "",
         prodcontent3: "",
-        prodcontent4: ""
+        prodcontent4: "",
+        prodsmtitle: "",
+        facility_pictures: [] // Add a new field for facility pictures
     });
-
     useEffect(() => {
         // 데이터 요청
         axios.get(`http://localhost:8080/product/${id}`)
             .then(response => {
                 console.log(response.data); // 백엔드에서 받은 데이터를 로그로 확인
                 setProductData({
-                    prodid: response.data.prodid,      // 받은 데이터의 prodid로 설정
-                    iconpicture: response.data.iconpicture,  // 받은 데이터의 iconpicture로 설정
+                    prodid: response.data.prodid,
+                    iconpicture: response.data.iconpicture,
                     prodtitle: response.data.prodtitle,
                     prodrating: response.data.prodrating,
                     address: response.data.address,
@@ -92,83 +88,79 @@ const Product= () => {
                     prodcontent1: response.data.prodcontent1,
                     prodcontent2: response.data.prodcontent2,
                     prodcontent3: response.data.prodcontent3,
-                    prodcontent4: response.data.prodcontent4
+                    prodcontent4: response.data.prodcontent4,
+                    prodsmtitle: response.data.prodsmtitle,
+                    facility_pictures: response.data.facility_pictures || [] // Set facility_pictures if available
                 });
-                console.log(productData.iconpicture);
             })
             .catch(error => {
                 console.error("Error fetching product data:", error);
             });
-    }, [id]); // id가 변경될 때마다 데이터 요청
+    }, [id]);
 
+    {/*const문*/}
+    const toggleShowImages = () => {
+        setShowFullImages(!showFullImages);
+    };
     const scrollToPhotoSection = () => {
 
         if (PhotoSectionRef.current) {
             PhotoSectionRef.current.scrollIntoView({ behavior: 'smooth' });
         }
     };
-
     const scrollToInfoSection = () => {
 
         if (InfoSectionRef.current) {
             InfoSectionRef.current.scrollIntoView({ behavior: 'smooth' });
         }
     };
-
     const scrollToReviewSection = () => {
 
         if (ReviewSectionRef.current) {
             ReviewSectionRef.current.scrollIntoView({ behavior: 'smooth' });
         }
     };
-
     const scrollToRestSection = () => {
 
         if (RestSectionRef.current) {
             RestSectionRef.current.scrollIntoView({ behavior: 'smooth' });
         }
     };
+    const buttonData = [
+        { text: "상품 정보", onClick: scrollToInfoSection },
+        { text: "시설 사진", onClick: scrollToPhotoSection },
+        { text: "편의 시설", onClick: scrollToRestSection },
+        { text: "리뷰", onClick: scrollToReviewSection },
+    ];
 
     return (
         <div className="flex flex-col h-full items-center justify-center mx-28">  {/*슬라이더 박스*/}
             <BottomBox productData={productData}/>
             <div
                 className="flex justify-start flex-row rounded-3xl border-2 border-gray-950 w-[62rem] h-[22rem] mt-6 items-center">
-                <div className="flex flex-row items-center w-[42rem] h-[22rem]">
-                    <img className="flex w-[42rem] h-[21.8rem] rounded-l-3xl" src={productData.prodpicture}/></div>
-                <div className="flex flex-col shadow-xl rounded-r-3xl items-center w-[20rem] h-[22rem]">
-                    <div className="flex w-[10rem] mt-[2rem] h-[10rem]"> {productData.iconpicture ? (
-                        <img className="rounded-full" src={productData.iconpicture} alt="Product Logo"/>
-                    ) : (
-                        <p>Loading...</p> // 데이터가 없을 때 보여줄 로더
-                    )}
+                <div className="flex flex-row items-center w-[42rem] h-[22rem]"><img
+                    className="flex w-[42rem] h-[21.8rem] rounded-l-3xl" src={productData.prodpicture}/></div>
+                <div className="flex flex-col shadow-xl rounded-r-3xl items-center w-[20rem] h-[22rem]"> {/*타이틀 우측*/}
+                    <div className="flex w-[10rem] mt-[2rem] h-[10rem]">
+                        {productData.iconpicture ? (
+                            <img className="rounded-full" src={productData.iconpicture} alt="Product Logo"/>
+                        ) : (
+                            <p>Loading...</p> // 데이터가 없을 때 보여줄 로더
+                        )}
                     </div>
                     <a className="text-lg mt-[1rem] font-bold">{productData.prodtitle}</a>
-                    <a className="text-sm">서울시 송파구 마천동에 위치한 실내 클라이밍 짐</a>
-                    <div className="flex mt-[1rem] flex-row"> {/*로고 하단 위치 박스*/}
+                    <a className="text-sm">{productData.prodsmtitle}</a>
+                    <div className="flex mt-[1rem] flex-row">
                         <FaLocationDot/>
                         <a className="text-sm font-bold">{productData.address}</a>
                     </div>
-                    <div className="flex mt-[1rem] flex-row"> {/*로고 하단 후기 박스*/}
-                        {/* 첫 번째 아이콘 */}
-                        <LiaDumbbellSolid
-                            className={`w-[2rem] h-[2rem] ${productData.prodrating >= 0 ? "fill-black" : "fill-gray-300"}`}
-                        />
-
-                        {/* 두 번째 아이콘 */}
-                        <LiaDumbbellSolid
-                            className={`w-[2rem] h-[2rem] ${productData.prodrating >= 3 ? "fill-black" : "fill-gray-300"}`}
-                        />
-
-                        {/* 세 번째 아이콘 */}
-                        <LiaDumbbellSolid
-                            className={`w-[2rem] h-[2rem] ${productData.prodrating >= 6 ? "fill-black" : "fill-gray-300"}`}
-                        />
-
-                        {/* 네 번째 아이콘 */}
-                        <LiaDumbbellSolid
-                            className={`w-[2rem] h-[2rem] ${productData.prodrating >= 9 ? "fill-black" : "fill-gray-300"}`}
-                        />
+                    <div className="flex mt-[1rem] flex-row">
+                        {[...Array(4)].map((_, index) => (
+                            <LiaDumbbellSolid
+                                key={index}
+                                className={`w-[2rem] h-[2rem] ${productData.prodrating >= (index + 1) * 3 ? "fill-black" : "fill-gray-300"}`}
+                            />
+                        ))}
                         <a className="text-lg mt-[0.3rem] font-bold items-center flex ml-[0.5rem]">{productData.prodrating}</a>
                         <a className="text-xs items-center ml-[0.1rem] mt-[0.4rem] flex"> / 10</a>
                     </div>
@@ -177,56 +169,35 @@ const Product= () => {
             <div className="flex flex-col items-center w-[68rem] h-full mt-[2rem]">
                 <div
                     className="flex flex-row w-[24rem] mt-[1rem] mr-[38rem] h-[4rem] shadow-lg justify-center items-center">
-                    <div
-                        className="flex w-[6rem] h-[4rem] rounded-l-lg items-center justify-center border-[0.1rem] border-gray-950 hover:bg-gray-100 hover:scale-125 transition-transform ease-in-out duration-500 cursor-pointer text-gray-950 font-semibold text-sm"
-                        onClick={scrollToInfoSection}>상품 정보
-                    </div>
-                    <p className="text-gray-950 flex w-[6rem] h-[4rem] items-center justify-center border-[0.1rem] border-gray-950 text-sm hover:bg-gray-100 hover:scale-125 transition-transform ease-in-out duration-500 font-semibold cursor-pointer"
-                       onClick={scrollToPhotoSection}>시설 사진</p>
-                    <p className="text-gray-950 flex w-[6rem] h-[4rem] items-center justify-center border-[0.1rem] border-gray-950 text-sm hover:bg-gray-100 hover:scale-125 transition-transform ease-in-out duration-500 cursor-pointer font-semibold"
-                       onClick={scrollToRestSection}>편의 시설</p>
-                    <p className="text-gray-950 flex w-[6rem] rounded-r-lg h-[4rem] items-center justify-center border-[0.1rem] hover:bg-gray-100 border-gray-950 text-sm font-semibold cursor-pointer hover:scale-125 transition-transform ease-in-out duration-500"
-                       onClick={scrollToReviewSection}>리뷰</p>
+                    {buttonData.map((button, index) => (
+                        <div
+                            key={index}
+                            className={`flex w-[6rem] h-[4rem] ${index === 0 ? 'rounded-l-lg' : ''} ${index === buttonData.length - 1 ? 'rounded-r-lg' : ''} items-center justify-center border-[0.1rem] border-gray-950 text-sm hover:bg-gray-100 hover:scale-125 transition-transform ease-in-out duration-500 cursor-pointer font-semibold`}
+                            onClick={button.onClick}
+                        >
+                            {button.text}
+                        </div>
+                    ))}
                 </div>
                 <div ref={InfoSectionRef} className="flex flex-col items-center w-[64rem] rounded-3xl h-full">
                     <div className="ml-[2rem] flex flex-row w-[64rem] h-full">
                         <div
                             className="relative flex flex-col items-center mr-[2rem] mt-[1rem] h-full rounded-xl w-[64rem] overflow-hidden">
-                            {/* 컨테이너 */}
+                            {/* 이미지 컨테이너 */}
                             <div
                                 className={`flex flex-col items-center ${showFullImages ? '' : 'h-[350px] overflow-hidden'}`}>
-                                {/* 첫 번째 이미지 */}
-                                <img
-                                    className="flex mt-[2rem] rounded-xl h-full w-[50rem]"
-                                    src={productData.prodcontent1}
-                                    alt="First"
-                                />
-
-                                {/* 두 번째 이미지 */}
-                                <img
-                                    className="flex mt-[2rem] rounded-xl h-full w-[50rem]"
-                                    src={productData.prodcontent2}
-                                    alt="Second"
-                                />
-
-                                {/* 추가 이미지 */}
-                                {showFullImages && (
-                                    <>
+                                {/* 이미지들 */}
+                                {[productData.prodcontent1, productData.prodcontent2, productData.prodcontent3, productData.prodcontent4]
+                                    .slice(0, showFullImages ? 4 : 2)
+                                    .map((src, index) => (
                                         <img
-                                            className="flex rounded-xl mt-[2rem] h-full w-[50rem]"
-                                            src={productData.prodcontent3}
-                                            alt="Third"
+                                            key={index}
+                                            className="flex mt-[2rem] rounded-xl h-full w-[50rem]"
+                                            src={src}
+                                            alt={`Image ${index + 1}`}
                                         />
-                                        <img
-                                            className="flex rounded-xl mt-[2rem] h-full w-[50rem]"
-                                            src={productData.prodcontent4}
-                                            alt="Fourth"
-                                        />
-                                    </>
-                                )}
+                                    ))}
                             </div>
-
-                            {/* 버튼 */}
                             <div
                                 className="flex mt-[1rem] border-[0.1rem] font-bold cursor-pointer hover:scale-90 hover:bg-gray-100 transition-transform ease-in-out duration-500 border-gray-950 bg-white text-gray-950 py-[1rem] px-[5rem] rounded z-30"
                                 onClick={toggleShowImages}
@@ -241,15 +212,20 @@ const Product= () => {
                         </div>
                     </div>
                     <div className="flex divide-gray-600 ml-[4rem] w-[60rem]"></div>
-                    <div className="flex flex-col"> {/*하단 소개글*/}
+                    <div className="flex flex-col">
+                        {/* 하단 소개글 */}
                         <div
                             className="flex flex-row text-sm mx-auto mt-[2rem] bg-gray-100 shadow-xl border-[0.1rem] border-gray-600 items-center justify-center rounded-lg w-[50rem] h-[20rem]">
+
+                            {/* 첫 번째 카드 */}
                             <div
                                 className="flex flex-col rounded-3xl bg-white justify-center items-center h-[18rem] w-[18rem]">
-                                <a className="flex text-sm bg-yellow-200 border-[0.2rem] border-yellow-200 items-center justify-center rounded-xl w-[12rem] font-bold mt-[1.2rem]">{productData.prodtitle}</a>
+                                <a className="flex text-sm bg-yellow-200 border-[0.2rem] border-yellow-200 items-center justify-center rounded-xl w-[12rem] font-bold mt-[1.2rem]">
+                                    {productData.prodtitle}
+                                </a>
                                 <div className="flex items-center justify-center flex-col w-1/2">
-                                    <div className="flex w-[8rem] mt-[1rem] h-[8rem]"><img className="rounded-full"
-                                                                                           src={productData.iconpicture}></img>
+                                    <div className="flex w-[8rem] mt-[1rem] h-[8rem]">
+                                        <img className="rounded-full" src={productData.iconpicture} alt="Product Logo"/>
                                     </div>
                                     <div
                                         className="flex flex-col items-center justify-center bg-yellow-200 mt-[1rem] rounded-xl h-[5rem] w-[20rem]">
@@ -261,11 +237,15 @@ const Product= () => {
                                     </div>
                                 </div>
                             </div>
+
                             <div className="border-l border-gray-400 ml-[3.5rem] h-[16rem]"></div>
+
+                            {/* 두 번째 카드 */}
                             <div
                                 className="flex flex-col ml-[3.5rem] rounded-3xl bg-white items-center w-[18rem] h-[18rem]">
-                                <a className="flex text-sm bg-yellow-200 border-[0.2rem] border-yellow-200 items-center justify-center rounded-xl w-[12rem] font-bold mt-[1.2rem]">운영
-                                    시간 및 이용 안내</a>
+                                <a className="flex text-sm bg-yellow-200 border-[0.2rem] border-yellow-200 items-center justify-center rounded-xl w-[12rem] font-bold mt-[1.2rem]">
+                                    운영 시간 및 이용 안내
+                                </a>
                                 <div className="flex flex-row justify-center mt-[2.8rem] w-[18rem] h-[18rem]">
                                     <div ref={RestSectionRef} className="flex ml-[0.5rem] items-center flex-col w-1/2">
                                         <MdDateRange className="flex w-[3rem] h-[3rem]"/>
@@ -279,7 +259,6 @@ const Product= () => {
                                         <a className="font-semibold mt-[0.5rem]">[ 주차 ]</a>
                                         <a className="flex text-xs whitespace-nowrap">1시간 무료</a>
                                         <a className="flex text-xs whitespace-nowrap">이후 시간당 1000원</a>
-
                                     </div>
                                 </div>
                             </div>
@@ -317,44 +296,23 @@ const Product= () => {
                         </div>
                     </div>
                     <div className="flex divider divide-gray-600 ml-[4rem] w-[60rem]"></div>
-                        <div className="flex flex-col rounded-lg w-[50rem] h-[24rem]">
-                            <a className="text-lg font-bold ml-[1rem]">시설 사진</a>
-                            <div className="flex flex-row space-x-7 mt-[1.2rem]">{/*시설사진*/}
-                                <div
-                                    className="flex w-[11rem] h-[10rem] hover:scale-125 transition-transform ease-in-out duration-500">
-                                    <img className="rounded-xl" src="https://ifh.cc/g/CoJTAC.png"/></div>
-                                <div
-                                    className="flex w-[11rem] h-[10rem] hover:scale-125 transition-transform ease-in-out duration-500">
-                                    <img className="rounded-xl" src="https://ifh.cc/g/ODqhnw.png"/>
-                                </div>
-                                <div
-                                    className="flex w-[11rem] h-[10rem] hover:scale-125 transition-transform ease-in-out duration-500">
-                                    <img className="rounded-xl" src="https://ifh.cc/g/fRFRkw.png"/>
-                                </div>
-                                <div
-                                    className="flex w-[11rem] h-[10rem] hover:scale-125 transition-transform ease-in-out duration-500">
-                                    <img className="rounded-xl" src="https://ifh.cc/g/Zf4TlH.png"/>
-                                </div>
-                            </div>
-                            <div className="flex flex-row space-x-7 mt-[1rem]">{/*시설사진*/}
-                                <div
-                                    className="flex w-[11rem] h-[10rem] hover:scale-125 transition-transform ease-in-out duration-500">
-                                    <img className="rounded-xl" src="https://ifh.cc/g/p8FalY.png"/>
-                                </div>
-                                <div
-                                    className="flex w-[11rem] h-[10rem] hover:scale-125 transition-transform ease-in-out duration-500">
-                                    <img className="rounded-xl" src="https://ifh.cc/g/yfCrXk.png"/>
-                                </div>
-                                <div
-                                    className="flex w-[11rem] h-[10rem] hover:scale-125 transition-transform ease-in-out duration-500">
-                                    <img className="rounded-xl" src="https://ifh.cc/g/4fpBhf.png"/>
-                                </div>
-                                <div
-                                    className="flex w-[11rem] h-[10rem] hover:scale-125 transition-transform ease-in-out duration-500">
-                                    <img className="rounded-xl" src="https://ifh.cc/g/oyVHYd.png"/>
-                                </div>
-                            </div>
+                    <div className="flex flex-col rounded-lg w-[50rem] h-[24rem]">
+                        <a className="text-lg font-bold ml-[1rem]">시설 사진</a>
+                        <div className="grid grid-cols-4 gap-7 mt-[1.2rem]">
+                            {/* Map through the facility pictures */}
+                            {productData.facility_pictures && productData.facility_pictures.length > 0 ? (
+                                productData.facility_pictures.map((imageUrl, index) => (
+                                    <div
+                                        key={index}
+                                        className="flex justify-center items-center w-[11rem] h-[10rem] hover:scale-125 transition-transform ease-in-out duration-500">
+                                        <img className="rounded-xl" src={imageUrl} alt={`Facility ${index + 1}`}/>
+                                    </div>
+                                ))
+                            ) : (
+                                <p>사진 데이터가 없습니다.</p>
+                            )}
                         </div>
+                    </div>
                     <div className="flex divider divide-gray-600 ml-[4rem] w-[60rem]"></div>
                     <div className="flex flex-col"> {/*하단 소개글*/}
                         <a className="text-lg font-bold ml-[1rem]">이용 후기</a>

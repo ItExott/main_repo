@@ -51,6 +51,14 @@ const Navbar = ({ loginStatus, setLoginStatus }) => {
         }
     }, [loginStatus, setLoginStatus]);
 
+    const gocart = () => {
+        if (!loginStatus) {
+            alert("로그인 후 이용할 수 있습니다.");
+        } else {
+            navigate("/Cart");
+        }
+    }
+
     // 드롭다운 표시 상태 관리
     const showDropdown = () => {
         if (timeoutRef.current) clearTimeout(timeoutRef.current);
@@ -67,10 +75,6 @@ const Navbar = ({ loginStatus, setLoginStatus }) => {
 
     const goweight = () => {
         navigate("/product_Main/weight");
-    };
-
-    const gocart = () => {
-        navigate("/Cart");
     };
 
     const gocrossfit = () => {
@@ -98,7 +102,8 @@ const Navbar = ({ loginStatus, setLoginStatus }) => {
                 setUserProfile(null); // 프로필 정보 초기화
                 sessionStorage.removeItem("loginStatus");
                 sessionStorage.removeItem("userProfile"); // sessionStorage에서 로그아웃 정보 제거
-                alert("로그아웃");
+                alert("로그아웃 되었습니다.");
+                navigate("/");
             }
         } catch (error) {
             alert("로그아웃에 실패했습니다.");

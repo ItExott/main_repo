@@ -54,10 +54,9 @@ db.connect(err => {
 });
 
 // 특정 제품 상세 조회 API
-app.get('/product/:id', (req, res) => {
+    app.get('/product/:id', (req, res) => {
     const prodid = req.params.id;
     const query = "SELECT * FROM Product WHERE prodid = ?";
-
     db.query(query, [prodid], (err, results) => {
         if (err) {
             console.error("Error fetching product data:", err);
@@ -66,7 +65,15 @@ app.get('/product/:id', (req, res) => {
         if (results.length === 0) {
             return res.status(404).send("Product not found");
         }
-        res.json(results[0]);
+        const product = results[0];
+        if (product.facility_pictures) {
+            try {
+                product.facility_pictures = JSON.parse(product.facility_pictures);
+            } catch (e) {
+                console.error("Error parsing facility_pictures:", e);
+            }
+        }
+        res.json(product);
     });
 });
 
