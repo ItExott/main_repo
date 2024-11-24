@@ -19,7 +19,7 @@ const Cartproduct = ({ item, onRemoveProduct }) => {
             </div>
             <div className="flex ml-auto justify-center items-center h-full pr-[3rem]">
                 <IoClose
-                    className="w-[2rem] h-[2rem] fill-gray-500 hover:scale-125 cursor-pointer transition-transform ease-in-out duration-500"
+                    className="w-[2rem] h-[2rem] fill-red-400 hover:scale-125 cursor-pointer transition-transform ease-in-out duration-500"
                     onClick={() => onRemoveProduct(item.prodid)}
                 />
             </div>

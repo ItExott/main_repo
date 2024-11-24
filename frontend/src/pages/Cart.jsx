@@ -118,8 +118,8 @@ const Cart = () => {
 
     return (
         <div className="flex flex-col mt-[1rem] h-full items-center justify-center mx-28">
-            <a className="flex items-center w-[62rem] font-bold text-xl justify-center">장바구니</a>
-            <div className="w-[62rem] border-b-2 border-gray-950 mt-4"></div>
+            <a className="flex items-center w-[62rem] text-red-400 font-bold text-xl justify-center">장바구니</a>
+            <div className="w-[62rem] border-b-2 border-red-400 mt-4"></div>
             <div className="flex flex-col w-[62rem] h-full mt-[1rem]">
                 <div className="flex flex-row">
                     <a className="text-red-400">{cartProducts.length}개 /</a> {/* 장바구니 아이템 수 표시 */}
@@ -137,11 +137,11 @@ const Cart = () => {
 
                 {/* 선택한 기간에 맞는 탭들 */}
                 <div
-                    className="flex flex-row w-[62rem] items-center justify-center shadow-xl h-[3rem] mt-[1rem] rounded-3xl bg-gray-300">
+                    className="flex flex-row w-[62rem] items-center justify-center shadow-xl h-[3rem] mt-[1rem] rounded-3xl bg-red-400">
                     <div className="flex h-full items-center justify-center w-1/4">
                         <a
                             className={`w-[14.3rem] cursor-pointer items-center justify-center flex rounded-3xl h-[2.5rem] transition-transform duration-300 ease-in-out transform ${
-                                selectedMonth === '1개월' ? 'bg-gray-100 text-red-400 translate-x-0' : 'bg-gray-300 text-gray-500 translate-x-[10px]'
+                                selectedMonth === '1개월' ? 'bg-gray-100 text-red-400 translate-x-0' : 'bg-red-400 text-white translate-x-[10px]'
                             }`}
                             onClick={() => handleClick('1개월')}
                         >
@@ -152,7 +152,7 @@ const Cart = () => {
                     <div className="flex w-1/4 items-center justify-center h-full">
                         <a
                             className={`w-[14.3rem] cursor-pointer items-center justify-center flex rounded-3xl h-[2.5rem] transition-transform duration-300 ease-in-out transform ${
-                                selectedMonth === '3개월' ? 'bg-gray-100 text-red-400 translate-x-0' : 'bg-gray-300 text-gray-500 translate-x-[10px]'
+                                selectedMonth === '3개월' ? 'bg-gray-100 text-red-400 translate-x-0' : 'bg-red-400 text-white translate-x-[10px]'
                             }`}
                             onClick={() => handleClick('3개월')}
                         >
@@ -163,7 +163,7 @@ const Cart = () => {
                     <div className="flex items-center justify-center w-1/4 h-full">
                         <a
                             className={`w-[14.3rem] cursor-pointer items-center justify-center flex rounded-3xl h-[2.5rem] transition-transform duration-300 ease-in-out transform ${
-                                selectedMonth === '6개월' ? 'bg-gray-100 text-red-400 translate-x-0' : 'bg-gray-300 text-gray-500 translate-x-[10px]'
+                                selectedMonth === '6개월' ? 'bg-gray-100 text-red-400 translate-x-0' : 'bg-red-400 text-white translate-x-[10px]'
                             }`}
                             onClick={() => handleClick('6개월')}
                         >
@@ -174,7 +174,7 @@ const Cart = () => {
                     <div className="flex items-center justify-center w-1/4 h-full">
                         <a
                             className={`w-[14.3rem] cursor-pointer items-center justify-center flex rounded-3xl h-[2.5rem] transition-transform duration-300 ease-in-out transform ${
-                                selectedMonth === '12개월' ? 'bg-gray-100 text-red-400 translate-x-0' : 'bg-gray-300 text-gray-500 translate-x-[10px]'
+                                selectedMonth === '12개월' ? 'bg-gray-100 text-red-400 translate-x-0' : 'bg-red-400 text-white translate-x-[10px]'
                             }`}
                             onClick={() => handleClick('12개월')}
                         >
@@ -182,7 +182,7 @@ const Cart = () => {
                         </a>
                     </div>
                 </div>
-                <div className="w-[62rem] border-b-2 border-gray-200 mt-[2rem]"></div>
+                <div className="w-[62rem] border-b-2 border-red-400 mt-[2rem]"></div>
 
                 {/* 결제 금액 관련 탭 내용들 */}
                 {activeTab === 'tab1' && (
@@ -194,7 +194,7 @@ const Cart = () => {
                             </div>
                             <div className="flex ml-[5rem] mt-[1rem] flex-row">
                                 <div className="flex items-start text-gray-950 w-1/2 text-lg">회원가 할인</div>
-                                <div className="flex justify-end mr-[7rem] text-blue-600 w-1/2">{`-${discountPrice.toLocaleString()}원`}</div>
+                                <div className="flex justify-end mr-[7rem] text-blue-500 w-1/2">{`-${discountPrice.toLocaleString()}원`}</div>
                             </div>
                             <div
                                 className="flex flex-row w-[60rem] mt-[1rem] rounded-2xl items-center shadow-xl h-[2.5rem] bg-red-100">
@@ -226,7 +226,7 @@ const Cart = () => {
                             </div>
                             <div className="flex ml-[5rem] mt-[1rem] flex-row">
                                 <div className="flex items-start text-gray-950 w-1/2 text-lg">회원가 할인</div>
-                                <div className="flex justify-end mr-[7rem] text-blue-600 w-1/2">-120,000원</div>
+                                <div className="flex justify-end mr-[7rem] text-blue-500 w-1/2">-120,000원</div>
                             </div>
                             <div
                                 className="flex flex-row w-[60rem] mt-[1rem] rounded-2xl items-center shadow-xl h-[2.5rem] bg-red-100">
@@ -259,7 +259,7 @@ const Cart = () => {
                             </div>
                             <div className="flex ml-[5rem] mt-[1rem] flex-row">
                                 <div className="flex items-start text-gray-950 w-1/2 text-lg">회원가 할인</div>
-                                <div className="flex justify-end mr-[7rem] text-blue-600 w-1/2">-120,000원</div>
+                                <div className="flex justify-end mr-[7rem] text-blue-500 w-1/2">-120,000원</div>
                             </div>
                             <div
                                 className="flex flex-row w-[60rem] mt-[1rem] rounded-2xl items-center shadow-xl h-[2.5rem] bg-red-100">
@@ -292,7 +292,7 @@ const Cart = () => {
                             </div>
                             <div className="flex ml-[5rem] mt-[1rem] flex-row">
                                 <div className="flex items-start text-gray-950 w-1/2 text-lg">회원가 할인</div>
-                                <div className="flex justify-end mr-[7rem] text-blue-600 w-1/2">-120,000원</div>
+                                <div className="flex justify-end mr-[7rem] text-blue-500 w-1/2">-120,000원</div>
                             </div>
                             <div
                                 className="flex flex-row w-[60rem] mt-[1rem] rounded-2xl items-center shadow-xl h-[2.5rem] bg-red-100">

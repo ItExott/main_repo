@@ -124,10 +124,10 @@ app.post('/api/signup', (req, res) => {
 
     // 로그인 API
     app.post('/api/login', (req, res) => {
-        const { userid, userpw } = req.body;
+        const { userid, userpw, profileimg, money } = req.body;
 
         const query = 'SELECT * FROM users WHERE userid = ? AND userpw = ?';
-        db.query(query, [userid, userpw], (err, results) => {
+        db.query(query, [userid, userpw, profileimg, money], (err, results) => {
             if (err) {
                 console.error('Database query error:', err);
                 return res.status(500).json({ success: false, message: 'Internal server error' });
@@ -137,13 +137,19 @@ app.post('/api/signup', (req, res) => {
                 req.session.userId = userid;
                 req.session.name = results[0].name;
                 req.session.profileimg = results[0].profileimg;
+                req.session.money = results[0].money;
 
                 req.session.save(err => {
                     if (err) {
                         console.error('Session save error:', err);
                         return res.status(500).json({ success: false, message: 'Session save error' });
                     }
-                    res.json({ success: true, name: results[0].name, message: 'Login successful' });
+                    res.json({
+                        success: true,
+                        name: results[0].name,
+                        profileimg : results[0].profileimg,
+                        money : results[0].money,
+                        message: 'Login successful' });
                 });
             } else {
                 res.json({ success: false, message: 'Invalid username or password' });
@@ -169,7 +175,8 @@ app.get('/api/userinfo', (req, res) => {
             success: true,
             userId: req.session.userId,
             name: req.session.name,
-            profileimg: req.session.profileimg
+            profileimg: req.session.profileimg,
+            money: req.session.money
         });
     } else {
         res.status(401).json({ success: false, message: 'User not logged in' });
@@ -386,7 +393,12 @@ app.delete('/cart-products/:prodid', async (req, res) => {
 app.get('/check-session', (req, res) => {
     // 세션에 userId가 존재하면 로그인된 상태
     if (req.session && req.session.userId) {
-        return res.json({ loggedIn: true, userId: req.session.userId, profileimg : req.session.profileimg});
+        return res.json({
+            loggedIn: true,
+            userId: req.session.userId,
+            profileimg : req.session.profileimg,
+            money : req.session.money
+        });
     } else {
         // 로그인되지 않았으면 false 반환
         return res.json({ loggedIn: false });
