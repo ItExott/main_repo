@@ -1,53 +1,76 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import Login from "../popup/Login.jsx";
 import { FaMoneyCheckDollar } from "react-icons/fa6";
+import { FaShoppingBasket } from "react-icons/fa";
 import axios from "axios";
 
 const Navbar = ({ loginStatus, setLoginStatus }) => {
     const navigate = useNavigate();
     const [isDropdownVisible, setDropdownVisible] = useState(false);
-    const timeoutRef = useRef(null); // 타이머를 추적하기 위한 ref
+    const [userProfile, setUserProfile] = useState(null); // 사용자 프로필 정보
+    const timeoutRef = useRef(null);
 
-    // 드롭다운 표시 상태를 처리하는 함수
+    // 새로고침 시 로그인 정보 유지
+    useEffect(() => {
+        const storedLoginStatus = sessionStorage.getItem("loginStatus");
+        const storedUserProfile = JSON.parse(sessionStorage.getItem("userProfile"));
+
+        if (storedLoginStatus === "true" && storedUserProfile) {
+            setLoginStatus(true);
+            setUserProfile(storedUserProfile);
+        } else {
+            setLoginStatus(false);
+            setUserProfile(null);
+        }
+    }, [setLoginStatus]);
+
+    // 사용자 정보 가져오기
+    useEffect(() => {
+        const fetchUserInfo = async () => {
+            try {
+                const response = await axios.get("http://localhost:8080/api/userinfo", { withCredentials: true });
+                if (response.data.loggedIn) {
+                    setLoginStatus(true);
+                    setUserProfile(response.data.user);
+                    sessionStorage.setItem("loginStatus", "true");
+                    sessionStorage.setItem("userProfile", JSON.stringify(response.data.user)); // sessionStorage에 저장
+                } else {
+                    setLoginStatus(false);
+                    setUserProfile(null); // 로그아웃 상태 처리
+                    sessionStorage.removeItem("loginStatus");
+                    sessionStorage.removeItem("userProfile");
+                }
+            } catch (error) {
+                console.error("사용자 정보 가져오기 실패:", error);
+            }
+        };
+
+        if (!loginStatus) {
+            fetchUserInfo(); // 로그인하지 않은 상태일 때만 사용자 정보 요청
+        }
+    }, [loginStatus, setLoginStatus]);
+
+    // 드롭다운 표시 상태 관리
     const showDropdown = () => {
-        if (timeoutRef.current) clearTimeout(timeoutRef.current); // 기존 타이머 취소
-        setDropdownVisible(true); // 즉시 드롭다운 표시
+        if (timeoutRef.current) clearTimeout(timeoutRef.current);
+        setDropdownVisible(true);
     };
 
     const hideDropdown = () => {
         timeoutRef.current = setTimeout(() => {
-            setDropdownVisible(false); // 일정 시간이 지난 후 드롭다운 숨김
-        }, 300); // 300ms 지연 (필요에 따라 조정 가능)
+            setDropdownVisible(false);
+        }, 300);
     };
 
-    const goclimbing = () => {
-        navigate("/product_Main/climbing");
-    };
-
-    const goswim = () => {
-        navigate("/product_Main/swim");
-    };
-
-    const gohome = () => {
-        navigate("/");
-    };
-
-    // 로그아웃 핸들러
-    const handleLogout = async () => {
-        try {
-            const response = await axios.post('http://localhost:8080/api/logout', {}, { withCredentials: true });
-            if (response.data.success) {
-                setLoginStatus(false); // 로그인 상태 해제
-                alert('Logged out successfully');
-            }
-        } catch (error) {
-            alert('로그아웃에 실패했습니다.');
-        }
-    };
+    const gohome = () => navigate("/");
 
     const goweight = () => {
         navigate("/product_Main/weight");
+    };
+
+    const gocart = () => {
+        navigate("/Cart");
     };
 
     const gocrossfit = () => {
@@ -58,11 +81,35 @@ const Navbar = ({ loginStatus, setLoginStatus }) => {
         navigate("/product_Main/pilates");
     };
 
+    const goclimbing = () => {
+        navigate("/product_Main/climbing");
+    };
+
+    const goswim = () => {
+        navigate("/product_Main/swim");
+    };
+
+    // 로그아웃 처리
+    const handleLogout = async () => {
+        try {
+            const response = await axios.post("http://localhost:8080/api/logout", {}, { withCredentials: true });
+            if (response.data.success) {
+                setLoginStatus(false);
+                setUserProfile(null); // 프로필 정보 초기화
+                sessionStorage.removeItem("loginStatus");
+                sessionStorage.removeItem("userProfile"); // sessionStorage에서 로그아웃 정보 제거
+                alert("로그아웃");
+            }
+        } catch (error) {
+            alert("로그아웃에 실패했습니다.");
+        }
+    };
+
     return (
         <div className="navbar bg-base-100">
             <div className="navbar-start">
-                <a onClick={gohome} className="btn btn-ghost w-[13rem] text-xl">
-                    <img alt="로고" src="https://ifh.cc/g/xrkNK1.png" />
+                <a onClick={gohome} className="btn btn-ghost w-full h-full text-xl">
+                    <img className="w-[14rem] h-[3rem]" alt="로고" src="https://ifh.cc/g/KMhc7f.png" />
                 </a>
             </div>
 
@@ -83,11 +130,21 @@ const Navbar = ({ loginStatus, setLoginStatus }) => {
                     >
                         <div className="ml-[18rem]">
                             <ul>
-                                <li className="cursor-pointer hover:scale-110 transition-transform ease-in-out duration-500" onClick={goweight}>헬스</li>
-                                <li className="cursor-pointer hover:scale-110 transition-transform ease-in-out duration-500" onClick={goswim}>수영</li>
-                                <li className="cursor-pointer hover:scale-110 transition-transform ease-in-out duration-500" onClick={goclimbing}>클라이밍</li>
-                                <li className="cursor-pointer hover:scale-110 transition-transform ease-in-out duration-500" onClick={gopilates}>필라테스</li>
-                                <li className="cursor-pointer hover:scale-110 transition-transform ease-in-out duration-500" onClick={gocrossfit}>크로스핏</li>
+                                <li className="cursor-pointer hover:scale-110 transition-transform ease-in-out duration-500"
+                                    onClick={goweight}>헬스
+                                </li>
+                                <li className="cursor-pointer hover:scale-110 transition-transform ease-in-out duration-500"
+                                    onClick={goswim}>수영
+                                </li>
+                                <li className="cursor-pointer hover:scale-110 transition-transform ease-in-out duration-500"
+                                    onClick={goclimbing}>클라이밍
+                                </li>
+                                <li className="cursor-pointer hover:scale-110 transition-transform ease-in-out duration-500"
+                                    onClick={gopilates}>필라테스
+                                </li>
+                                <li className="cursor-pointer hover:scale-110 transition-transform ease-in-out duration-500"
+                                    onClick={gocrossfit}>크로스핏
+                                </li>
                             </ul>
                         </div>
                         <div className="ml-[6rem]">
@@ -111,12 +168,13 @@ const Navbar = ({ loginStatus, setLoginStatus }) => {
             </div>
 
             <div className="navbar-end">
+                <div onClick={gocart} className="flex rounded-full w-[3rem] h-[3rem] border-[0.2rem] cursor-pointer hover:scale-110 transition-transform ease-in-out duration-500 mb-[0.38rem] mr-[0.7rem] border-red-400"><FaShoppingBasket className="w-[2.4rem] items-center justify-center fill-red-400 h-[2.4rem] ml-[0.1rem]"/></div>
                 <div className="dropdown dropdown-end">
                     <div tabIndex={0} role="btn" className="btn btn-ghost btn-circle avatar">
                         <div className="w-10 rounded-full">
                             <img
                                 alt="프로필 사진"
-                                src={loginStatus ? "https://ifh.cc/g/7ky5bT.jpg" : "https://ifh.cc/g/bFHjG0.png"}
+                                src={loginStatus && userProfile ? userProfile.profileimg : "https://ifh.cc/g/bFHjG0.png"}
                             />
                         </div>
                     </div>
@@ -129,8 +187,8 @@ const Navbar = ({ loginStatus, setLoginStatus }) => {
                         </li>
                         <li>
                             <div className="h-[4rem] items-center justify-center flex flex-row border-[0.1rem]">
-                                <FaMoneyCheckDollar className="h-[1.5rem] w-[1.5rem]" />
-                                <a className="whitespace-nowrap">보유 머니 : 5000원</a>
+                                <FaMoneyCheckDollar className="h-[1.5rem] w-[1.5rem]"/>
+                                <a className="whitespace-nowrap">보유 머니 : {userProfile?.money || 0}원</a>
                                 <a className="text-xs w-[1rem] h-[1rem] border-[0.1rem] whitespace-nowrap">충전</a>
                             </div>
                         </li>
@@ -142,7 +200,8 @@ const Navbar = ({ loginStatus, setLoginStatus }) => {
                             </li>
                         ) : (
                             <li className="mt-[0.2rem]">
-                                <a onClick={() => document.getElementById("my_modal_3").showModal()} className="font-bold">
+                                <a onClick={() => document.getElementById("my_modal_3").showModal()}
+                                   className="font-bold">
                                     Login
                                 </a>
                             </li>
@@ -152,7 +211,7 @@ const Navbar = ({ loginStatus, setLoginStatus }) => {
             </div>
 
             <dialog id="my_modal_3" className="modal">
-                <Login setLoginStatus={setLoginStatus} />
+                <Login setLoginStatus={setLoginStatus}/>
             </dialog>
         </div>
     );

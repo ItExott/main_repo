@@ -3,7 +3,6 @@ import { useNavigate } from 'react-router-dom';
 import { RiKakaoTalkFill } from "react-icons/ri";
 import { IoIosCloseCircleOutline } from "react-icons/io";
 import axios from 'axios';
-import Cookies from 'js-cookie'; // js-cookie 라이브러리 임포트
 
 const Login = ({ setLoginStatus }) => {
     const [ID, setID] = useState(''); // 사용자 아이디
@@ -13,13 +12,20 @@ const Login = ({ setLoginStatus }) => {
 
     const navigate = useNavigate();
 
-    // 컴포넌트가 마운트될 때 로그인 상태 확인 (쿠키에서 토큰 확인)
+    // 컴포넌트가 마운트될 때 로그인 상태 확인
     useEffect(() => {
-        const token = Cookies.get('auth_token'); // 쿠키에서 토큰 가져오기
-        if (token) {
-            setLoginStatus(true); // 토큰이 있으면 로그인 상태로 설정
-        }
-    }, [setLoginStatus, navigate]);
+        const checkLoginStatus = async () => {
+            try {
+                const response = await axios.get('http://localhost:8080/api/userinfo', { withCredentials: true });
+                if (response.data.loggedIn) {
+                    setLoginStatus(true); // 로그인 상태 업데이트
+                }
+            } catch (error) {
+                console.error('로그인 상태 확인 중 오류:', error);
+            }
+        };
+        checkLoginStatus();
+    }, [setLoginStatus]);
 
     // 로그인 모달 닫기
     const closeModal = () => {
@@ -40,16 +46,16 @@ const Login = ({ setLoginStatus }) => {
             const response = await axios.post(
                 'http://localhost:8080/api/login',
                 { userid: ID, userpw: PW },
-                { withCredentials: true } // 쿠키를 포함한 요청
+                { withCredentials: true } // 세션 쿠키 포함
             );
 
             if (response.data.success) {
-                // 로그인 성공 시 토큰을 쿠키에 저장
-                Cookies.set('auth_token', response.data.token, { expires: 7, path: '/' }); // 7일 동안 쿠키 저장
-
-                setLoginStatus(true);  // 로그인 상태 업데이트
+                setLoginStatus(true); // 로그인 상태 업데이트
                 alert(`Welcome, ${response.data.name}`); // 환영 메시지
                 closeModal(); // 모달 닫기
+
+                const currentPath = location.pathname; // 현재 경로 확인
+                navigate(currentPath); // 현재 페이지로 이동
             } else {
                 setError(response.data.message); // 로그인 실패 시 에러 메시지
             }
@@ -63,9 +69,14 @@ const Login = ({ setLoginStatus }) => {
 
     // 로그아웃 함수
     const handleLogout = () => {
-        Cookies.remove('auth_token'); // 쿠키에서 토큰 삭제
-        setLoginStatus(false); // 로그인 상태를 false로 설정
-        navigate('/login'); // 로그인 페이지로 리다이렉트
+        axios.post('http://localhost:8080/api/logout', {}, { withCredentials: true })
+            .then(() => {
+                setLoginStatus(false); // 로그인 상태를 false로 설정
+                navigate('/login'); // 로그인 페이지로 리다이렉트
+            })
+            .catch(error => {
+                console.error('로그아웃 오류:', error);
+            });
     };
 
     return (

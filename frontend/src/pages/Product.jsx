@@ -32,6 +32,31 @@ const Product= () => {
     const [isExpanded, setIsExpanded] = useState(false);
     const [isExpanded1, setIsExpanded1] = useState(false);
     const [isExpanded2, setIsExpanded2] = useState(false);
+    const [isLoggedIn, setIsLoggedIn] = useState(false);
+    const [userId, setUserId] = useState(null);
+
+    useEffect(() => {
+        // 로그인 상태 확인
+        const checkLoginStatus = async () => {
+            try {
+                const response = await axios.get('http://localhost:8080/api/userinfo', {
+                    withCredentials: true, // 세션을 확인하려면 반드시 필요
+                });
+
+                if (response.data.success) {
+                    setIsLoggedIn(true);
+                    setUserId(response.data.userId);
+                } else {
+                    setIsLoggedIn(false);
+                }
+            } catch (error) {
+                console.error('로그인 상태 확인 실패', error);
+            }
+        };
+
+        checkLoginStatus();
+    }, []);
+
 
     const toggleShowImages = () => {
         setShowFullImages(!showFullImages);
@@ -106,13 +131,14 @@ const Product= () => {
 
     return (
         <div className="flex flex-col h-full items-center justify-center mx-28">  {/*슬라이더 박스*/}
-            <BottomBox/>
-            <div className="flex justify-start flex-row rounded-3xl border-2 border-gray-950 w-[62rem] h-[22rem] mt-6 items-center">
+            <BottomBox productData={productData}/>
+            <div
+                className="flex justify-start flex-row rounded-3xl border-2 border-gray-950 w-[62rem] h-[22rem] mt-6 items-center">
                 <div className="flex flex-row items-center w-[42rem] h-[22rem]">
                     <img className="flex w-[42rem] h-[21.8rem] rounded-l-3xl" src={productData.prodpicture}/></div>
                 <div className="flex flex-col shadow-xl rounded-r-3xl items-center w-[20rem] h-[22rem]">
                     <div className="flex w-[10rem] mt-[2rem] h-[10rem]"> {productData.iconpicture ? (
-                        <img className="rounded-full" src={productData.iconpicture} alt="Product Logo" />
+                        <img className="rounded-full" src={productData.iconpicture} alt="Product Logo"/>
                     ) : (
                         <p>Loading...</p> // 데이터가 없을 때 보여줄 로더
                     )}
@@ -291,44 +317,44 @@ const Product= () => {
                         </div>
                     </div>
                     <div className="flex divider divide-gray-600 ml-[4rem] w-[60rem]"></div>
-                    <div className="flex flex-col rounded-lg w-[50rem] h-[24rem]">
-                        <a className="text-lg font-bold ml-[1rem]">시설 사진</a>
-                        <div className="flex flex-row space-x-7 mt-[1.2rem]">{/*시설사진*/}
-                            <div
-                                className="flex w-[11rem] h-[10rem] hover:scale-125 transition-transform ease-in-out duration-500">
-                                <img className="rounded-xl" src="https://ifh.cc/g/CoJTAC.png"/></div>
-                            <div
-                                className="flex w-[11rem] h-[10rem] hover:scale-125 transition-transform ease-in-out duration-500">
-                                <img className="rounded-xl" src="https://ifh.cc/g/ODqhnw.png"/>
+                        <div className="flex flex-col rounded-lg w-[50rem] h-[24rem]">
+                            <a className="text-lg font-bold ml-[1rem]">시설 사진</a>
+                            <div className="flex flex-row space-x-7 mt-[1.2rem]">{/*시설사진*/}
+                                <div
+                                    className="flex w-[11rem] h-[10rem] hover:scale-125 transition-transform ease-in-out duration-500">
+                                    <img className="rounded-xl" src="https://ifh.cc/g/CoJTAC.png"/></div>
+                                <div
+                                    className="flex w-[11rem] h-[10rem] hover:scale-125 transition-transform ease-in-out duration-500">
+                                    <img className="rounded-xl" src="https://ifh.cc/g/ODqhnw.png"/>
+                                </div>
+                                <div
+                                    className="flex w-[11rem] h-[10rem] hover:scale-125 transition-transform ease-in-out duration-500">
+                                    <img className="rounded-xl" src="https://ifh.cc/g/fRFRkw.png"/>
+                                </div>
+                                <div
+                                    className="flex w-[11rem] h-[10rem] hover:scale-125 transition-transform ease-in-out duration-500">
+                                    <img className="rounded-xl" src="https://ifh.cc/g/Zf4TlH.png"/>
+                                </div>
                             </div>
-                            <div
-                                className="flex w-[11rem] h-[10rem] hover:scale-125 transition-transform ease-in-out duration-500">
-                                <img className="rounded-xl" src="https://ifh.cc/g/fRFRkw.png"/>
-                            </div>
-                            <div
-                                className="flex w-[11rem] h-[10rem] hover:scale-125 transition-transform ease-in-out duration-500">
-                                <img className="rounded-xl" src="https://ifh.cc/g/Zf4TlH.png"/>
+                            <div className="flex flex-row space-x-7 mt-[1rem]">{/*시설사진*/}
+                                <div
+                                    className="flex w-[11rem] h-[10rem] hover:scale-125 transition-transform ease-in-out duration-500">
+                                    <img className="rounded-xl" src="https://ifh.cc/g/p8FalY.png"/>
+                                </div>
+                                <div
+                                    className="flex w-[11rem] h-[10rem] hover:scale-125 transition-transform ease-in-out duration-500">
+                                    <img className="rounded-xl" src="https://ifh.cc/g/yfCrXk.png"/>
+                                </div>
+                                <div
+                                    className="flex w-[11rem] h-[10rem] hover:scale-125 transition-transform ease-in-out duration-500">
+                                    <img className="rounded-xl" src="https://ifh.cc/g/4fpBhf.png"/>
+                                </div>
+                                <div
+                                    className="flex w-[11rem] h-[10rem] hover:scale-125 transition-transform ease-in-out duration-500">
+                                    <img className="rounded-xl" src="https://ifh.cc/g/oyVHYd.png"/>
+                                </div>
                             </div>
                         </div>
-                        <div className="flex flex-row space-x-7 mt-[1rem]">{/*시설사진*/}
-                            <div
-                                className="flex w-[11rem] h-[10rem] hover:scale-125 transition-transform ease-in-out duration-500">
-                                <img className="rounded-xl" src="https://ifh.cc/g/p8FalY.png"/>
-                            </div>
-                            <div
-                                className="flex w-[11rem] h-[10rem] hover:scale-125 transition-transform ease-in-out duration-500">
-                                <img className="rounded-xl" src="https://ifh.cc/g/yfCrXk.png"/>
-                            </div>
-                            <div
-                                className="flex w-[11rem] h-[10rem] hover:scale-125 transition-transform ease-in-out duration-500">
-                                <img className="rounded-xl" src="https://ifh.cc/g/4fpBhf.png"/>
-                            </div>
-                            <div
-                                className="flex w-[11rem] h-[10rem] hover:scale-125 transition-transform ease-in-out duration-500">
-                                <img className="rounded-xl" src="https://ifh.cc/g/oyVHYd.png"/>
-                            </div>
-                        </div>
-                    </div>
                     <div className="flex divider divide-gray-600 ml-[4rem] w-[60rem]"></div>
                     <div className="flex flex-col"> {/*하단 소개글*/}
                         <a className="text-lg font-bold ml-[1rem]">이용 후기</a>
@@ -501,8 +527,10 @@ const Product= () => {
                                         </div>
                                         <div className="flex flex-row ml-[1.4rem]">
                                             <LiaDumbbellSolid className="w-[1.5rem] h-[1.5rem] mt-[0.4rem] fill-black"/>
-                                            <LiaDumbbellSolid className="w-[1.5rem] h-[1.5rem] mt-[0.4rem] fill-gray-300"/>
-                                            <LiaDumbbellSolid className="w-[1.5rem] h-[1.5rem] mt-[0.4rem] fill-gray-300"/>
+                                            <LiaDumbbellSolid
+                                                className="w-[1.5rem] h-[1.5rem] mt-[0.4rem] fill-gray-300"/>
+                                            <LiaDumbbellSolid
+                                                className="w-[1.5rem] h-[1.5rem] mt-[0.4rem] fill-gray-300"/>
                                             <LiaDumbbellSolid
                                                 className="w-[1.5rem] h-[1.5rem] mt-[0.4rem] fill-gray-300"/>
                                         </div>
@@ -518,8 +546,10 @@ const Product= () => {
                         )}
                         {activeTab === '상품 문의' && (
                             <div>
-                                <div  onClick={() => setIsExpanded(!isExpanded)} className="flex mx-auto flex-row items-center mt-[1rem] hover:bg-gray-200 cursor-pointer bg-gray-100 shadow-xl border-[0.1rem] border-gray-600 rounded-lg w-[50rem] h-[7rem]">
-                                    <div className="flex flex-col h-[6rem] border-r-[0.1rem] border-gray-400 items-center w-[10rem]">
+                                <div onClick={() => setIsExpanded(!isExpanded)}
+                                     className="flex mx-auto flex-row items-center mt-[1rem] hover:bg-gray-200 cursor-pointer bg-gray-100 shadow-xl border-[0.1rem] border-gray-600 rounded-lg w-[50rem] h-[7rem]">
+                                    <div
+                                        className="flex flex-col h-[6rem] border-r-[0.1rem] border-gray-400 items-center w-[10rem]">
                                         <FaCircleUser className="flex mt-[0.6rem] h-[4rem] w-[4rem]"/>
                                         <a className="flex font-bold mt-[0.5rem] items-center text-xs">김기사</a>
                                     </div>
@@ -537,9 +567,11 @@ const Product= () => {
                                     </div>
                                     <div className="flex">
                                         {isExpanded ? (
-                                            <FaAngleUp className="flex items-center justify-center w-[2rem] h-[2rem] ml-[5rem]" />
+                                            <FaAngleUp
+                                                className="flex items-center justify-center w-[2rem] h-[2rem] ml-[5rem]"/>
                                         ) : (
-                                            <FaAngleDown className="flex items-center justify-center w-[2rem] h-[2rem] ml-[5rem]" />
+                                            <FaAngleDown
+                                                className="flex items-center justify-center w-[2rem] h-[2rem] ml-[5rem]"/>
                                         )}
                                     </div>
                                 </div>
@@ -555,7 +587,7 @@ const Product= () => {
                                         <div
                                             className="mt-[1rem] bg-gray-50 border-[0.1rem] border-gray-300 rounded-lg p-4 w-[48rem] mx-auto shadow-md">
                                             <div className="flex items-center flex-row">
-                                                <FaCheckCircle />
+                                                <FaCheckCircle/>
                                                 <a className="text-xm ml-[0.3rem] text-gray-700">답변 내용</a>
                                             </div>
                                             <p className="text-sm mt-2 text-gray-700">
@@ -588,14 +620,17 @@ const Product= () => {
                                     </div>
                                     <div className="flex">
                                         {isExpanded1 ? (
-                                            <FaAngleUp className="flex items-center justify-center w-[2rem] h-[2rem] ml-[5rem]" />
+                                            <FaAngleUp
+                                                className="flex items-center justify-center w-[2rem] h-[2rem] ml-[5rem]"/>
                                         ) : (
-                                            <FaAngleDown className="flex items-center justify-center w-[2rem] h-[2rem] ml-[5rem]" />
+                                            <FaAngleDown
+                                                className="flex items-center justify-center w-[2rem] h-[2rem] ml-[5rem]"/>
                                         )}
                                     </div>
                                 </div>
                                 {isExpanded1 && (
-                                    <div className="mt-2 bg-gray-50 border-[0.1rem] border-gray-300 rounded-lg p-4 w-[50rem] mx-auto shadow-md">
+                                    <div
+                                        className="mt-2 bg-gray-50 border-[0.1rem] border-gray-300 rounded-lg p-4 w-[50rem] mx-auto shadow-md">
                                         <p className="text-sm text-gray-700">
                                             안녕하세요, 고객님. 환불 관련 문의 사항에 대해 답변드립니다. 환불 절차는 구매일로부터 7일 이내에 신청 가능합니다.
                                         </p>
@@ -604,8 +639,10 @@ const Product= () => {
                                         </p>
                                     </div>
                                 )}
-                                <div  onClick={() => setIsExpanded2(!isExpanded2)} className="flex mx-auto flex-row items-center mt-[1rem] hover:bg-gray-200 cursor-pointer bg-gray-100 shadow-xl border-[0.1rem] border-gray-600 rounded-lg w-[50rem] h-[7rem]">
-                                    <div className="flex flex-col h-[6rem] border-r-[0.1rem] border-gray-400 items-center w-[10rem]">
+                                <div onClick={() => setIsExpanded2(!isExpanded2)}
+                                     className="flex mx-auto flex-row items-center mt-[1rem] hover:bg-gray-200 cursor-pointer bg-gray-100 shadow-xl border-[0.1rem] border-gray-600 rounded-lg w-[50rem] h-[7rem]">
+                                    <div
+                                        className="flex flex-col h-[6rem] border-r-[0.1rem] border-gray-400 items-center w-[10rem]">
                                         <FaCircleUser className="flex mt-[0.6rem] h-[4rem] w-[4rem]"/>
                                         <a className="flex font-bold mt-[0.5rem] items-center text-xs">김기사</a>
                                     </div>
@@ -623,14 +660,17 @@ const Product= () => {
                                     </div>
                                     <div className="flex">
                                         {isExpanded2 ? (
-                                            <FaAngleUp className="flex items-center justify-center w-[2rem] h-[2rem] ml-[5rem]" />
+                                            <FaAngleUp
+                                                className="flex items-center justify-center w-[2rem] h-[2rem] ml-[5rem]"/>
                                         ) : (
-                                            <FaAngleDown className="flex items-center justify-center w-[2rem] h-[2rem] ml-[5rem]" />
+                                            <FaAngleDown
+                                                className="flex items-center justify-center w-[2rem] h-[2rem] ml-[5rem]"/>
                                         )}
                                     </div>
                                 </div>
                                 {isExpanded2 && (
-                                    <div className="mt-2 bg-gray-50 border-[0.1rem] border-gray-300 rounded-lg p-4 w-[50rem] mx-auto shadow-md">
+                                    <div
+                                        className="mt-2 bg-gray-50 border-[0.1rem] border-gray-300 rounded-lg p-4 w-[50rem] mx-auto shadow-md">
                                         <p className="text-sm text-gray-700">
                                             안녕하세요, 고객님. 환불 관련 문의 사항에 대해 답변드립니다. 환불 절차는 구매일로부터 7일 이내에 신청 가능합니다.
                                         </p>

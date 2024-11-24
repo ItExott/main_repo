@@ -12,6 +12,7 @@ import 'swiper/css/scrollbar';
 import MainCard from "../components/MainCard.jsx";
 import Attendance from "../popup/Attendance";
 import Login from "../popup/Login.jsx";
+import axios from "axios";
 
 const Home = () => {
     const [isFocused, setIsFocused] = useState(false); // 검색창 포커스 상태
@@ -20,12 +21,36 @@ const Home = () => {
     const [isCalendarOpen, setIsCalendarOpen] = useState(false); // 출석체크 달력 팝업 상태
     const [isLoggedIn, setIsLoggedIn] = useState(false); // 로그인 상태 (로그인 여부)
 
+
     const location = useLocation();
     const { openLoginModal: locationOpenLoginModal = false } = location.state || {};
 
     const [openLoginModal, setOpenLoginModal] = useState(locationOpenLoginModal); // 초기값을 locationOpenLoginModal로 설정
     const inputRef = useRef(null);
 
+
+    const [userId, setUserId] = useState(null);
+    useEffect(() => {
+        // 로그인 상태 확인
+        const checkLoginStatus = async () => {
+            try {
+                const response = await axios.get('http://localhost:8080/api/userinfo', {
+                    withCredentials: true, // 세션을 확인하려면 반드시 필요
+                });
+
+                if (response.data.success) {
+                    setIsLoggedIn(true);
+                    setUserId(response.data.userId);
+                } else {
+                    setIsLoggedIn(false);
+                }
+            } catch (error) {
+                console.error('로그인 상태 확인 실패', error);
+            }
+        };
+
+        checkLoginStatus();
+    }, []);
 
     useEffect(() => {
         const handleBeforeUnload = () => {
