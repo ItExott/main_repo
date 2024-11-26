@@ -113,7 +113,11 @@ const Cart = () => {
     };
 
     const gobuyform = () => {
-        navigate("/Buyform");
+        if (cartProducts.length === 0) {
+            alert('구매할 상품이 없습니다.');
+        } else {
+            navigate("/Buyform");
+        }
     };
 
     return (

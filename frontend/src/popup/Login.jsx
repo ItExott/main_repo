@@ -14,17 +14,10 @@ const Login = ({ setLoginStatus }) => {
 
     // 컴포넌트가 마운트될 때 로그인 상태 확인
     useEffect(() => {
-        const checkLoginStatus = async () => {
-            try {
-                const response = await axios.get('http://localhost:8080/api/userinfo', { withCredentials: true });
-                if (response.data.loggedIn) {
-                    setLoginStatus(true); // 로그인 상태 업데이트
-                }
-            } catch (error) {
-                console.error('로그인 상태 확인 중 오류:', error);
-            }
-        };
-        checkLoginStatus();
+        const storedLoginStatus = sessionStorage.getItem('loginStatus');
+        if (storedLoginStatus === 'true') {
+            setLoginStatus(true); // 이미 로그인된 상태라면 로그인 상태 업데이트
+        }
     }, [setLoginStatus]);
 
     // 로그인 모달 닫기
@@ -51,7 +44,8 @@ const Login = ({ setLoginStatus }) => {
 
             if (response.data.success) {
                 setLoginStatus(true); // 로그인 상태 업데이트
-                alert(`Welcome, ${response.data.name}`); // 환영 메시지
+                alert(`${response.data.name}님 환영합니다.`); // 환영 메시지
+                sessionStorage.setItem('loginStatus', 'true');
                 closeModal(); // 모달 닫기
 
                 const currentPath = location.pathname; // 현재 경로 확인
@@ -67,17 +61,6 @@ const Login = ({ setLoginStatus }) => {
         }
     };
 
-    // 로그아웃 함수
-    const handleLogout = () => {
-        axios.post('http://localhost:8080/api/logout', {}, { withCredentials: true })
-            .then(() => {
-                setLoginStatus(false); // 로그인 상태를 false로 설정
-                navigate('/login'); // 로그인 페이지로 리다이렉트
-            })
-            .catch(error => {
-                console.error('로그아웃 오류:', error);
-            });
-    };
 
     return (
         <div className="flex flex-col h-[34rem] bg-white items-center justify-center">

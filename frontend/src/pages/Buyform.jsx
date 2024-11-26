@@ -1,7 +1,10 @@
 import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import axios from "axios";
+import { MdCheckBoxOutlineBlank } from "react-icons/md";
+import {FaPlaystation, FaRegSquareCheck} from "react-icons/fa6";
 
-const Buyform = () => {
+const Buyform = ({ money, setMoney }) => {
     const [cartProducts, setCartProducts] = useState([]);
     const [activePaymentMethod, setActivePaymentMethod] = useState("무통장");
     const [selectedBank, setSelectedBank] = useState("농협은행");
@@ -16,6 +19,69 @@ const Buyform = () => {
     const [phoneNumber, setPhoneNumber] = useState("");
     const [totalPrice, setTotalPrice] = useState(0); // 총 상품 금액
     const [discountPrice, setDiscountPrice] = useState(0); // 할인 금액
+    const [name, setName] = useState(""); // 추가된 상태
+    const [isUserInfoFilled, setIsUserInfoFilled] = useState(false);
+    const [isbuyModalOpen, setIsbuyModalOpen] = useState(false);  // 팝업 상태
+
+
+
+    const fetchUserData = async () => {
+        try {
+            const response = await axios.get("http://localhost:8080/api/userinfo", { withCredentials: true });
+            if (response.data.success) {
+                const { name, phonenumber, money } = response.data;
+                setName(name); // 이름 업데이트
+                setMoney(money);
+                setPhoneNumber(phonenumber); // 전화번호 업데이트
+            } else {
+                // 성공하지 않은 응답 처리
+                console.error("Failed to fetch user info:", response.data.message);
+                alert(response.data.message || "사용자 정보를 가져오는 데 실패했습니다.");
+            }
+        } catch (err) {
+            console.error("Error fetching user info:", err);
+            alert("서버와의 연결에 문제가 발생했습니다.");
+        }
+    };
+
+    useEffect(() => {
+    const fetchMoneyData = async () => {
+        try {
+            const response = await axios.get("http://localhost:8080/api/userinfo", { withCredentials: true });
+            if (response.data.success) {
+                const { money } = response.data;
+                setMoney(money);
+            } else {
+                // 성공하지 않은 응답 처리
+                console.error("Failed to fetch user info:", response.data.message);
+                alert(response.data.message || "사용자 정보를 가져오는 데 실패했습니다.");
+            }
+        } catch (err) {
+            console.error("Error fetching user info:", err);
+            alert("서버와의 연결에 문제가 발생했습니다.");
+        }
+    };
+    fetchMoneyData();
+    }, []);
+
+    const [isClicked, setIsClicked] = useState(false);  // 클릭 상태를 관리하는 state
+
+    const handleClick = () => {
+        setIsClicked(!isClicked);  // 클릭 시 클릭 상태를 토글
+    };
+
+    const handleUseCurrentUserInfo = async () => {
+        if (!isUserInfoFilled) {
+            // Fill the user information
+            await fetchUserData();
+            setIsUserInfoFilled(true);  // Mark user info as filled
+        } else {
+            // Reset the user information
+            setName("");  // Reset name
+            setPhoneNumber("");  // Reset phone number
+            setIsUserInfoFilled(false);  // Mark user info as reset
+        }
+    };
 
     const handlePhoneNumberChange = (e) => {
         const value = e.target.value;
@@ -122,6 +188,56 @@ const Buyform = () => {
         { name: "수협은행", account: "345-678-9012" },
     ];
 
+    const handleSubmit = () => {
+        // 필수 입력값 체크
+        if (!name || !phoneNumber) {
+            alert("구매자 정보 입력이 다되지 않았습니다.");
+            return; // 알림 후 함수 종료
+        }
+        if (!isClicked) {
+            alert("결제 수단을 선택해주세요");
+            return; // 알림 후 함수 종료
+        }
+        if (!startDate) {
+            alert("시작 날짜를 입력해주세요");
+            return; // 알림 후 함수 종료
+        }
+
+        // 모든 체크가 완료되었을 때 팝업 열기
+        setIsbuyModalOpen(true);
+    };
+
+    const handleAgree = async () => {
+        try {
+            const amountToDeduct = totalPrice - discountPrice; // The final payment amount
+            const response = await axios.post("http://localhost:8080/api/deductMoney",
+                { amount: amountToDeduct },
+                { withCredentials: true }
+            );
+
+            if (response.data.success) {
+                const updatedMoney = sessionStorage.getItem("money") - amountToDeduct;
+                sessionStorage.setItem("money", updatedMoney);
+                setMoney(updatedMoney); // 부모 상태 업데이트
+                alert("결제가 완료 되었습니다.");
+                setIsbuyModalOpen(false); // 팝업 닫기
+                navigate("/"); // 홈으로 이동
+            } else {
+                alert(response.data.message || "결제 실패");
+            }
+        } catch (error) {
+            console.error("Error during payment:", error);
+            alert("결제 중 문제가 발생했습니다.");
+        }
+    };
+
+    const navigate = useNavigate();
+
+    const handleDisagree = () => {
+        // 미동의 버튼 클릭 시 팝업 닫기
+        alert("결제가 취소되었습니다.");
+        setIsbuyModalOpen(false);  // 팝업 닫기
+    };
 
     return (
         <div className="flex flex-col mt-[1rem] h-full items-center justify-center mx-28">
@@ -164,34 +280,60 @@ const Buyform = () => {
                         <p className="font-bold text-lg text-red-400">구매자 정보</p>
                         <div className="flex flex-col gap-2 mt-[1.5rem]">
                             <div className="flex flex-row gap-2">
-                            <input type="text" placeholder="이름" className="border p-2 rounded-lg w-2/5"/>
-                            {/* 성별 선택 */}
-                            <div className="flex gap-4 w-1/5">
-                                <div
-                                    className={`cursor-pointer flex items-center justify-center w-1/2 p-2 border rounded-lg ${
-                                        selectedGender === "남성" ? "bg-red-400 text-white" : ""
-                                    }`}
-                                    onClick={() => setSelectedGender("남성")}
-                                >
-                                    남성
+                                <input
+                                    type="text"
+                                    placeholder="이름"
+                                    value={name} // 사용자 이름 상태와 바인딩
+                                    onChange={(e) => setName(e.target.value)} // 수동 입력도 가능하게 처리
+                                    className="border p-2 rounded-lg w-2/5"
+                                />
+                                {/* 성별 선택 */}
+                                <div className="flex gap-4 w-1/5">
+                                    <div
+                                        className={`cursor-pointer flex items-center justify-center w-1/2 p-2 border rounded-lg ${
+                                            selectedGender === "남성" ? "bg-red-400 text-white" : ""
+                                        }`}
+                                        onClick={() => setSelectedGender("남성")}
+                                    >
+                                        남성
+                                    </div>
+                                    <div
+                                        className={`cursor-pointer flex items-center justify-center w-1/2 p-2 border rounded-lg ${
+                                            selectedGender === "여성" ? "bg-red-400 text-white" : ""
+                                        }`}
+                                        onClick={() => setSelectedGender("여성")}
+                                    >
+                                        여성
+                                    </div>
                                 </div>
+                                {/* 현재 사용자 정보 체크 버튼 */}
                                 <div
-                                    className={`cursor-pointer flex items-center justify-center w-1/2 p-2 border rounded-lg ${
-                                        selectedGender === "여성" ? "bg-red-400 text-white" : ""
-                                    }`}
-                                    onClick={() => setSelectedGender("여성")}
+                                    className={`cursor-pointer flex items-center justify-center p-2 border rounded-lg ${isUserInfoFilled ? "bg-red-400 text-white" : ""}`}
+                                    onClick={handleUseCurrentUserInfo} // 사용자 정보 자동 입력 실행
                                 >
-                                    여성
+                                    {isUserInfoFilled ? (
+                                        <>
+                                            <FaRegSquareCheck className="mr-2 flex mb-[0.1rem]"/> {/* Icon for "사용" */}
+                                            현재 사용자 정보
+                                        </>
+                                    ) : (
+                                        <>
+                                            <MdCheckBoxOutlineBlank
+                                                className="mr-2 mb-[0.1rem]"/> {/* Icon for "사용 안함" */}
+                                            현재 사용자 정보
+                                        </>
+                                    )}
                                 </div>
-                            </div>
                             </div>
 
                             {/* 휴대폰 번호 */}
                             <input
                                 type="text"
                                 placeholder="휴대폰 번호"
-                                value={phoneNumber}
-                                onChange={handlePhoneNumberChange} className="border p-2 rounded-lg w-full"/>
+                                value={phoneNumber} // 사용자 전화번호 상태와 바인딩
+                                onChange={(e) => setPhoneNumber(e.target.value)}
+                                className="border p-2 rounded-lg w-full"
+                            />
 
                             {/* 쿠폰 선택 */}
                             <div
@@ -215,7 +357,8 @@ const Buyform = () => {
 
                             {/* 쿠폰 선택 팝업 */}
                             {isCouponPopupOpen && (
-                                <div className="fixed inset-0 bg-gray-700 bg-opacity-50 flex items-center justify-center z-50">
+                                <div
+                                    className="fixed inset-0 bg-gray-700 bg-opacity-50 flex items-center justify-center z-50">
                                     <div className="bg-white p-4 rounded-lg shadow-lg w-[80%] sm:w-[40%]">
                                         <p className="font-bold mb-4">쿠폰 선택</p>
                                         {/* 기존 쿠폰 리스트 */}
@@ -251,9 +394,6 @@ const Buyform = () => {
                                 </div>
                             )}
 
-
-                            {/* 마일리지 사용 */}
-                            <input type="text" placeholder="마일리지 사용" className="border p-2 rounded-lg w-full"/>
                         </div>
                     </div>
 
@@ -422,9 +562,19 @@ const Buyform = () => {
 
                                 {activePaymentMethod === "짐머니" && (
                                     <div
-                                        className="flex flex-col mt-[0.5rem] p-4 rounded-lg overflow-hidden transition-all duration-300">
+                                        className="flex flex-col mt-[0.5rem] p-4 rounded-lg flow-hidden items-center transition-all duration-300">
                                         <p className="text-lg text-red-400">간편 결제</p>
-                                        <div className="mt-[1rem] flex items-center justify-center text-white rounded-xl w-full h-[3rem] bg-red-400">보유 포인트: 5,000원</div>
+                                        <div
+                                            onClick={handleClick}
+                                            className={`mt-[1rem] flex-col justify-center flex cursor-pointer hover:scale-110 transition-transform ease-in-out duration-500 h-[7rem] p-4 text-red-400 border-[0.1rem] border-red-400 rounded-xl w-[22rem] ${isClicked ? "bg-red-400 text-white" : "bg-white"}`}
+                                        >
+                                            <div className="flex flex-row mb-[1.3rem] items-center">
+                                                <a className="text-sm">핏머니 ·</a>
+                                                <FaPlaystation className="flex text-sm ml-[0.1rem]"/>
+                                                <a className="text-sm">PLAY 증권</a>
+                                            </div>
+                                            <a className="flex text-xl">보유 핏머니: {money.toLocaleString()}원</a>
+                                        </div>
                                     </div>
                                 )}
                             </div>
@@ -432,7 +582,8 @@ const Buyform = () => {
                     </div>
 
                     {/* 운동 시작일 */}
-                    <div className="flex flex-col border-[0.15rem] shadow-xl rounded-xl p-4 border-red-400 w-[62rem] mt-4">
+                    <div
+                        className="flex flex-col border-[0.15rem] shadow-xl rounded-xl p-4 border-red-400 w-[62rem] mt-4">
                         <p className="font-bold text-lg mt-[0.5rem] text-red-400">운동 시작일</p>
                         <input
                             type="date"
@@ -459,10 +610,32 @@ const Buyform = () => {
                             <p className="text-red-400 text-xl mt-[1rem]">{`${(totalPrice - discountPrice).toLocaleString()}원`}</p>
                         </div>
                         <div
-                            className="flex justify-center mt-4 p-4 bg-red-400 text-white font-bold rounded-lg cursor-pointer hover:scale-105 transition-transform ease-in-out duration-500"
+                            onClick={handleSubmit} className="flex justify-center mt-4 p-4 bg-red-400 text-white font-bold rounded-lg cursor-pointer hover:scale-105 transition-transform ease-in-out duration-500"
                         >
                             결제하기
                         </div>
+
+                        {isbuyModalOpen && (
+                            <div className="fixed inset-0 flex justify-center items-center bg-gray-500 bg-opacity-50">
+                                <div className="bg-white p-6 rounded-lg shadow-lg w-[20rem] text-center">
+                                    <h2 className="text-xl mb-4">동의 하시겠습니까?</h2>
+                                    <div className="flex justify-around">
+                                        <button
+                                            onClick={handleAgree}
+                                            className="bg-red-400 text-white w-[5rem] p-2 rounded-lg cursor-pointer hover:scale-110 transition-transform ease-in-out duration-500"
+                                        >
+                                            동의
+                                        </button>
+                                        <button
+                                            onClick={handleDisagree}
+                                            className="text-red-400 border-[0.1rem] cursor-pointer hover:scale-110 transition-transform ease-in-out duration-500 border-red-400 w-[5rem] p-2 rounded-lg"
+                                        >
+                                            미동의
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        )}
                     </div>
                 </>
             )}

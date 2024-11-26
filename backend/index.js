@@ -10,7 +10,7 @@ app.use(session({
     secret: 'your-secret-key',  // Replace with your secret key
     resave: false,
     saveUninitialized: true,
-    cookie: { secure: false }  // For development purposes; set to true for HTTPS in production
+    cookie: { maxAge: 60 * 60 * 1000 }  // For development purposes; set to true for HTTPS in production
 }));
 
 // CORS 설정
@@ -22,18 +22,6 @@ app.use(cors({
 // JSON 요청 본문 처리
 app.use(express.json());
 
-// 세션 설정 (메모리 기반)
-app.use(session({
-    secret: 'your-secret-key', // 세션 암호화 키
-    resave: false, // 세션이 변경된 경우에만 저장
-    saveUninitialized: false, // 초기화되지 않은 세션 저장 안 함
-    cookie: {
-        maxAge: 3600000, // 세션 만료 시간: 1시간
-        httpOnly: true, // JavaScript로 쿠키 접근 차단
-        secure: false, // HTTPS 환경이 아닌 경우 false
-        sameSite: 'None' // 크로스 오리진 요청 허용
-    }
-}));
 
 // MySQL 데이터베이스 연결 설정
 const db = mysql.createConnection({
@@ -138,6 +126,7 @@ app.post('/api/signup', (req, res) => {
                 req.session.name = results[0].name;
                 req.session.profileimg = results[0].profileimg;
                 req.session.money = results[0].money;
+                req.session.phonenumber = results[0].phonenumber;
 
                 req.session.save(err => {
                     if (err) {
@@ -148,8 +137,9 @@ app.post('/api/signup', (req, res) => {
                         success: true,
                         name: results[0].name,
                         profileimg : results[0].profileimg,
+                        phonenumber: results[0].phonenumber,
                         money : results[0].money,
-                        message: 'Login successful' });
+                        message: '로그인 성공' });
                 });
             } else {
                 res.json({ success: false, message: 'Invalid username or password' });
@@ -171,14 +161,33 @@ app.post('/api/logout', (req, res) => {
 // 유저 세션 정보 확인 API
 app.get('/api/userinfo', (req, res) => {
     if (req.session && req.session.userId) {
-        res.json({
-            success: true,
-            userId: req.session.userId,
-            name: req.session.name,
-            profileimg: req.session.profileimg,
-            money: req.session.money
+        const userId = req.session.userId;
+
+        const query = 'SELECT money FROM users WHERE userId = ?';
+
+        db.query(query, [userId], (err, results) => {
+            if (err) {
+                console.error('DB 쿼리 오류:', err);
+                return res.status(500).json({ success: false, message: 'Database error' });
+            }
+
+            if (results.length > 0) {
+                const money = results[0].money;
+                res.json({
+                    success: true,
+                    userId: req.session.userId,
+                    name: req.session.name,
+                    profileimg: req.session.profileimg,
+                    phonenumber: req.session.phonenumber,
+                    money: money
+                });
+            } else {
+                console.log("사용자가 존재하지 않음");
+                return res.status(404).json({ success: false, message: 'User not found' });
+            }
         });
     } else {
+        console.log("로그인되지 않은 상태");
         res.status(401).json({ success: false, message: 'User not logged in' });
     }
 });
@@ -404,6 +413,72 @@ app.get('/check-session', (req, res) => {
         return res.json({ loggedIn: false });
     }
 });
+
+app.post("/api/charge", (req, res) => {
+    const { userId, chargeAmount } = req.body;
+
+    // 금액이 0 이상인 경우에만 처리
+    if (chargeAmount > 0) {
+        // 현재 사용자의 money 필드를 업데이트하는 SQL 쿼리
+        const query = 'UPDATE users SET money = money + ? WHERE userId = ?';
+
+        // 쿼리 실행
+        db.query(query, [chargeAmount, userId], (err, results) => {
+            if (err) {
+                console.error('DB 업데이트 오류:', err);
+                return res.status(500).json({ success: false, message: '서버 오류' });
+            }
+
+            if (results.affectedRows > 0) {
+                // 충전 성공 시
+                return res.json({ success: true, message: '충전 완료' });
+            } else {
+                // 사용자가 존재하지 않는 경우
+                return res.status(404).json({ success: false, message: '유저가 존재하지 않거나 충전 실패' });
+            }
+        });
+    } else {
+        return res.status(400).json({ success: false, message: '올바른 금액을 입력하세요.' });
+    }
+});
+
+app.post('/api/deductMoney', (req, res) => {
+    const { amount } = req.body;  // The amount to deduct
+
+    // You should pass the logged-in user's ID here (assuming it's available)
+    const userId = req.session.userId;  // Adjust this based on your auth method
+
+    // Fetch the user's current money
+    db.query('SELECT money FROM users WHERE userid = ?', [userId], (err, results) => {
+        if (err) {
+            console.error('Error fetching user money:', err);
+            return res.status(500).json({ success: false, message: '서버 오류' });
+        }
+
+        if (results.length === 0) {
+            return res.status(404).json({ success: false, message: '사용자 정보를 찾을 수 없습니다.' });
+        }
+
+        const currentMoney = results[0].money;
+
+        // Check if user has enough money
+        if (currentMoney < amount) {
+            return res.status(400).json({ success: false, message: '잔액이 부족합니다.' });
+        }
+
+        // Deduct money from the user's balance
+        const newMoney = currentMoney - amount;
+        db.query('UPDATE users SET money = ? WHERE userid = ?', [newMoney, userId], (err, results) => {
+            if (err) {
+                console.error('Error updating user money:', err);
+                return res.status(500).json({ success: false, message: '서버 오류' });
+            }
+
+            return res.status(200).json({ success: true, message: '결제가 완료되었습니다.' });
+        });
+    });
+});
+
 
 
 // 서버 시작

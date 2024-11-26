@@ -25,13 +25,13 @@ function App() {
     // 로그인 상태 확인 및 userInfo 가져오기
     useEffect(() => {
         const storedLoginStatus = sessionStorage.getItem("loginStatus");
-        const storedUserProfile = JSON.parse(sessionStorage.getItem("userProfile"));
+        const storedUserProfile = sessionStorage.getItem("userProfile");
 
         if (storedLoginStatus === "true" && storedUserProfile) {
+            const parsedUserProfile = JSON.parse(storedUserProfile);
             setLoginStatus(true);
-            setUserProfile(storedUserProfile);
-            // 사용자 정보 API에서 가져오기
-            fetchUserInfo(); // 사용자 정보 가져오는 함수 호출
+            setUserProfile(parsedUserProfile);
+            setMoney(Number(sessionStorage.getItem("money"))); // sessionStorage에서 금액을 가져와 상태에 반영
         } else {
             setLoginStatus(false);
             setUserProfile(null);
@@ -39,30 +39,24 @@ function App() {
         }
     }, []); // 컴포넌트 마운트 시 한번만 실행
 
-
     // API 호출로 사용자 정보 (money와 profileimg) 가져오기
     const fetchUserInfo = async () => {
         try {
             const response = await axios.get("http://localhost:8080/api/userinfo", { withCredentials: true });
-            console.log(response.data); // Log the response to check if profileimg is present
 
             // 로그인 성공 여부 확인
             if (response.data.success) {
-                setMoney(response.data.money); // API 응답에서 money 값을 상태로 설정
+                const data = response.data;
+                setMoney(data.money); // 금액 상태 업데이트
                 setUserProfile({
-                    profileimg: response.data.profileimg, // 프로필 이미지를 상태로 설정
-                    name: response.data.name, // 사용자 이름도 설정
-                    userId: response.data.userId, // 사용자 아이디도 설정
-                    ...response.data // 여기에 다른 사용자 정보를 포함할 수 있음
+                    profileimg: data.profileimg,
+                    name: data.name,
+                    userId: data.userId,
+                    ...data
                 });
                 // sessionStorage에도 저장
-                sessionStorage.setItem("money", response.data.money);
-                sessionStorage.setItem("userProfile", JSON.stringify({
-                    profileimg: response.data.profileimg,
-                    name: response.data.name,
-                    userId: response.data.userId,
-                    ...response.data
-                }));
+                sessionStorage.setItem("money", data.money); // sessionStorage에 금액 저장
+                sessionStorage.setItem("userProfile", JSON.stringify(data)); // sessionStorage에 사용자 정보 저장
             } else {
                 setMoney(0); // 로그인되지 않은 경우 money는 0으로 설정
                 setUserProfile(null); // 로그인되지 않으면 프로필 정보 삭제
@@ -74,23 +68,53 @@ function App() {
         }
     };
 
+    useEffect(() => {
+        if (loginStatus && !userProfile) { // 로그인 상태인데 사용자 프로필이 없을 경우에만 fetchUserInfo 호출
+            fetchUserInfo();
+        }
+    }, [loginStatus, userProfile]); // loginStatus가 true일 때만 fetchUserInfo를 호출
+
+    const handleLogout = async () => {
+        try {
+            const response = await axios.post("http://localhost:8080/api/logout", {}, { withCredentials: true });
+            if (response.data.success) {
+                setLoginStatus(false);
+                setUserProfile(null); // 프로필 이미지 및 사용자 정보 초기화
+                setMoney(0); // 금액 초기화
+                sessionStorage.removeItem("loginStatus");
+                sessionStorage.removeItem("userProfile");
+                sessionStorage.removeItem("money");
+            }
+        } catch (error) {
+            console.error("로그아웃 실패:", error);
+        }
+    };
+
     return (
         <div className="App">
-            <Navbar loginStatus={loginStatus} setLoginStatus={setLoginStatus} userProfile={userProfile} money={money}/>
+            <Navbar
+                loginStatus={loginStatus}
+                setLoginStatus={setLoginStatus}
+                userProfile={userProfile}
+                setUserProfile={setUserProfile}
+                money={money}
+                setMoney={setMoney}
+                handleLogout={handleLogout}
+            />
             <Routes>
-                <Route path="/Cart" element={<Cart/>}/>
-                <Route path="/Buyform" element={<Buyform/>}/>
-                <Route path="/Find_Id" element={<Find_Id/>}/>
-                <Route path="/Find_Id_Check" element={<Find_Id_Check/>}/>
-                <Route path="/Find_Pw" element={<Find_Pw/>}/>
-                <Route path="/Find_Pw_Check" element={<Find_Pw_Check/>}/>
-                <Route path="/Agree_to_terms/MBL_CRTFC" element={<MBL_CRTFC/>}/>
-                <Route path="/Agree_to_terms/MBL_CRTFC/SignUp" element={<SignUp/>}/>
-                <Route path="/Complete_SignUp" element={<Complete_SignUp/>}/>
-                <Route path="/Agree_to_terms" element={<Agree_to_terms/>}/>
-                <Route path="/Product_Main/:category" element={<Product_Main/>}/>
-                <Route path="/product/:id" element={<Product/>}/>
-                <Route path="/" element={<Home/>}/>
+                <Route path="/Cart" element={<Cart />} />
+                <Route path="/Buyform" element={<Buyform money={money} setMoney={setMoney} />} />
+                <Route path="/Find_Id" element={<Find_Id />} />
+                <Route path="/Find_Id_Check" element={<Find_Id_Check />} />
+                <Route path="/Find_Pw" element={<Find_Pw />} />
+                <Route path="/Find_Pw_Check" element={<Find_Pw_Check />} />
+                <Route path="/Agree_to_terms/MBL_CRTFC" element={<MBL_CRTFC />} />
+                <Route path="/Agree_to_terms/MBL_CRTFC/SignUp" element={<SignUp />} />
+                <Route path="/Complete_SignUp" element={<Complete_SignUp />} />
+                <Route path="/Agree_to_terms" element={<Agree_to_terms />} />
+                <Route path="/Product_Main/:category" element={<Product_Main />} />
+                <Route path="/product/:id" element={<Product />} />
+                <Route path="/" element={<Home />} />
             </Routes>
         </div>
     );
