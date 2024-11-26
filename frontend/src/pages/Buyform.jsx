@@ -24,7 +24,6 @@ const Buyform = ({ money, setMoney }) => {
     const [isbuyModalOpen, setIsbuyModalOpen] = useState(false);  // 팝업 상태
 
 
-
     const fetchUserData = async () => {
         try {
             const response = await axios.get("http://localhost:8080/api/userinfo", { withCredentials: true });

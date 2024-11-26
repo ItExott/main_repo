@@ -16,6 +16,7 @@ import "./app.css";
 import Cart from "./pages/Cart.jsx";
 import MBL_CRTFC from "./pages/MBL_CRTFC.jsx";
 import Buyform from "./pages/Buyform.jsx";
+import MyPage from "./pages/MyPage.jsx";
 
 function App() {
     const [loginStatus, setLoginStatus] = useState(false);
@@ -103,6 +104,7 @@ function App() {
             />
             <Routes>
                 <Route path="/Cart" element={<Cart />} />
+                <Route path="/MyPage" element={<MyPage/>} />
                 <Route path="/Buyform" element={<Buyform money={money} setMoney={setMoney} />} />
                 <Route path="/Find_Id" element={<Find_Id />} />
                 <Route path="/Find_Id_Check" element={<Find_Id_Check />} />
@@ -113,7 +115,7 @@ function App() {
                 <Route path="/Complete_SignUp" element={<Complete_SignUp />} />
                 <Route path="/Agree_to_terms" element={<Agree_to_terms />} />
                 <Route path="/Product_Main/:category" element={<Product_Main />} />
-                <Route path="/product/:id" element={<Product />} />
+                <Route path="/product/:id" element={<Product userProfile={userProfile} />} />
                 <Route path="/" element={<Home />} />
             </Routes>
         </div>

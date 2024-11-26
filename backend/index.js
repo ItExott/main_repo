@@ -44,6 +44,8 @@ db.connect(err => {
 // 특정 제품 상세 조회 API
     app.get('/product/:id', (req, res) => {
     const prodid = req.params.id;
+    const userId = req.session.userId;
+
     const query = "SELECT * FROM Product WHERE prodid = ?";
     db.query(query, [prodid], (err, results) => {
         if (err) {
@@ -54,6 +56,16 @@ db.connect(err => {
             return res.status(404).send("Product not found");
         }
         const product = results[0];
+
+        if (userId) {
+            const addRecentViewedQuery = `INSERT INTO recent_viewed_products (userId, prodid) VALUES (?, ?)`;
+            db.query(addRecentViewedQuery, [userId, prodid], (err) => {
+                if (err) {
+                    console.error("Error adding product to recent viewed:", err);
+                }
+            });
+        }
+
         if (product.facility_pictures) {
             try {
                 product.facility_pictures = JSON.parse(product.facility_pictures);
@@ -93,6 +105,33 @@ app.get('/product_Main/:category', (req, res) => {
                 products: productResults
             });
         });
+    });
+});
+
+app.get('/recent-products', (req, res) => {
+    const userId = req.session.userId;  // 로그인된 사용자의 ID 가져오기
+
+    if (!userId) {
+        return res.status(401).json({ message: "로그인이 필요합니다." });
+    }
+
+    // 최근 본 제품 5개를 시간순으로 조회
+    const query = `
+        SELECT p.*
+        FROM recent_viewed_products rv
+        JOIN Product p ON rv.prodid = p.prodid
+        WHERE rv.userId = ?
+        ORDER BY rv.viewed_at DESC
+        LIMIT 6
+    `;
+
+    db.query(query, [userId], (err, products) => {
+        if (err) {
+            console.error("Error fetching recent viewed products:", err);
+            return res.status(500).json({ message: "Internal server error" });
+        }
+
+        res.json(products);
     });
 });
 
@@ -479,6 +518,22 @@ app.post('/api/deductMoney', (req, res) => {
     });
 });
 
+app.post('/recently-viewed', (req, res) => {
+    const { productId, userId } = req.body;
+
+    if (!userId || !productId) {
+        return res.status(400).send("Missing productId or userId");
+    }
+
+    const query = "INSERT INTO recent_viewed_products (userId, prodid) VALUES (?, ?)";
+    db.query(query, [userId, productId], (err) => {
+        if (err) {
+            console.error("Error saving recent viewed product:", err);
+            return res.status(500).send("Internal server error");
+        }
+        res.status(200).send("Product added to recent viewed");
+    });
+});
 
 
 // 서버 시작

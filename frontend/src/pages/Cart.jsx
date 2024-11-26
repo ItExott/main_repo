@@ -41,7 +41,16 @@ const Cart = () => {
     useEffect(() => {
         const calculatePrices = () => {
             const total = cartProducts.reduce((sum, product) => {
-                const price = parseInt(product.prodprice.replace(/,/g, ''), 10) || 0; // 문자열을 숫자로 변환
+                let price = 0;
+                if (activeTab === 'tab1') {
+                    price = parseInt(product.prodprice.replace(/,/g, ''), 10) || 0; // prodprice 필드 사용
+                } else if (activeTab === 'tab2') {
+                    price = parseInt(product.prodprice2.replace(/,/g, ''), 10) || 0; // prodprice2 필드 사용
+                } else if (activeTab === 'tab3') {
+                    price = parseInt(product.prodprice3.replace(/,/g, ''), 10) || 0;
+                } else if (activeTab === 'tab4') {
+                    price = parseInt(product.prodprice4.replace(/,/g, ''), 10) || 0;
+                }
                 return sum + price;
             }, 0);
 
@@ -51,7 +60,7 @@ const Cart = () => {
         };
 
         calculatePrices();
-    }, [cartProducts]);
+    }, [cartProducts, activeTab]);
 
     useEffect(() => {
         const fetchCartProducts = async () => {
@@ -116,6 +125,8 @@ const Cart = () => {
         if (cartProducts.length === 0) {
             alert('구매할 상품이 없습니다.');
         } else {
+            // cartProducts를 JSON.stringify()로 문자열로 변환하여 저장
+            sessionStorage.setItem("prodlist", JSON.stringify(cartProducts)); // cartProducts를 저장
             navigate("/Buyform");
         }
     };
@@ -226,11 +237,11 @@ const Cart = () => {
                         <div className="flex flex-col">
                             <div className="flex ml-[5rem] mt-[1.2rem] flex-row">
                                 <div className="flex items-start text-gray-950 w-1/2 text-lg">상품금액</div>
-                                <div className="flex justify-end mr-[7rem] text-gray-950 w-1/2">840,000원</div>
+                                <div className="flex justify-end mr-[7rem] text-gray-950 w-1/2">{totalPrice.toLocaleString()}원</div>
                             </div>
                             <div className="flex ml-[5rem] mt-[1rem] flex-row">
                                 <div className="flex items-start text-gray-950 w-1/2 text-lg">회원가 할인</div>
-                                <div className="flex justify-end mr-[7rem] text-blue-500 w-1/2">-120,000원</div>
+                                <div className="flex justify-end mr-[7rem] text-blue-500 w-1/2">{`-${discountPrice.toLocaleString()}원`}</div>
                             </div>
                             <div
                                 className="flex flex-row w-[60rem] mt-[1rem] rounded-2xl items-center shadow-xl h-[2.5rem] bg-red-100">
@@ -238,7 +249,7 @@ const Cart = () => {
                                     금액
                                 </div>
                                 <div
-                                    className="flex justify-end mr-[5rem] text-xl font-bold text-red-400 w-1/2">685,000원
+                                    className="flex justify-end mr-[5rem] text-xl font-bold text-red-400 w-1/2">{`${(totalPrice - discountPrice).toLocaleString()}원`}
                                 </div>
                             </div>
                             <div className="flex flex-row items-center mt-[2rem] justify-center w-[60rem]">
@@ -259,11 +270,11 @@ const Cart = () => {
                         <div className="flex flex-col">
                             <div className="flex ml-[5rem] mt-[1.2rem] flex-row">
                                 <div className="flex items-start text-gray-950 w-1/2 text-lg">상품금액</div>
-                                <div className="flex justify-end mr-[7rem] text-gray-950 w-1/2">840,000원</div>
+                                <div className="flex justify-end mr-[7rem] text-gray-950 w-1/2">{totalPrice.toLocaleString()}원</div>
                             </div>
                             <div className="flex ml-[5rem] mt-[1rem] flex-row">
                                 <div className="flex items-start text-gray-950 w-1/2 text-lg">회원가 할인</div>
-                                <div className="flex justify-end mr-[7rem] text-blue-500 w-1/2">-120,000원</div>
+                                <div className="flex justify-end mr-[7rem] text-blue-500 w-1/2">{`-${discountPrice.toLocaleString()}원`}</div>
                             </div>
                             <div
                                 className="flex flex-row w-[60rem] mt-[1rem] rounded-2xl items-center shadow-xl h-[2.5rem] bg-red-100">
@@ -271,7 +282,7 @@ const Cart = () => {
                                     금액
                                 </div>
                                 <div
-                                    className="flex justify-end mr-[5rem] text-xl font-bold text-red-400 w-1/2">685,000원
+                                    className="flex justify-end mr-[5rem] text-xl font-bold text-red-400 w-1/2">{`${(totalPrice - discountPrice).toLocaleString()}원`}
                                 </div>
                             </div>
                             <div className="flex flex-row items-center mt-[2rem] justify-center w-[60rem]">
@@ -292,11 +303,11 @@ const Cart = () => {
                         <div className="flex flex-col">
                             <div className="flex ml-[5rem] mt-[1.2rem] flex-row">
                                 <div className="flex items-start text-gray-950 w-1/2 text-lg">상품금액</div>
-                                <div className="flex justify-end mr-[7rem] text-gray-950 w-1/2">840,000원</div>
+                                <div className="flex justify-end mr-[7rem] text-gray-950 w-1/2">{totalPrice.toLocaleString()}원</div>
                             </div>
                             <div className="flex ml-[5rem] mt-[1rem] flex-row">
                                 <div className="flex items-start text-gray-950 w-1/2 text-lg">회원가 할인</div>
-                                <div className="flex justify-end mr-[7rem] text-blue-500 w-1/2">-120,000원</div>
+                                <div className="flex justify-end mr-[7rem] text-blue-500 w-1/2">{`-${discountPrice.toLocaleString()}원`}</div>
                             </div>
                             <div
                                 className="flex flex-row w-[60rem] mt-[1rem] rounded-2xl items-center shadow-xl h-[2.5rem] bg-red-100">
@@ -304,7 +315,7 @@ const Cart = () => {
                                     금액
                                 </div>
                                 <div
-                                    className="flex justify-end mr-[5rem] text-xl font-bold text-red-400 w-1/2">685,000원
+                                    className="flex justify-end mr-[5rem] text-xl font-bold text-red-400 w-1/2">{`${(totalPrice - discountPrice).toLocaleString()}원`}
                                 </div>
                             </div>
                             <div className="flex flex-row items-center mt-[2rem] justify-center w-[60rem]">

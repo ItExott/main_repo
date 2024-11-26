@@ -22,7 +22,7 @@ import { FaCheckCircle } from "react-icons/fa";
 {/*컴포넌트 동기화문*/}
 import BottomBox from "../components/BottomBox.jsx";
 
-const Product= () => {
+const Product= ({ userProfile }) => {
     const PhotoSectionRef = useRef(null);
     const ReviewSectionRef = useRef(null);
     const InfoSectionRef = useRef(null);
@@ -92,11 +92,26 @@ const Product= () => {
                     prodsmtitle: response.data.prodsmtitle,
                     facility_pictures: response.data.facility_pictures || [] // Set facility_pictures if available
                 });
+
+                if (userProfile && userProfile.userId) {
+                    axios
+                        .post("http://localhost:8080/recently-viewed", {
+                            productId: response.data.prodid,
+                            userId: userId,
+                        })
+                        .then((response) => {
+                            console.log("Product saved to recently viewed:", response.data);
+                        })
+                        .catch((error) => {
+                            console.error("Error saving recently viewed product:", error);
+                        });
+                }
             })
-            .catch(error => {
+            .catch((error) => {
                 console.error("Error fetching product data:", error);
             });
-    }, [id]);
+    }, [id, userProfile, userId]);
+
 
     {/*const문*/}
     const toggleShowImages = () => {

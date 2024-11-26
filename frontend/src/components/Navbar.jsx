@@ -5,6 +5,7 @@ import { FaShoppingBasket } from "react-icons/fa";
 import { FaPlaystation } from "react-icons/fa6";
 import axios from "axios";
 import ChargePopup from "../popup/ChargePopup.jsx";
+import myPage from "../pages/MyPage.jsx";
 
 const Navbar = ({ loginStatus, setLoginStatus, userProfile, setUserProfile, money, setMoney, handleLogout }) => {
     const displayMoney = money || 0; // Default money to 0 if not available
@@ -82,7 +83,7 @@ const Navbar = ({ loginStatus, setLoginStatus, userProfile, setUserProfile, mone
     const gopilates = () => navigate("/product_Main/pilates");
     const goclimbing = () => navigate("/product_Main/climbing");
     const goswim = () => navigate("/product_Main/swim");
-
+    const gomypage = () => navigate("/MyPage");
 
     // Handle charge popup visibility
     const handleOpenChargePopup = () => {
@@ -102,7 +103,7 @@ const Navbar = ({ loginStatus, setLoginStatus, userProfile, setUserProfile, mone
         <div className="navbar bg-base-100">
             <div className="navbar-start">
                 <a onClick={gohome} className="btn btn-ghost w-full h-full text-xl">
-                    <img className="w-[14rem] h-[3rem]" alt="로고" src="https://ifh.cc/g/KMhc7f.png" />
+                    <img className="w-[14rem] h-[4rem]" alt="로고" src="https://ifh.cc/g/oRNlfd.png" />
                 </a>
             </div>
 
@@ -167,7 +168,7 @@ const Navbar = ({ loginStatus, setLoginStatus, userProfile, setUserProfile, mone
                         className="mt-3 z-10 p-2 menu menu-sm dropdown-content bg-white rounded-box w-60"
                     >
                         <div className="border-[0.1rem] text-red-400 hover:bg-red-400 hover:scale-110 transition-transform ease-in-out duration-500 hover:text-white cursor-pointer text-start rounded-md border-red-400">
-                            <a className="ml-[1rem] text-lg">MY PAGE</a>
+                            <a onClick={gomypage} className="ml-[1rem] text-lg">MY PAGE</a>
                         </div>
 
                         <div

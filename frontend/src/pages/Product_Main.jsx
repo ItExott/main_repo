@@ -82,8 +82,21 @@ const Product_Main = () => {
         setShowSuggestions(false);
     };
 
+    const saveRecentlyViewed = (id) => {
+        const recentlyViewed = JSON.parse(localStorage.getItem('recentlyViewed')) || [];
+        if (!recentlyViewed.includes(id)) {
+            recentlyViewed.push(id);
+        }
+        if (recentlyViewed.length > 5) {
+            recentlyViewed.shift();
+        }
+        localStorage.setItem('recentlyViewed', JSON.stringify(recentlyViewed));
+    };
+
     const handleClick = (id) => {
-        navigate(`/product/${id}`);
+        // Save to local storage (optional)
+        saveRecentlyViewed(id);
+        navigate(`/product/${id}`);  // Navigate to the product detail page
     };
 
     return (
