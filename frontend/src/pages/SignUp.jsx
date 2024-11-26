@@ -144,166 +144,166 @@ const SignUp = () => {
     return (
 
 
-            <div className="flex flex-col h-full items-center justify-center mx-[24rem] rounded-3xl ">
+        <div className="flex flex-col h-full items-center justify-center mx-[24rem] rounded-3xl ">
 
 
-                    {isadressModalOpen && (
-                        <div className="fixed top-0 left-0 w-full h-full bg-gray-500 bg-opacity-50 z-50 flex items-center justify-center">
-                            <div className="bg-white p-4 rounded-xl shadow-lg w-[50%]">
-                                <DaumPostcode
-                                    onComplete={handleSelectAddress}  // 주소 선택 후 호출되는 이벤트
-                                    autoClose={false} // 주소 선택 후 자동으로 모달을 닫지 않음
-                                />
-                                <button
-                                    onClick={() => setIsadressModalOpen(false)}
-                                    className="absolute top-2 right-2 text-red-500"
-                                >
-                                    X
-                                </button>
-                            </div>
-                        </div>
-                    )}
-
-                <div
-                    className="flex flex-col mb-[2rem] mt-[2rem] h-full items-center justify-center bg-white w-[65rem]  rounded-3xl ">
-                    <div
-                        className="border-gray-950 font-bold  flex flex-row mt-6 h-11 w-[35rem] items-center justify-center text-xl">
-
-                        <a className="mb-[1rem] text-3xl font-bold">회원가입</a>
+            {isadressModalOpen && (
+                <div className="fixed top-0 left-0 w-full h-full bg-gray-500 bg-opacity-50 z-50 flex items-center justify-center">
+                    <div className="bg-white p-4 rounded-xl shadow-lg w-[50%]">
+                        <DaumPostcode
+                            onComplete={handleSelectAddress}  // 주소 선택 후 호출되는 이벤트
+                            autoClose={false} // 주소 선택 후 자동으로 모달을 닫지 않음
+                        />
+                        <button
+                            onClick={() => setIsadressModalOpen(false)}
+                            className="absolute top-2 right-2 text-red-500"
+                        >
+                            X
+                        </button>
                     </div>
-                    <ul className="w-[45rem] steps mb-[2rem]">
-                        <li className=" step step-error">약관동의</li>
-                        <li className="step step-error">본인인증</li>
-                        <li className="step step-error">정보입력</li>
-                        <li className="step">가입완료</li>
-                    </ul>
-                    <div className="flex w-[40rem] justify-center items-center shadow-xl border border-gray-100 rounded-lg">
-                        <form onSubmit={handleSubmit}>
+                </div>
+            )}
 
-                            <div className="flex flex-col w-[25rem] h-auto mt-6 p-4">
-                                <div className="mb-4 items-start">
-                                    <div className="text-left text-lg">회원구분</div>
-                                    <div className="flex flex-row items-start mt-2">
-                                        <label className="mr-4">
-                                            <input type="radio"
-                                                   name="userType"
-                                                   className="radio radio-error"
-                                                   value="individual"
+            <div
+                className="flex flex-col mb-[2rem] mt-[2rem] h-full items-center justify-center bg-white w-[65rem]  rounded-3xl ">
+                <div
+                    className="border-gray-950 font-bold  flex flex-row mt-6 h-11 w-[35rem] items-center justify-center text-xl">
 
-                                                   checked={formData.userType === "individual"}
-                                                   onChange={handleChange} defaultChecked/>
+                    <a className="mb-[1rem] text-3xl font-bold">회원가입</a>
+                </div>
+                <ul className="w-[45rem] steps mb-[2rem]">
+                    <li className=" step step-error">약관동의</li>
+                    <li className="step step-error">본인인증</li>
+                    <li className="step step-error">정보입력</li>
+                    <li className="step">가입완료</li>
+                </ul>
+                <div className="flex w-[40rem] justify-center items-center shadow-xl border border-gray-100 rounded-lg">
+                    <form onSubmit={handleSubmit}>
+
+                        <div className="flex flex-col w-[25rem] h-auto mt-6 p-4">
+                            <div className="mb-4 items-start">
+                                <div className="text-left text-lg">회원구분</div>
+                                <div className="flex flex-row items-start mt-2">
+                                    <label className="mr-4">
+                                        <input type="radio"
+                                               name="userType"
+                                               className="radio radio-error"
+                                               value="individual"
+
+                                               checked={formData.userType === "individual"}
+                                               onChange={handleChange} defaultChecked/>
 
 
-                                            <a className="text-xs ml-[0.2rem]"> 개인회원</a>
-                                        </label>
-                                        <label>
-                                            <input type="radio"
-                                                   name="userType"
-                                                   value="gymManager"
-                                                   className="radio radio-error "
-                                                   onChange={handleChange}
-                                                   checked={formData.userType === "gymManager"}/>
+                                        <a className="text-xs ml-[0.2rem]"> 개인회원</a>
+                                    </label>
+                                    <label>
+                                        <input type="radio"
+                                               name="userType"
+                                               value="gymManager"
+                                               className="radio radio-error "
+                                               onChange={handleChange}
+                                               checked={formData.userType === "gymManager"}/>
 
-                                            <a className="text-xs  ml-[0.2rem]"> GYM 관리자</a>
-                                        </label>
+                                        <a className="text-xs  ml-[0.2rem]"> GYM 관리자</a>
+                                    </label>
+                                </div>
+                            </div>
+
+                            <div className="flex mb-2">
+                                <a className="flex p-2 text-lg w-[8rem] text-gray-500">이름</a>
+                                <div className="flex h-[1.5rem] border-l border-gray-300 mt-[0.5rem]"></div>
+                                <input
+                                    placeholder="이름"
+                                    type="text"
+                                    name="name"
+                                    value={formData.name}
+                                    onChange={handleChange}
+                                    required
+                                    className="flex border-none outline-none p-2 w-[15.9rem] focus:ring-red-500 rounded mr-[0.5rem] ml-2"
+
+                                />
+
+                                {errors.name && <p className="text-red-500">{errors.name}</p>}
+                            </div>
+
+                            <div className="flex mb-2">
+                                <a className="flex p-2 text-lg w-[8rem] text-gray-500">아이디</a>
+                                <div className="flex h-[1.5rem] border-l border-gray-300 mt-[0.5rem]"></div>
+                                <input
+                                    placeholder="아이디"
+                                    type="text"
+                                    name="userId"
+                                    value={formData.userId}
+                                    onChange={handleChange}
+                                    required
+                                    className="flex border-none outline-none p-2 w-[15.9rem] focus:ring-red-500 rounded mr-[0.5rem] ml-2"
+
+                                />
+
+                                {errors.userId && <p className="text-red-500">{errors.userId}</p>}
+                            </div>
+
+                            <div className="flex mb-2">
+                                <a className="flex p-2 text-lg w-[8rem] text-gray-500">비밀번호</a>
+                                <div className="flex h-[1.5rem] border-l border-gray-300 mt-[0.5rem]"></div>
+                                <input
+                                    placeholder="비밀번호"
+                                    type="password"
+                                    name="userpw"
+                                    value={formData.userpw}
+                                    onChange={handleChange}
+                                    required
+                                    className="flex border-none outline-none p-2 w-[15.9rem] focus:ring-red-500 rounded mr-[0.5rem] ml-2"
+
+                                />
+
+
+                            </div>
+                            {errors.userpw && <p className="text-red-500">{errors.userpw}</p>}
+
+                            <div className="flex mb-2">
+                                <a className="flex p-2 text-lg w-[8rem] text-gray-500">비밀번호 확인</a>
+                                <div className="flex h-[1.5rem] border-l border-gray-300 mt-[0.5rem]"></div>
+                                <input
+                                    placeholder="비밀번호 확인"
+                                    type="password"
+                                    name="passwordConfirm"
+                                    value={formData.passwordConfirm}
+                                    onChange={handleChange}
+                                    required
+                                    className="flex border-none outline-none p-2 w-[15.9rem] focus:ring-red-500 rounded mr-[0.5rem] ml-2"
+
+                                />
+
+
+                            </div>
+                            {errors.passwordConfirm && <p className="text-red-500">{errors.passwordConfirm}</p>}
+                            <div className="flex-row flex h-[6rem]">
+                                <div className="flex-col flex mb-[0.3rem] border border-red-300 rounded ">
+
+                                    <div className="  rounded h-1/2 border-b border-red-300 ">
+                                        <a
+                                            className=" flex border-none outline-none p-2 w-[15.9rem] focus:ring-red-500 rounded mt-[0.2rem]"
+                                        >{firstaddress}</a>
+
                                     </div>
-                                </div>
-
-                                <div className="flex mb-2">
-                                    <a className="flex p-2 text-lg w-[8rem] text-gray-500">이름</a>
-                                    <div className="flex h-[1.5rem] border-l border-gray-300 mt-[0.5rem]"></div>
-                                    <input
-                                        placeholder="이름"
-                                        type="text"
-                                        name="name"
-                                        value={formData.name}
-                                        onChange={handleChange}
-                                        required
-                                        className="flex border-none outline-none p-2 w-[15.9rem] focus:ring-red-500 rounded mr-[0.5rem] ml-2"
-
-                                    />
-
-                                    {errors.name && <p className="text-red-500">{errors.name}</p>}
-                                </div>
-
-                                <div className="flex mb-2">
-                                    <a className="flex p-2 text-lg w-[8rem] text-gray-500">아이디</a>
-                                    <div className="flex h-[1.5rem] border-l border-gray-300 mt-[0.5rem]"></div>
-                                    <input
-                                        placeholder="아이디"
-                                        type="text"
-                                        name="userId"
-                                        value={formData.userId}
-                                        onChange={handleChange}
-                                        required
-                                        className="flex border-none outline-none p-2 w-[15.9rem] focus:ring-red-500 rounded mr-[0.5rem] ml-2"
-
-                                    />
-
-                                    {errors.userId && <p className="text-red-500">{errors.userId}</p>}
-                                </div>
-
-                                <div className="flex mb-2">
-                                    <a className="flex p-2 text-lg w-[8rem] text-gray-500">비밀번호</a>
-                                    <div className="flex h-[1.5rem] border-l border-gray-300 mt-[0.5rem]"></div>
-                                    <input
-                                        placeholder="비밀번호"
-                                        type="password"
-                                        name="userpw"
-                                        value={formData.userpw}
-                                        onChange={handleChange}
-                                        required
-                                        className="flex border-none outline-none p-2 w-[15.9rem] focus:ring-red-500 rounded mr-[0.5rem] ml-2"
-
-                                    />
-
-
-                                </div>
-                                {errors.userpw && <p className="text-red-500">{errors.userpw}</p>}
-
-                                <div className="flex mb-2">
-                                    <a className="flex p-2 text-lg w-[8rem] text-gray-500">비밀번호 확인</a>
-                                    <div className="flex h-[1.5rem] border-l border-gray-300 mt-[0.5rem]"></div>
-                                    <input
-                                        placeholder="비밀번호 확인"
-                                        type="password"
-                                        name="passwordConfirm"
-                                        value={formData.passwordConfirm}
-                                        onChange={handleChange}
-                                        required
-                                        className="flex border-none outline-none p-2 w-[15.9rem] focus:ring-red-500 rounded mr-[0.5rem] ml-2"
-
-                                    />
-
-
-                                </div>
-                                {errors.passwordConfirm && <p className="text-red-500">{errors.passwordConfirm}</p>}
-                                <div className="flex-row flex h-[6rem]">
-                                    <div className="flex-col flex mb-[0.3rem] border border-red-300 rounded ">
-
-                                        <div className="  rounded h-1/2 border-b border-red-300 ">
-                                            <a
-                                                className=" flex border-none outline-none p-2 w-[15.9rem] focus:ring-red-500 rounded mt-[0.2rem]"
-                                            >{firstaddress}</a>
-
-                                        </div>
 
 
 
 
 
 
-                                        <div className="flex h-1/2">
+                                    <div className="flex h-1/2">
 
-                                            <input
-                                                placeholder="상세주소 입력"
-                                                type="text"
-                                                name="preciseaddress"
-                                                value={secondaddress}
-                                                onChange={handleChangeaddress}
-                                                required
-                                                className="flex border-none outline-none p-2 w-[16.5rem] focus:ring-red-500 rounded h-full"
-                                            />
+                                        <input
+                                            placeholder="상세주소 입력"
+                                            type="text"
+                                            name="preciseaddress"
+                                            value={secondaddress}
+                                            onChange={handleChangeaddress}
+                                            required
+                                            className="flex border-none outline-none p-2 w-[16.5rem] focus:ring-red-500 rounded h-full"
+                                        />
 
 
 
@@ -316,70 +316,70 @@ const SignUp = () => {
                                 >
                                     주소 입력
                                 </button>
-                                </div>
-                                {errors.address && <p className="text-red-500">{errors.address}</p>}
-                                <div className="mb-2 mt-[1rem]">
+                            </div>
+                            {errors.address && <p className="text-red-500">{errors.address}</p>}
+                            <div className="mb-2 mt-[1rem]">
 
-                                    <div className="flex ">
-                                        <a className="flex p-2 text-lg w-[5rem] text-gray-500">전화번호</a>
-                                        <div
-                                            className="flex h-[1.5rem] border-l border-gray-300 mt-[0.5rem] mr-[1rem] ml-[2.1rem]"></div>
-                                        <a className="flex mt-[0.6rem]">{formatPhoneNumber(phoneNumber)}</a>
-                                    </div>
-                                    {errors.phoneNumber && <p className="text-red-500">{errors.phoneNumber}</p>}
+                                <div className="flex ">
+                                    <a className="flex p-2 text-lg w-[5rem] text-gray-500">전화번호</a>
+                                    <div
+                                        className="flex h-[1.5rem] border-l border-gray-300 mt-[0.5rem] mr-[1rem] ml-[2.1rem]"></div>
+                                    <a className="flex mt-[0.6rem]">{formatPhoneNumber(phoneNumber)}</a>
                                 </div>
+                                {errors.phoneNumber && <p className="text-red-500">{errors.phoneNumber}</p>}
+                            </div>
 
-                                {/* 이메일은 필수 항목에서 제외 */}
-                                <div className="flex mt-2">
+                            {/* 이메일은 필수 항목에서 제외 */}
+                            <div className="flex mt-2">
+                                <input
+                                    type="text"
+                                    name="emailId"
+                                    value={emailId}  // emailId로 값 설정
+                                    onChange={handleemailChange}
+                                    className="flex p-2 w-40 focus:ring-red-500 rounded border-none outline-none"
+                                    placeholder="이메일 입력"
+                                />
+                                <span className="mr-[0.5rem] ml-[0.5rem] mt-[0.3rem] text-2xl">@</span>
+                                {emailDomain === 'other' && (
                                     <input
                                         type="text"
-                                        name="emailId"
-                                        value={emailId}  // emailId로 값 설정
-                                        onChange={handleemailChange}
-                                        className="flex p-2 w-40 focus:ring-red-500 rounded border-none outline-none"
-                                        placeholder="이메일 입력"
-                                    />
-                                    <span className="mr-[0.5rem] ml-[0.5rem] mt-[0.3rem] text-2xl">@</span>
-                                    {emailDomain === 'other' && (
-                                        <input
-                                            type="text"
-                                            name="emailDomain"
-                                            value={emailDomain}  // emailDomain으로 값 설정
-                                            onChange={handleemailChange}
-                                            className=" p-2 w-40 focus:ring-red-500 rounded border-none outline-none mr-[0.2rem]"
-                                            placeholder="도메인 입력"
-                                        />
-                                    )}
-                                    <select
                                         name="emailDomain"
                                         value={emailDomain}  // emailDomain으로 값 설정
                                         onChange={handleemailChange}
-                                        className=" p-2 w-40 focus:ring-red-500 rounded border-none outline-none"
-                                    >
-                                        <option value="other">직접 입력</option>
-                                        <option value="gmail.com">gmail.com</option>
-                                        <option value="naver.com">naver.com</option>
-                                        <option value="option.com">daum.net</option>
-                                        <option value="option.com">hanmail.net</option>
-                                        <option value="option.com">kakao.com</option>
+                                        className=" p-2 w-40 focus:ring-red-500 rounded border-none outline-none mr-[0.2rem]"
+                                        placeholder="도메인 입력"
+                                    />
+                                )}
+                                <select
+                                    name="emailDomain"
+                                    value={emailDomain}  // emailDomain으로 값 설정
+                                    onChange={handleemailChange}
+                                    className=" p-2 w-40 focus:ring-red-500 rounded border-none outline-none"
+                                >
+                                    <option value="other">직접 입력</option>
+                                    <option value="gmail.com">gmail.com</option>
+                                    <option value="naver.com">naver.com</option>
+                                    <option value="option.com">daum.net</option>
+                                    <option value="option.com">hanmail.net</option>
+                                    <option value="option.com">kakao.com</option>
 
-                                    </select>
-                                </div>
+                                </select>
                             </div>
-                            {errors.email && <p className="text-red-500">{errors.email}</p>}
-                            <div className="flex flex-row w-full h-[7rem] items-center justify-center">
-                                <button type="submit" className=" bg-red-400 w-40 h-12 bg-black text-white">
-                                    회원가입
-                                </button>
-                            </div>
-                        </form>
-                    </div>
-
+                        </div>
+                        {errors.email && <p className="text-red-500">{errors.email}</p>}
+                        <div className="flex flex-row w-full h-[7rem] items-center justify-center">
+                            <button type="submit" className=" bg-red-400 w-40 h-12 bg-black text-white">
+                                회원가입
+                            </button>
+                        </div>
+                    </form>
                 </div>
 
             </div>
 
-        );
-    };
+        </div>
 
-    export default SignUp;
+    );
+};
+
+export default SignUp;
