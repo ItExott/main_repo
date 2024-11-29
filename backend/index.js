@@ -134,6 +134,42 @@ app.get('/recent-products', (req, res) => {
         res.json(products);
     });
 });
+app.post('/api/check-userId', async (req, res) => {
+    const { userId } = req.body;  // Get userId from the body of the request
+
+    if (!userId) {
+        return res.status(400).json({ success: false, message: "아이디를 입력하세요." });
+    }
+
+    try {
+        // db.query를 Promise로 래핑
+        const result = await new Promise((resolve, reject) => {
+            db.query('SELECT count(*) AS count FROM users WHERE userid = ?', [userId], (err, result) => {
+                if (err) {
+                    reject(err);
+                } else {
+                    resolve(result);
+                }
+            });
+        });
+
+        // 결과를 확인
+        const count = result[0].count;
+        console.log(result);
+        console.log(count);
+
+        // 결과에 따라 응답
+        if (count > 0) {
+            return res.status(200).json({ success: false, message: "이미 존재하는 아이디입니다." });
+        } else {
+            return res.status(200).json({ success: true, message: "사용 가능한 아이디입니다." });
+        }
+    } catch (error) {
+        console.error("Error checking userId:", error);
+        return res.status(500).json({ success: false, message: "서버 오류가 발생했습니다." });
+    }
+});
+
 
 // 회원가입 API
 app.post('/api/signup', (req, res) => {
