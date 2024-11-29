@@ -518,13 +518,15 @@ app.post("/api/charge", (req, res) => {
 });
 
 app.post('/api/deductMoney', (req, res) => {
-    const { amount } = req.body;  // The amount to deduct
+    const { amount, products, startDate } = req.body;  // The amount to deduct, products, and startDate
+    const userId = req.session.userId;  // Logged-in user's ID
 
-    // You should pass the logged-in user's ID here (assuming it's available)
-    const userId = req.session.userId;  // Adjust this based on your auth method
+    if (!userId) {
+        return res.status(401).json({ success: false, message: '로그인이 필요합니다.' });
+    }
 
-    // Fetch the user's current money
-    db.query('SELECT money FROM users WHERE userid = ?', [userId], (err, results) => {
+    // Fetch the user's current money and prodlist
+    db.query('SELECT money, prodlist FROM users WHERE userid = ?', [userId], (err, results) => {
         if (err) {
             console.error('Error fetching user money:', err);
             return res.status(500).json({ success: false, message: '서버 오류' });
@@ -535,21 +537,44 @@ app.post('/api/deductMoney', (req, res) => {
         }
 
         const currentMoney = results[0].money;
-
+        const prodlist = results[0].prodlist ? JSON.parse(results[0].prodlist) : []; // Ensure prodlist is parsed properly
+        console.log('Current Money:', currentMoney);
         // Check if user has enough money
         if (currentMoney < amount) {
+            console.log('잔액 부족:', amount, currentMoney);
             return res.status(400).json({ success: false, message: '잔액이 부족합니다.' });
         }
 
         // Deduct money from the user's balance
         const newMoney = currentMoney - amount;
-        db.query('UPDATE users SET money = ? WHERE userid = ?', [newMoney, userId], (err, results) => {
+        db.query('UPDATE users SET money = ? WHERE userid = ?', [newMoney, userId], (err) => {
             if (err) {
                 console.error('Error updating user money:', err);
                 return res.status(500).json({ success: false, message: '서버 오류' });
             }
 
-            return res.status(200).json({ success: true, message: '결제가 완료되었습니다.' });
+            // Insert the purchased products into buy_product table with the startdate
+            const productValues = products.map((prodid) => [userId, prodid, startDate]); // Ensure startDate is included
+            db.query('INSERT INTO buy_product (userid, prodid, startdate) VALUES ?', [productValues], (err) => {
+                if (err) {
+                    console.error('Error inserting into buy_product:', err);
+                    return res.status(500).json({ success: false, message: '서버 오류' });
+                }
+
+                // Remove purchased products from prodlist
+                const updatedProdlist = prodlist.filter((id) => !products.includes(id)); // Filter out products that were bought
+
+                // Update the prodlist in the users table
+                db.query('UPDATE users SET prodlist = ? WHERE userid = ?', [JSON.stringify(updatedProdlist), userId], (err) => {
+                    if (err) {
+                        console.error('Error updating prodlist:', err);
+                        return res.status(500).json({ success: false, message: '서버 오류' });
+                    }
+
+                    // Success response after all queries are completed
+                    return res.status(200).json({ success: true, message: '결제가 완료되었습니다.' });
+                });
+            });
         });
     });
 });
@@ -570,6 +595,183 @@ app.post('/recently-viewed', (req, res) => {
         res.status(200).send("Product added to recent viewed");
     });
 });
+
+app.get('/api/user/subscriptions', (req, res) => {
+    const userId = req.session.userId;  // 로그인된 사용자의 ID 가져오기
+
+    if (!userId) {
+        return res.status(401).json({ message: "로그인이 필요합니다." });
+    }
+
+    // buy_product 테이블에서 사용자가 구독한 제품들의 정보 가져오기
+    const query = `
+        SELECT p.*, b.startdate
+        FROM buy_product b
+        JOIN product p ON b.prodid = p.prodid
+        WHERE b.userid = ?
+        ORDER BY b.startdate DESC  -- 구독한 날짜 순으로 정렬
+        LIMIT 6  -- 최근 6개의 구독 제품만 반환
+    `;
+
+    db.query(query, [userId], (err, products) => {
+        if (err) {
+            console.error("Error fetching subscribed products:", err);
+            return res.status(500).json({ message: "Internal server error" });
+        }
+
+        // 구독된 제품 정보를 반환
+        res.json(products);
+    });
+});
+
+app.post('/api/user/interest', async (req, res) => {
+    const { userId, prodid } = req.body;  // 사용자 ID와 제품 ID를 받아옴
+
+    if (!userId || !prodid) {
+        return res.status(400).json({ success: false, message: '필요한 데이터가 없습니다.' });
+    }
+
+    try {
+        const query = 'INSERT INTO interest_products (userid, prodid) VALUES (?, ?)';
+        await db.query(query, [userId, prodid]);
+
+        res.json({ success: true, message: '관심 상품에 추가되었습니다.' });
+    } catch (error) {
+        console.error('Error adding product to interest list:', error);
+        res.status(500).json({ success: false, message: '서버 오류' });
+    }
+});
+
+app.post('/api/user/remove-interest', async (req, res) => {
+    const { userId, prodid } = req.body;  // 사용자 ID와 제품 ID를 받아옴
+
+    if (!userId || !prodid) {
+        return res.status(400).json({ success: false, message: '필요한 데이터가 없습니다.' });
+    }
+
+    try {
+        // 관심 상품에서 제거
+        const query = 'DELETE FROM interest_products WHERE userid = ? AND prodid = ?';
+        await db.query(query, [userId, prodid]);
+
+        res.json({ success: true, message: '관심 상품에서 제거되었습니다.' });
+    } catch (error) {
+        console.error('Error removing product from interest list:', error);
+        res.status(500).json({ success: false, message: '서버 오류' });
+    }
+});
+
+
+app.get('/api/user/liked-items', (req, res) => {
+    const userId = req.session.userId;  // 로그인된 사용자의 ID 가져오기
+
+    if (!userId) {
+        return res.status(401).json({ message: "로그인이 필요합니다." });
+    }
+
+    // 관심 제품 목록을 가져오는 쿼리 (예시로 user_liked_products 테이블 사용)
+    const query = `
+        SELECT p.*
+        FROM interest_products i
+        JOIN product p ON i.prodid = p.prodid
+        WHERE i.userid = ?
+        LIMIT 6  -- 최근 6개의 관심 제품만 반환
+    `;
+
+    db.query(query, [userId], (err, products) => {
+        if (err) {
+            console.error("Error fetching liked products:", err);
+            return res.status(500).json({ message: "Internal server error" });
+        }
+
+        // 관심 제품 정보를 반환
+        res.json(products);
+    });
+});
+
+app.post('/api/buy-now', async (req, res) => {
+    const { prodid } = req.body;
+    const userId = req.session.userId; // 세션에서 로그인 사용자 ID 가져오기
+
+    if (!userId) {
+        return res.status(401).json({ success: false, message: "로그인이 필요합니다." });
+    }
+
+    try {
+        // `users` 테이블의 `buylist` 컬럼에 단일 prodid 저장
+        await db.query(`
+            UPDATE users SET buylist = ? WHERE userid = ?
+        `, [prodid, userId]); // buylist에 단일 prodid를 설정
+
+        res.json({ success: true, message: "구매 요청이 처리되었습니다." });
+    } catch (error) {
+        console.error("Error updating buylist:", error);
+        res.status(500).json({ success: false, message: "서버 오류가 발생했습니다." });
+    }
+});
+
+app.get('/api/buy-product', (req, res) => {
+    // Check if user is logged in by verifying session
+    if (!req.session || !req.session.userId) {
+        return res.status(401).json({ success: false, message: "로그인이 필요합니다." });
+    }
+
+    const userId = req.session.userId;  // Retrieve userId from session
+    console.log("Session object:", req.session);
+
+    // Query to get the user's buylist (a single prodid in this case)
+    const getBuylistQuery = `SELECT buylist FROM users WHERE userid = ?`;
+    console.log("User ID from session:", userId);  // Log the userId to ensure it's correct
+
+    db.query(getBuylistQuery, [userId], (err, results) => {
+        if (err) {
+            console.error("Error fetching user's buylist:", err);
+            return res.status(500).json({ success: false, message: "Internal server error" });
+        }
+
+        // If no buylist is found, return an error
+        if (!results[0] || !results[0].buylist) {
+            console.log("No buylist found for this user.");
+            return res.status(404).json({ success: false, message: "구매할 제품이 없습니다." });
+        }
+
+        // Get the buylist value (a single prodid, which is stored as TEXT)
+        const buylist = results[0].buylist;
+
+        // Convert the buylist to an integer (prodid) since it's stored as a string
+        const prodid = parseInt(buylist, 10); // Convert the string to a number
+
+        if (isNaN(prodid)) {
+            return res.status(400).json({ success: false, message: "잘못된 prodid 형식입니다." });
+        }
+
+        // Query to fetch product details for the prodid
+        const getProductQuery = `SELECT * FROM Product WHERE prodid = ?`;
+
+        console.log("Executing query:", getProductQuery);  // Log the query for debugging
+
+        db.query(getProductQuery, [prodid], (err, products) => {
+            if (err) {
+                console.error("Error fetching product details:", err);
+                return res.status(500).json({ success: false, message: "Internal server error" });
+            }
+
+            // If no product is found, return an empty array
+            if (products.length === 0) {
+                console.log("No products found for this prodid.");
+                return res.status(404).json({ success: false, message: "제품 정보를 찾을 수 없습니다." });
+            }
+
+            // Return the product details to the frontend
+            res.json(products);
+        });
+    });
+});
+
+
+
+
+
 
 
 // 서버 시작

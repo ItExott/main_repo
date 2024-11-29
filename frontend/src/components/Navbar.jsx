@@ -167,9 +167,11 @@ const Navbar = ({ loginStatus, setLoginStatus, userProfile, setUserProfile, mone
                         tabIndex={0}
                         className="mt-3 z-10 p-2 menu menu-sm dropdown-content bg-white rounded-box w-60"
                     >
+                        {loginStatus && (
                         <div className="border-[0.1rem] text-red-400 hover:bg-red-400 hover:scale-110 transition-transform ease-in-out duration-500 hover:text-white cursor-pointer text-start rounded-md border-red-400">
                             <a onClick={gomypage} className="ml-[1rem] text-lg">MY PAGE</a>
                         </div>
+                        )}
 
                         <div
                             className="h-full rounded-md items-start fill-red-400 hover:fill-white text-red-400 hover:scale-110 hover:bg-red-400 hover:text-white transition-transform ease-in-out duration-500 justify-start p-3 flex flex-col border-red-400 border-[0.1rem]"
