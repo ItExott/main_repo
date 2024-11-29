@@ -1,3 +1,5 @@
+import MainBox from "../components/MainBox.jsx";
+
 {/*모듈 import문*/}
 import React, { useState, useEffect, useRef } from "react";
 import { Swiper, SwiperSlide } from "swiper/react";
@@ -24,6 +26,7 @@ const Home = () => {
     const [showSuggestions, setShowSuggestions] = useState(false); // 추천 검색어 박스 표시 여부
     const [isCalendarOpen, setIsCalendarOpen] = useState(false); // 출석체크 달력 팝업 상태
     const [isLoggedIn, setIsLoggedIn] = useState(false); // 로그인 상태 (로그인 여부)
+    const [activeTab, setActiveTab] = useState('weight');
 
     const location = useLocation();
     const { openLoginModal: locationOpenLoginModal = false } = location.state || {};
@@ -111,27 +114,23 @@ const Home = () => {
         setOpenLoginModal(locationOpenLoginModal); // location에서 받은 값으로 openLoginModal 초기화
     }, [locationOpenLoginModal]);
 
-    return (
-        <div className="flex flex-col h-full items-center justify-center mx-56">
-            {/* 로그인 버튼 (임시) */}
-            {!isLoggedIn && (
-                <button onClick={handleLogin} className="mt-4 p-2 bg-blue-500 text-white rounded-md">
-                    로그인
-                </button>
-            )}
+    const handleTabChange = (tab) => {
+        setActiveTab(tab);
+    };
 
+    return (
+        <div className="flex flex-col h-full w-full items-center justify-center">
             {/* 출석 체크 팝업 */}
             <Attendance
                 isOpen={isCalendarOpen}
                 onClose={() => setIsCalendarOpen(false)} // 팝업 닫기
                 onDateSelect={handleDateSelect} // 날짜 선택 시 처리 함수
             />
-
             {/* 검색창 */}
-            <div className="flex flex-row h-14 w-[35rem] items-center justify-center shadow-xl rounded-xl relative">
+            <div className="flex flex-row h-14 w-[35rem] items-center justify-center shadow-md rounded-xl relative">
                 <div className="flex flex-row w-1/5 cursor-pointer">
-                    <FaLocationDot size="20" className="ml-3 cursor-pointer mt-[0.06rem]"/>
-                    <p className="text-sm font-bold text-nowrap ml-[0.5rem]">송파구 마천동</p>
+                    <FaLocationDot size="20" className="ml-3 cursor-pointer mt-[0.05rem]"/>
+                    <p className="text-sm text-nowrap ml-[0.5rem]">송파구 마천동</p>
                 </div>
                 <div className="flex flex-row w-4/5 ml-2">
                     <input
@@ -146,64 +145,58 @@ const Home = () => {
                 <BiSearch size="20"
                           className="mr-3 mt-1 cursor-pointer hover:scale-150 transition-transform ease-in-out duration-500"/>
             </div>
-
             {/* MainCard들 */}
-            <div className="flex flex-row w-[60rem] h-[20rem] mt-6 items-center justify-center shadow-xl rounded-xl">
+            <div className="flex flex-row w-full h-[32rem] mt-6 items-center justify-center shadow-xl rounded-xl">
                 <Swiper
                     pagination={{dynamicBullets: true}}
                     modules={[Pagination, Autoplay]}
                     className="shadow-xl rounded-xl"
-                    autoplay={{
-                        delay: 2500,
-                        disableOnInteraction: false,
-                    }}
-                    loop={true}
                 >
-                    <SwiperSlide><img src="https://ifh.cc/g/xNoK4m.jpg"/></SwiperSlide>
-                    <SwiperSlide><img src="https://ifh.cc/g/LjaSk8.jpg"/></SwiperSlide>
-                    <SwiperSlide><img src="https://ifh.cc/g/bfjzx2.jpg"/></SwiperSlide>
+                    <SwiperSlide><img className="slide1" src="https://ifh.cc/g/djK3KG.gif" alt="Slide 1"/></SwiperSlide>
                 </Swiper>
+            </div>
+            <div className="flex flex-col mt-[5rem] items-start w-full justify-start"> {/*카테고리별 제품 한눈에 보기*/}
+                <a className="text-xl">카테고리 한 눈에 보기</a>
+            <div className="flex items-start mt-4 space-x-8 mb-4">
+                <div
+                    onClick={() => handleTabChange('weight')}
+                    className={`cursor-pointer hover:scale-110 transition-transform ease-in-out duration-500 ${activeTab === 'weight' ? 'text-red-400 border-b-2 border-red-400' : 'text-red-400'}`}
+                >
+                    헬스
+                </div>
+                <div
+                    onClick={() => handleTabChange('swim')}
+                    className={`cursor-pointer hover:scale-110 transition-transform ease-in-out duration-500 ${activeTab === 'swim' ? 'text-red-400 border-b-2 border-red-400' : 'text-red-400'}`}
+                >
+                    수영
+                </div>
+                <div
+                    onClick={() => handleTabChange('climbing')}
+                    className={`cursor-pointer hover:scale-110 transition-transform ease-in-out duration-500 ${activeTab === 'climbing' ? 'text-red-400 border-b-2 border-red-400' : 'text-red-400'}`}
+                >
+                    클라이밍
+                </div>
+                <div
+                    onClick={() => handleTabChange('pilates')}
+                    className={`cursor-pointer hover:scale-110 transition-transform ease-in-out duration-500 ${activeTab === 'pilates' ? 'text-red-400 border-b-2 border-red-400' : 'text-red-400'}`}
+                >
+                    필라테스
+                </div>
+                <div
+                    onClick={() => handleTabChange('crossfit')}
+                    className={`cursor-pointer hover:scale-110 transition-transform ease-in-out duration-500 ${activeTab === 'crossfit' ? 'text-red-400 border-b-2 border-red-400' : 'text-red-400'}`}
+                >
+                    크로스핏
+                </div>
+            </div>
+                {activeTab === 'weight' && (
+                    <div className="w-full">
+                        <MainBox/>
+                    </div>
+                    )}
             </div>
 
-            {/* 추가 Swiper 및 MainCard */}
-            <div className="flex flex-row w-[60rem] h-[20rem] mt-6 items-center justify-center shadow-xl rounded-xl">
-                <Swiper
-                    slidesPerView="auto"
-                    spaceBetween={-120}
-                    centeredSlides={false}
-                    scrollbar={{
-                        hide: false,
-                        draggable: true,
-                        dragSize: 200,
-                    }}
-                    modules={[Scrollbar]}
-                    className="flex w-full"
-                >
-                    <SwiperSlide className="flex ml-[5rem] justify-center w-auto h-auto"><MainCard text="카드1"
-                                                                                                   sor="https://ifh.cc/g/QqVy3C.png"/></SwiperSlide>
-                    <SwiperSlide className="flex ml-[14rem] justify-center w-auto h-auto"><MainCard text="카드2"
-                                                                                                    sor="https://ifh.cc/g/M0Yaqq.png"/></SwiperSlide>
-                </Swiper>
-            </div>
-            <div className="flex flex-row w-[60rem] h-[20rem] mt-6 items-center justify-center shadow-xl rounded-xl">
-                <Swiper
-                    slidesPerView="auto"
-                    spaceBetween={-120}
-                    centeredSlides={false}
-                    scrollbar={{
-                        hide: false,
-                        draggable: true,
-                        dragSize: 200,
-                    }}
-                    modules={[Scrollbar]}
-                    className="flex w-full"
-                >
-                    <SwiperSlide className="flex ml-[5rem] justify-center w-auto h-auto"><MainCard text="카드3"
-                                                                                                   sor="https://ifh.cc/g/6l8LDF.jpg"/></SwiperSlide>
-                    <SwiperSlide className="flex ml-[14rem] justify-center w-auto h-auto"><MainCard text="카드4"
-                                                                                                    sor="https://ifh.cc/g/9nDygD.png"/></SwiperSlide>
-                </Swiper>
-            </div>
+
         </div>
     );
 };

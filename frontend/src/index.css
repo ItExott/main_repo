@@ -81,12 +81,23 @@ button:focus-visible {
 .swiper-slide {
   background-position: center;
   background-size: cover;
-  width: 350px;
-  height: 350px;
+  width: 100%;
+  height: 100%;
   display: flex;
   text-align:center;
   align-items:center;
   justify-content:center;
+}
+
+.maincard-slide {
+  background-position: center;
+  background-size: cover;
+  width: 350px;
+  height: 16rem;
+  display: flex;
+  text-align: center;
+  align-items: center;
+  justify-content: center;
 }
 
 .swiper-slide img {
@@ -97,6 +108,16 @@ button:focus-visible {
   align-items:center;
   justify-content:center;
 }
+
+.slide1 img {
+  display: flex;
+  width: 100%;
+  height: 100%;
+  text-align:center;
+  align-items:center;
+  justify-content:center;
+}
+
 .swiper-button-prev,
 .swiper-button-next {
   background-color: gray;

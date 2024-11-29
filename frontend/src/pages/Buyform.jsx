@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useParams, useNavigate } from 'react-router-dom';
 import axios from "axios";
 import { MdCheckBoxOutlineBlank } from "react-icons/md";
 import {FaPlaystation, FaRegSquareCheck} from "react-icons/fa6";
 
 const Buyform = ({ money, setMoney }) => {
+    const location = useLocation(); // To get the state passed via navigate
+    const queryParams = new URLSearchParams(location.search);
     const [cartProducts, setCartProducts] = useState([]);
     const [activePaymentMethod, setActivePaymentMethod] = useState("무통장");
     const [selectedBank, setSelectedBank] = useState("농협은행");
@@ -22,6 +24,9 @@ const Buyform = ({ money, setMoney }) => {
     const [name, setName] = useState(""); // 추가된 상태
     const [isUserInfoFilled, setIsUserInfoFilled] = useState(false);
     const [isbuyModalOpen, setIsbuyModalOpen] = useState(false);  // 팝업 상태
+    const [prodlist, setProdlist] = useState([]);
+    const signal = queryParams.get('signal'); // 'buy' 또는 'cart'
+    const { prodid } = useParams(); // To get the product ID from the URL if needed
 
 
     const fetchUserData = async () => {
@@ -43,12 +48,38 @@ const Buyform = ({ money, setMoney }) => {
         }
     };
 
+    const { prodid: passedProdid, prodtitle, prodprice } = location.state || {};
+
+    const [productDetails, setProductDetails] = useState({
+        prodid: passedProdid || '',
+        prodtitle: prodtitle || '',
+        prodprice: prodprice || ''
+    });
+
+    useEffect(() => {
+        const fetchProductDetails = async () => {
+            if (!productDetails.prodid) return;
+
+            try {
+                const response = await axios.get(`http://localhost:8080/product/${productDetails.prodid}`);
+                setProductDetails(response.data); // Update the state with the fetched data
+            } catch (error) {
+                console.error("Error fetching product details:", error);
+                setError("상품 정보를 불러오는 데 실패했습니다.");
+            } finally {
+                setIsLoading(false);
+            }
+        };
+
+        fetchProductDetails();
+    }, [productDetails.prodid]);
+
     useEffect(() => {
     const fetchMoneyData = async () => {
         try {
             const response = await axios.get("http://localhost:8080/api/userinfo", { withCredentials: true });
             if (response.data.success) {
-                const { money } = response.data;
+                const { money} = response.data;
                 setMoney(money);
             } else {
                 // 성공하지 않은 응답 처리
@@ -150,24 +181,58 @@ const Buyform = ({ money, setMoney }) => {
     };
 
     // 백엔드에서 장바구니 제품 정보 가져오기
-    useEffect(() => {
-        const fetchCartProducts = async () => {
-            try {
-                // Ensure credentials (cookies) are included in the request
-                const response = await axios.get("http://localhost:8080/cart-products", {
-                    withCredentials: true, // Ensure session cookie is sent
-                });
-                setCartProducts(response.data);
-                setIsLoading(false);
-            } catch (error) {
-                console.error("Error fetching cart products:", error);
-                setError("장바구니 제품을 불러오는 데 실패했습니다.");
-                setIsLoading(false);
-            }
-        };
+    const fetchCartProducts = async () => {
+        try {
+            const response = await axios.get("http://localhost:8080/cart-products", {
+                withCredentials: true, // Ensure session cookie is sent
+            });
+            setCartProducts(response.data); // 장바구니 제품 정보 설정
+            setIsLoading(false);
+        } catch (error) {
+            console.error("Error fetching cart products:", error);
+            setError("장바구니 제품을 불러오는 데 실패했습니다.");
+            setIsLoading(false);
+        }
+    };
 
-        fetchCartProducts();
-    }, []);
+    // 구매 정보 (buylist) 불러오기
+    const fetchBuyProduct = async () => {
+        try {
+            const response = await axios.get("http://localhost:8080/api/buy-product", {
+                withCredentials: true,
+            });
+
+            console.log('API Response:', response.data); // 응답 데이터 구조 확인
+
+            // 응답 데이터가 객체일 경우 배열로 감싸기
+            if (Array.isArray(response.data)) {
+                setCartProducts(response.data); // 이미 배열이면 그대로 처리
+            } else {
+                setCartProducts([response.data]); // 객체라면 배열로 감싸서 처리
+            }
+
+            setIsLoading(false);
+        } catch (error) {
+            console.error("Error fetching buy product:", error);
+            setError("구매할 제품 정보를 불러오는 데 실패했습니다.");
+            setIsLoading(false);
+        }
+    };
+
+    // 신호에 따라 적절한 데이터를 불러오는 로직
+    useEffect(() => {
+        setIsLoading(true); // 로딩 상태 시작
+        setError(null); // 이전 에러 초기화
+
+        if (signal === 'cart') {
+            fetchCartProducts(); // 장바구니 데이터 불러오기
+        } else if (signal === 'buy') {
+            fetchBuyProduct(); // buylist 데이터 불러오기
+        } else {
+            setError("잘못된 요청입니다."); // 잘못된 신호 처리
+            setIsLoading(false);
+        }
+    }, [signal]);
 
     const handlePaymentClick = (method) => {
         setActivePaymentMethod(activePaymentMethod === method ? null : method);
@@ -210,10 +275,15 @@ const Buyform = ({ money, setMoney }) => {
         try {
             const amountToDeduct = totalPrice - discountPrice; // The final payment amount
             const response = await axios.post("http://localhost:8080/api/deductMoney",
-                { amount: amountToDeduct },
+                {
+                    amount: amountToDeduct,
+                    products: cartProducts.map((product) => product.prodid),
+                    startDate: startDate
+                },
                 { withCredentials: true }
             );
 
+            // 서버가 결제 성공을 응답했을 경우
             if (response.data.success) {
                 const updatedMoney = sessionStorage.getItem("money") - amountToDeduct;
                 sessionStorage.setItem("money", updatedMoney);
@@ -222,13 +292,22 @@ const Buyform = ({ money, setMoney }) => {
                 setIsbuyModalOpen(false); // 팝업 닫기
                 navigate("/"); // 홈으로 이동
             } else {
+                // 결제 실패 메시지 출력
                 alert(response.data.message || "결제 실패");
             }
         } catch (error) {
             console.error("Error during payment:", error);
-            alert("결제 중 문제가 발생했습니다.");
+
+            // 서버에서 '잔액이 부족합니다' 오류를 응답했을 경우 처리
+            if (error.response && error.response.status === 400 && error.response.data.message === '잔액이 부족합니다.') {
+                alert("잔액이 부족합니다. 결제를 진행할 수 없습니다.");
+            } else {
+                // 다른 오류 처리
+                alert("결제 중 문제가 발생했습니다.");
+            }
         }
     };
+
 
     const navigate = useNavigate();
 

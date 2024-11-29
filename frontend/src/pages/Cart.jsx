@@ -127,7 +127,9 @@ const Cart = () => {
         } else {
             // cartProducts를 JSON.stringify()로 문자열로 변환하여 저장
             sessionStorage.setItem("prodlist", JSON.stringify(cartProducts)); // cartProducts를 저장
-            navigate("/Buyform");
+
+            // Buyform으로 이동 시 signal=cart를 쿼리 파라미터로 추가
+            navigate("/Buyform?signal=cart");
         }
     };
 
