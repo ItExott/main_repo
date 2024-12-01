@@ -5,7 +5,7 @@ import { FaPlaystation } from "react-icons/fa6";
 import {useNavigate} from "react-router-dom";
 
 const Mypage = () => {
-    const [userData, setUserData] = useState(null);  // User data for profile (name, etc.)
+    const [userData, setUserData] = useState(null);
     const [activeTab, setActiveTab] = useState('subscriptions');
     const [recentItems, setRecentItems] = useState([]);
     const [subscriptions, setSubscriptions] = useState([]);
@@ -98,6 +98,8 @@ const Mypage = () => {
         navigate(`/product/${id}`);  // Navigate to the product detail page
     };
 
+    const goChangeUser = () => navigate("/MyPage/ChangeUser");
+
     return (
         <div className="flex flex-col mt-[1rem] h-full items-center justify-center mx-28">
             <a className="flex items-center text-red-400 w-[62rem] font-bold text-xl justify-center">마이페이지</a>
@@ -106,15 +108,13 @@ const Mypage = () => {
             <div className="w-[50rem] h-[15rem] mt-6 shadow-xl flex items-center">
                 <div className="w-[10rem] flex items-center ml-[3rem] h-full"><img
                     className="border-[0.15rem] shadow-mg hover:scale-110 transition-transform ease-in-out duration-500 border-red-400 rounded-full w-[10rem] h-[10rem]"
-                    src={userData.profileimg}/></div>
+                    src={`http://localhost:8080${userData.profileimg}`}/></div>
                 <div className="flex ml-[1rem] items-center w-[8rem]">
                     <div className="flex flex-col space-y-2 items-start">
                         <div
+                            onClick={goChangeUser}
                             className="text-red-400 hover:bg-red-400 cursor-pointer hover:text-white hover:scale-110 transition-transform ease-in-out duration-500 border-b-[0.1rem] border-red-400 w-[6rem] h-[2.5rem] flex justify-center items-center">
-                            <a>개인정보 변경</a></div>
-                        <div
-                            className="text-red-400 border-b-[0.1rem] cursor-pointer hover:bg-red-400 hover:text-white hover:scale-110 transition-transform ease-in-out duration-500 border-red-400 w-[4rem] h-[2.5rem] flex justify-center items-center">
-                            <a>PW 변경</a></div>
+                            <a>회원정보 수정</a></div>
                         <div
                             className="text-red-400 border-b-[0.1rem] cursor-pointer hover:bg-red-400 hover:text-white hover:scale-110 transition-transform ease-in-out duration-500 border-red-400 w-[4rem] h-[2.5rem] flex justify-center items-center">
                             <a>회원 탈퇴</a></div>
@@ -160,8 +160,8 @@ const Mypage = () => {
                 <div className="w-full">
                     {/* Display subscriptions */}
                     <div className="grid grid-cols-3 gap-4">
-                        {subscriptions.map(item => (
-                            <div key={item.id}
+                        {subscriptions.map((item, index) => (
+                            <div key={`${item.id}-${index}`}
                                  onClick={() => ClickCard(item.prodid)} className="border cursor-pointer h-[12.5rem] rounded-lg shadow-md hover:scale-105 transition-transform duration-500">
                                 <img src={item.iconpicture} className="w-full h-32 object-cover rounded-md"/>
                                 <h3 className="text-lg text-red-400 mt-2">{item.prodtitle}</h3>
@@ -200,8 +200,8 @@ const Mypage = () => {
                 <div className="w-full">
                     {/* Display recent items */}
                     <div className="grid grid-cols-3 gap-4">
-                        {recentItems.map(item => (
-                            <div key={item.id} onClick={() => handleClick(item.prodid)} className="border cursor-pointer h-[11rem] rounded-lg shadow-md hover:scale-105 transition-transform duration-500">
+                        {recentItems.map((item, index) => (
+                            <div key={`${item.id}-${index}`} onClick={() => handleClick(item.prodid)} className="border cursor-pointer h-[11rem] rounded-lg shadow-md hover:scale-105 transition-transform duration-500">
                                 <img src={item.iconpicture} alt={item.name} className="w-full h-32 object-cover rounded-md" />
                                 <h3 className="text-lg text-red-400 mt-2">{item.prodtitle}</h3>
                             </div>
@@ -213,8 +213,8 @@ const Mypage = () => {
                 <div className="w-full">
                     {/* 관심 짐 목록을 표시 */}
                     <div className="grid grid-cols-3 gap-4">
-                        {likedItems.map(item => (
-                            <div key={item.prodid} onClick={() => handleClick(item.prodid)} className="border cursor-pointer h-[11rem] rounded-lg shadow-md hover:scale-105 transition-transform duration-500">
+                        {likedItems.map((item, index) => (
+                            <div key={`${item.id}-${index}`} onClick={() => handleClick(item.prodid)} className="border cursor-pointer h-[11rem] rounded-lg shadow-md hover:scale-105 transition-transform duration-500">
                                 <img src={item.iconpicture} alt={item.prodtitle} className="w-full h-32 object-cover rounded-md" />
                                 <h3 className="text-lg text-red-400 mt-2">{item.prodtitle}</h3>
                             </div>

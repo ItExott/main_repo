@@ -2,6 +2,9 @@ const express = require('express');
 const mysql = require('mysql');
 const cors = require('cors');
 const session = require('express-session');
+const multer = require('multer');
+const path = require('path');
+const fs = require('fs');
 
 const app = express();
 const port = 8080;
@@ -21,6 +24,25 @@ app.use(cors({
 
 // JSON 요청 본문 처리
 app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+
+const uploadDir = path.join(__dirname, 'src/uploads');
+if (!fs.existsSync(uploadDir)) {
+    fs.mkdirSync(uploadDir, { recursive: true });
+}
+
+const storage = multer.diskStorage({
+    destination: (req, file, cb) => {
+        cb(null, uploadDir); // 파일 저장 위치
+    },
+    filename: (req, file, cb) => {
+        const ext = path.extname(file.originalname); // 파일 확장자
+        const filename = Date.now() + ext; // 고유한 파일명 (타임스탬프 + 확장자)
+        cb(null, filename); // 파일명 설정
+    }
+});
+
+const upload = multer({ storage: storage });
 
 
 // MySQL 데이터베이스 연결 설정
@@ -238,7 +260,7 @@ app.get('/api/userinfo', (req, res) => {
     if (req.session && req.session.userId) {
         const userId = req.session.userId;
 
-        const query = 'SELECT money FROM users WHERE userId = ?';
+        const query = 'SELECT money,email,userpw FROM users WHERE userId = ?';
 
         db.query(query, [userId], (err, results) => {
             if (err) {
@@ -248,13 +270,18 @@ app.get('/api/userinfo', (req, res) => {
 
             if (results.length > 0) {
                 const money = results[0].money;
+                const email = results[0].email;
+                const userpw = results[0].userpw;
+                const profileImgUrl = req.session.profileimg || '/uploads/default-profile.png';
                 res.json({
                     success: true,
                     userId: req.session.userId,
                     name: req.session.name,
-                    profileimg: req.session.profileimg,
+                    profileimg: profileImgUrl,
                     phonenumber: req.session.phonenumber,
-                    money: money
+                    money: money,
+                    userpw: userpw,
+                    email: email
                 });
             } else {
                 console.log("사용자가 존재하지 않음");
@@ -768,11 +795,172 @@ app.get('/api/buy-product', (req, res) => {
     });
 });
 
+app.post('/api/upload', upload.single('profileImg'), (req, res) => {
+    try {
+        // 업로드된 이미지의 경로
+        const filePath = `/uploads/${req.file.filename}`;
+
+        // 세션에 프로필 이미지 경로 저장
+        req.session.profileimg = filePath;
+
+        res.status(200).send({ url: filePath });
+    } catch (error) {
+        res.status(500).send({ message: 'Error uploading file', error });
+    }
+});
+
+app.put('/api/updateProfile', (req, res) => {
+    const { profileimg } = req.body;
+    const userId = req.session.userId;  // 세션에서 userId 가져오기
+
+    // userId가 세션에 없을 경우 처리
+    if (!userId) {
+        return res.status(401).send({ message: 'User not logged in' });
+    }
+
+    if (!profileimg) {
+        return res.status(400).send({ message: 'No profile image provided' });
+    }
+
+    // 쿼리 실행 전 로그 출력
+    console.log('Received profileimg:', profileimg);
+    console.log('User ID:', userId);
+
+    const query = 'UPDATE users SET profileimg = ? WHERE userid = ?';
+    db.query(query, [profileimg, userId], (err, result) => {
+        if (err) {
+            console.error('Database error:', err);  // DB 오류 출력
+            return res.status(500).send({ message: 'Database update error', error: err });
+        }
+
+        // 업데이트 결과 확인
+        console.log('Update result:', result);  // 쿼리 실행 결과 확인
+
+        if (result.affectedRows === 0) {
+            return res.status(404).send({ message: 'User not found or profile image not updated' });
+        }
+
+        res.status(200).send({ message: 'Profile image updated successfully' });
+    });
+});
+
+const util = require('util');
+const query = util.promisify(db.query).bind(db);  // MySQL의 콜백을 Promise로 변경
+
+app.put('/api/updateEmail', async (req, res) => {
+    const { email } = req.body;  // 새로운 이메일 값
+    const userId = req.session.userId;  // 로그인된 사용자 ID (세션에서 가져오기)
+
+    if (!email || !userId) {
+        return res.status(400).send({ message: 'Email and User ID are required' });
+    }
+
+    const query = 'UPDATE users SET email = ? WHERE userid = ?';  // 이메일 업데이트 쿼리
+
+    try {
+        db.query(query, [email, userId], (err, result) => {
+            if (err) {
+                console.error('Error updating email:', err);
+                return res.status(500).send({ message: 'Server error occurred while updating email.' });
+            }
+
+            if (result.affectedRows === 1) {
+                return res.status(200).send({ message: 'Email updated successfully' });
+            } else {
+                return res.status(400).send({ message: 'Email update failed. User not found or invalid email.' });
+            }
+        });
+    } catch (error) {
+        console.error('Unexpected error:', error);
+        res.status(500).send({ message: 'Unexpected error occurred.' });
+    }
+});
+
+// 현재 비밀번호 확인
+app.post('/api/checkPassword', (req, res) => {
+    if (req.session && req.session.userId) {
+        const userId = req.session.userId;
+        const currentPassword = req.body.currentPassword;
+
+        // 비밀번호 확인을 위한 쿼리
+        const query = 'SELECT userpw FROM users WHERE userId = ?';
+
+        db.query(query, [userId], (err, results) => {
+            if (err) {
+                console.error('DB 쿼리 오류:', err);
+                return res.status(500).json({ success: false, message: 'Database error' });
+            }
+
+            if (results.length > 0) {
+                const storedPassword = results[0].userpw; // DB에 저장된 비밀번호
+
+                // 입력된 비밀번호와 DB의 비밀번호 비교 (단순 비교로 처리)
+                if (currentPassword === storedPassword) {
+                    return res.json({ success: true, isCorrect: true });
+                } else {
+                    return res.json({ success: false, isCorrect: false });
+                }
+            } else {
+                console.log("사용자가 존재하지 않음");
+                return res.status(404).json({ success: false, message: 'User not found' });
+            }
+        });
+    } else {
+        console.log("로그인되지 않은 상태");
+        res.status(401).json({ success: false, message: 'User not logged in' });
+    }
+});
+
+app.put('/api/updatePassword', (req, res) => {
+    const { currentPassword, newPassword } = req.body;  // 현재 비밀번호와 새 비밀번호
+    const userId = req.session.userId;  // 세션에서 로그인한 사용자 ID
+
+    if (!currentPassword || !newPassword) {
+        return res.status(400).json({ success: false, message: '현재 비밀번호와 새 비밀번호를 모두 입력해주세요.' });
+    }
+
+    if (newPassword.length < 6) {
+        return res.status(400).json({ success: false, message: '새 비밀번호는 최소 6자 이상이어야 합니다.' });
+    }
+
+    // 1. 현재 비밀번호 확인
+    const query = 'SELECT userpw FROM users WHERE userId = ?';
+    db.query(query, [userId], (err, results) => {
+        if (err) {
+            console.error('DB 쿼리 오류:', err);
+            return res.status(500).json({ success: false, message: '서버 오류' });
+        }
+
+        if (results.length > 0) {
+            const storedPassword = results[0].userpw;  // DB에서 가져온 저장된 비밀번호
+
+            // 2. 현재 비밀번호가 맞는지 확인
+            if (currentPassword !== storedPassword) {
+                return res.status(400).json({ success: false, message: '현재 비밀번호가 일치하지 않습니다.' });
+            }
+
+            // 3. 새 비밀번호로 업데이트
+            const updateQuery = 'UPDATE users SET userpw = ? WHERE userId = ?';
+            db.query(updateQuery, [newPassword, userId], (updateErr, updateResult) => {
+                if (updateErr) {
+                    console.error('DB 업데이트 오류:', updateErr);
+                    return res.status(500).json({ success: false, message: '비밀번호 업데이트 중 오류가 발생했습니다.' });
+                }
+
+                if (updateResult.affectedRows === 1) {
+                    return res.status(200).json({ success: true, message: '비밀번호가 성공적으로 업데이트되었습니다.' });
+                } else {
+                    return res.status(400).json({ success: false, message: '비밀번호 업데이트에 실패했습니다.' });
+                }
+            });
+        } else {
+            return res.status(404).json({ success: false, message: '사용자가 존재하지 않습니다.' });
+        }
+    });
+});
 
 
-
-
-
+app.use('/uploads', express.static(path.join(__dirname, 'src/uploads')));
 
 // 서버 시작
 app.listen(port, () => {

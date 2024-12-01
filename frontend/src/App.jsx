@@ -17,6 +17,7 @@ import Cart from "./pages/Cart.jsx";
 import MBL_CRTFC from "./pages/MBL_CRTFC.jsx";
 import Buyform from "./pages/Buyform.jsx";
 import MyPage from "./pages/MyPage.jsx";
+import ChangeUser from "./pages/ChangeUser.jsx";
 
 function App() {
     const [loginStatus, setLoginStatus] = useState(false);
@@ -103,20 +104,21 @@ function App() {
                 handleLogout={handleLogout}
             />
             <Routes>
-                <Route path="/Cart" element={<Cart />} />
-                <Route path="/MyPage" element={<MyPage/>} />
-                <Route path="/Buyform" element={<Buyform money={money} setMoney={setMoney} />} />
-                <Route path="/Find_Id" element={<Find_Id />} />
-                <Route path="/Find_Id_Check" element={<Find_Id_Check />} />
-                <Route path="/Find_Pw" element={<Find_Pw />} />
-                <Route path="/Find_Pw_Check" element={<Find_Pw_Check />} />
+                <Route path="/" element={<Home />} /> {/* 홈 */}
+                <Route path="/Agree_to_terms" element={<Agree_to_terms />} />  {/* 회원가입 시작 */}
                 <Route path="/Agree_to_terms/MBL_CRTFC" element={<MBL_CRTFC />} />
                 <Route path="/Agree_to_terms/MBL_CRTFC/SignUp" element={<SignUp />} />
-                <Route path="/Complete_SignUp" element={<Complete_SignUp />} />
-                <Route path="/Agree_to_terms" element={<Agree_to_terms />} />
-                <Route path="/Product_Main/:category" element={<Product_Main />} />
-                <Route path="/product/:id" element={<Product userProfile={userProfile} />} />
-                <Route path="/" element={<Home />} />
+                <Route path="/Complete_SignUp" element={<Complete_SignUp />} />  {/* 회원가입 끝 */}
+                <Route path="/Find_Id" element={<Find_Id />} /> {/* 각종 개인정보 찾기 */}
+                <Route path="/Find_Id_Check" element={<Find_Id_Check />} />
+                <Route path="/Find_Pw" element={<Find_Pw />} />
+                <Route path="/Find_Pw_Check" element={<Find_Pw_Check />} />  {/* 각종 개인정보 찾기 끝 */}
+                <Route path="/MyPage/ChangeUser" element={<ChangeUser />}/> {/* 개인정보 변경 */}
+                <Route path="/Product_Main/:category" element={<Product_Main />} /> {/* 카테고리별 제품 */}
+                <Route path="/product/:id" element={<Product userProfile={userProfile} />} /> {/* 제품 상세 */}
+                <Route path="/Cart" element={<Cart />} /> {/* 장바구니 */}
+                <Route path="/Buyform" element={<Buyform money={money} setMoney={setMoney} />} /> {/* 결제 창 */}
+                <Route path="/MyPage" element={<MyPage/>} /> {/* 마이페이지 */}
             </Routes>
         </div>
     );
