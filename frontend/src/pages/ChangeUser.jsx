@@ -382,6 +382,7 @@ const ChangeUser = () => {
                         <div className="flex w-[8rem] h-full items-center justify-center"><a
                             className="flex mt-[0.1rem] items-center text-red-400 justify-center text-xl">수신설정</a>
                         </div>
+
                         <div className="flex border-r-2 h-[2rem] border-red-400"></div>
                         <div className="flex flex-col">
                             <div className="flex flex-row items-center h-full ml-[2rem]">

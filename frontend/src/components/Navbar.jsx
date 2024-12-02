@@ -101,9 +101,9 @@ const Navbar = ({ loginStatus, setLoginStatus, userProfile, setUserProfile, mone
 
     return (
         <div className="navbar bg-base-100">
-            <div className="navbar-start">
+            <div className="navbar-start mr-[2rem]">
                 <a onClick={gohome} className="btn btn-ghost w-full h-full text-xl">
-                    <img className="w-[14rem] h-[4rem]" alt="로고" src="https://ifh.cc/g/oRNlfd.png" />
+                    <img className="w-[14rem] h-[4rem] shadow-md rounded-3xl" alt="로고" src="https://ifh.cc/g/PTwhob.jpg" />
                 </a>
             </div>
 

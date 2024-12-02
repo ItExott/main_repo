@@ -940,7 +940,7 @@ app.put('/api/updatePassword', (req, res) => {
             }
 
             // 3. 새 비밀번호로 업데이트
-            const updateQuery = 'UPDATE users SET userpw = ? WHERE userId = ?';
+            const updateQuery = 'UPDATE users SET userpw = ? WHERE userid = ?';
             db.query(updateQuery, [newPassword, userId], (updateErr, updateResult) => {
                 if (updateErr) {
                     console.error('DB 업데이트 오류:', updateErr);
@@ -958,6 +958,36 @@ app.put('/api/updatePassword', (req, res) => {
         }
     });
 });
+
+app.delete("/api/users", (req, res) => {
+    const userId = req.session?.userId;
+
+    if (!userId) {
+        return res.status(401).json({ error: "로그인되지 않았거나 유효하지 않은 세션입니다." });
+    }
+
+    const query = "DELETE FROM users WHERE userid = ?";
+    db.query(query, [userId], (err, result) => {
+        if (err) {
+            console.error("회원 삭제 중 오류 발생:", err);
+            return res.status(500).json({ error: "회원 삭제 중 오류가 발생했습니다." });
+        }
+
+        if (result.affectedRows === 0) {
+            return res.status(404).json({ error: "해당 회원을 찾을 수 없습니다." });
+        }
+
+        // 세션 종료
+        req.session.destroy((err) => {
+            if (err) {
+                console.error("세션 종료 중 오류 발생:", err);
+                return res.status(500).json({ error: "세션 종료 중 오류가 발생했습니다." });
+            }
+            res.status(200).json({ message: "회원 삭제 및 로그아웃 완료!" });
+        });
+    });
+});
+
 
 
 app.use('/uploads', express.static(path.join(__dirname, 'src/uploads')));
