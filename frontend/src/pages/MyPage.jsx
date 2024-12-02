@@ -99,6 +99,7 @@ const Mypage = () => {
     };
 
     const goChangeUser = () => navigate("/MyPage/ChangeUser");
+    const goDeleteUser = () => navigate("/MyPage/DeleteUser");
 
     return (
         <div className="flex flex-col mt-[1rem] h-full items-center justify-center mx-28">
@@ -116,6 +117,7 @@ const Mypage = () => {
                             className="text-red-400 hover:bg-red-400 cursor-pointer hover:text-white hover:scale-110 transition-transform ease-in-out duration-500 border-b-[0.1rem] border-red-400 w-[6rem] h-[2.5rem] flex justify-center items-center">
                             <a>회원정보 수정</a></div>
                         <div
+                            onClick={goDeleteUser}
                             className="text-red-400 border-b-[0.1rem] cursor-pointer hover:bg-red-400 hover:text-white hover:scale-110 transition-transform ease-in-out duration-500 border-red-400 w-[4rem] h-[2.5rem] flex justify-center items-center">
                             <a>회원 탈퇴</a></div>
                     </div>
