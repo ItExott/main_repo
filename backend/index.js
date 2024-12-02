@@ -197,7 +197,7 @@ app.post('/api/check-userId', async (req, res) => {
 app.post('/api/signup', (req, res) => {
     const { userId, userpw, name, email, phoneNumber, address, userType } = req.body;
 
-    const query = 'INSERT INTO users (userId, userpw, name, email, phoneNumber, address, userType) VALUES (?, ?, ?, ?, ?, ?, ?)';
+    const query = 'INSERT INTO users (userId, userpw, name, email, phoneNumber, address, userType, money) VALUES (?, ?, ?, ?, ?, ?, ?,0)';
     db.query(query, [userId, userpw, name, email, phoneNumber, address, userType], (err) => {
         if (err) {
             console.error("Error inserting user:", err);
