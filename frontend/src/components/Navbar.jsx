@@ -157,11 +157,15 @@ const Navbar = ({ loginStatus, setLoginStatus, userProfile, setUserProfile, mone
                 </div>
                 <div className="dropdown dropdown-end">
                     <div tabIndex={0} role="btn" className="btn btn-ghost btn-circle avatar">
-                        {userProfile && userProfile.profileimg && (
-                            <div className="w-10 rounded-full">
-                                <img src={`http://localhost:8080${userProfile.profileimg}`} />
-                            </div>
-                        )}
+                        {loginStatus && userProfile && userProfile.profileimg ? (
+                                <div className="w-10 rounded-full">
+                                    <img src={'http://localhost:8080${userProfile.profileimg}'} alt="User Avatar" />
+                                        </div>
+                                        ) : (
+                                        <div className="w-10 rounded-full">
+                                        <img src="https://ifh.cc/g/bz6Sap.png" alt="Default Avatar" />
+                                        </div>
+                                        )}
                     </div>
                     <div
                         tabIndex={0}
