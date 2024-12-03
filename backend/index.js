@@ -5,6 +5,7 @@ const session = require('express-session');
 const multer = require('multer');
 const path = require('path');
 const fs = require('fs');
+let todaySettings = {}; // { userId: todaySetting } 형태로 저장
 
 const app = express();
 const port = 8080;
@@ -341,6 +342,91 @@ app.post('/add-to-cart', (req, res) => {
         });
     });
 });
+
+app.get('/api/attendance/:userId', (req, res) => {
+    const { userId } = req.params;
+
+    // 쿼리 실행
+    const query = 'SELECT attendance FROM attendance WHERE userid = ?';
+
+    db.query(query, [userId], (err, results) => {
+        if (err) {
+            console.error("출석 데이터 로드 오류:", err);
+            return res.status(500).json({ success: false, error: '서버 오류' });
+        }
+
+        // 결과가 없을 경우 처리
+        if (results.length > 0) {
+            // 출석 정보 (attendance)를 가져와서 문자열을 처리
+            const attendanceDays = results[0].attendance.split(',').map(day => parseInt(day.trim()));
+
+            // 출석일을 1~31 범위로 필터링
+            const days = attendanceDays.filter(day => day >= 1 && day <= 31);
+
+            // 출석일 반환
+            res.json({ success: true, days });
+        } else {
+            // 해당 유저의 출석 데이터가 없을 경우
+            res.status(404).json({ success: false, error: '출석 데이터가 없습니다.' });
+        }
+    });
+});
+
+
+
+
+
+// "오늘 하루 보지 않기" 상태 저장
+function resetTodaySettingsAtMidnight() {
+    const now = new Date();
+    const timeUntilMidnight = new Date(now.setHours(24, 0, 0, 0)) - new Date(); // 자정까지 남은 시간 계산
+
+    setTimeout(() => {
+        // 자정이 되면 todaySettings 객체를 초기화
+        todaySettings = {};
+
+        // 매일 자정마다 this function이 실행되도록 반복
+        setInterval(() => {
+            todaySettings = {}; // todaySettings 초기화
+            console.log('오늘 하루 보지 않기 설정이 초기화되었습니다.');
+        }, 24 * 60 * 60 * 1000); // 24시간마다 실행
+    }, timeUntilMidnight);
+}
+
+// 서버 시작 시 자정 리셋 함수 호출
+resetTodaySettingsAtMidnight();
+
+// 오늘 하루 보지 않기 상태 저장
+app.post('/api/attendance/today', (req, res) => {
+    const { userId, today } = req.body;
+
+    // 서버 메모리에 today 설정 저장
+    todaySettings[userId] = today;
+    console.log('세션에 저장된 today 값:', req.session.today);
+    res.json({ success: true });
+});
+
+// "오늘 하루 보지 않기" 상태 조회
+app.get('/api/attendance/today/:userId', (req, res) => {
+    const { userId } = req.params;
+
+    // 서버 메모리에서 오늘 하루 보지 않기 설정을 조회
+    const today = todaySettings[userId] || 0; // 기본값 0 (설정 안됨)
+    console.log('세션에서 조회된 today 값:', today);
+
+    res.json({ success: true, today });
+});
+// 자정마다 서버 메모리에서 모든 사용자에 대해 today 값을 0으로 초기화
+setInterval(() => {
+    const currentHour = new Date().getHours();
+    const currentMinute = new Date().getMinutes();
+
+    // 자정이 되면 today 값을 0으로 초기화
+    if (currentHour === 0 && currentMinute === 0) {
+        todaySettings = {}; // 모든 사용자에 대해 today 설정 초기화
+        console.log('오늘 하루 보지 않기 상태 초기화');
+    }
+}, 60000); // 1분마다 확인
 
 app.get('/cart-products', (req, res) => {
     // Check if user is logged in by verifying session

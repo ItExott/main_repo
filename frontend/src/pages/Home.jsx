@@ -46,6 +46,16 @@ const Home = () => {
                 if (response.data.success) {
                     setIsLoggedIn(true);
                     setUserId(response.data.userId);
+                    // "오늘 하루 보지 않기" 설정 확인
+                    const today = new Date().toISOString().split('T')[0]; // 오늘 날짜
+                    const dontShowDate = localStorage.getItem('dontShowAttendance');
+
+                    // 설정되지 않았거나 자정을 넘겼다면 팝업 표시
+                    if (dontShowDate == today) {
+                        setIsCalendarOpen(true); // 출석 체크 팝업 열기
+
+                    }
+
                 } else {
                     setIsLoggedIn(false);
                 }
@@ -78,11 +88,6 @@ const Home = () => {
         setShowSuggestions(e.target.value.length > 0); // 입력이 있으면 추천 박스 표시
     };
 
-    // 로그인 상태 변경 함수
-    const handleLogin = () => {
-        setIsLoggedIn(true); // 로그인 상태로 변경
-        setIsCalendarOpen(true); // 로그인 후 출석 체크 팝업 열기
-    };
 
     // 출석 체크 날짜 선택 처리
     const handleDateSelect = (date) => {
@@ -114,17 +119,18 @@ const Home = () => {
         setOpenLoginModal(locationOpenLoginModal); // location에서 받은 값으로 openLoginModal 초기화
     }, [locationOpenLoginModal]);
 
+
     const handleTabChange = (tab) => {
         setActiveTab(tab);
     };
 
     return (
         <div className="flex flex-col h-full w-full items-center justify-center">
-            {/* 출석 체크 팝업 */}
             <Attendance
                 isOpen={isCalendarOpen}
                 onClose={() => setIsCalendarOpen(false)} // 팝업 닫기
                 onDateSelect={handleDateSelect} // 날짜 선택 시 처리 함수
+                userId={userId} // userId 전달
             />
             {/* 검색창 */}
             <div className="flex flex-row h-14 w-[35rem] items-center justify-center shadow-md rounded-xl relative">

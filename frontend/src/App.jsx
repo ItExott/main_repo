@@ -19,6 +19,7 @@ import Buyform from "./pages/Buyform.jsx";
 import MyPage from "./pages/MyPage.jsx";
 import ChangeUser from "./pages/ChangeUser.jsx";
 import DeleteUser from "./pages/DeleteUser.jsx";
+import Attendance from "./popup/Attendance.jsx";
 
 function App() {
     const [loginStatus, setLoginStatus] = useState(false);

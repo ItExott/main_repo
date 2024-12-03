@@ -1,57 +1,103 @@
 import React, { useState, useEffect } from "react";
 import 'react-calendar/dist/Calendar.css';
 import { FaRegCircle } from "react-icons/fa6";
-const Attendance = ({ isOpen, onClose, onDateSelect }) => {
-    const [selectedDate, setSelectedDate] = useState(null); // 선택된 날짜 상태
+import axios from "axios";
 
+const Attendance = ({ userId, isOpen, onClose, onDateSelect }) => {
+    const [items, setItems] = useState(Array(32).fill(0)); // 0으로 초기화된 배열 (0~31)
+    const [dontShowToday, setDontShowToday] = useState(false); // "오늘 하루 보지 않기" 상태
+
+    // userId를 props로 직접 전달받았으므로, userProfile에서 가져오는 방식은 불필요
+    // const userId = userProfile?.userId;  // 이 줄은 제거해야 함
+
+    // userId가 없는 경우, 출석 데이터를 요청하지 않도록 방지
     useEffect(() => {
-        // 팝업이 열릴 때마다 선택된 날짜를 초기화
-        if (isOpen) {
-            setSelectedDate(null); // 선택된 날짜 초기화
-        }
-    }, [isOpen]);
+        if (!userId) return; // userId가 없으면 API 요청하지 않음
+        fetchAttendanceData(); // userId가 있으면 출석 데이터 불러오기
+        checkDontShowToday(); // 로그인 시 오늘 하루 보지 않기 설정 체크
+    }, [userId]);
 
-    const handleDateChange = (date) => {
-        setSelectedDate(date); // 날짜 선택 시 상태 업데이트
-        onDateSelect(date); // 부모 컴포넌트로 선택된 날짜 전달
-        onClose(); // 팝업 닫기
+    // 오늘 하루 보지 않기 설정을 서버에서 가져오기
+    const checkDontShowToday = async () => {
+        try {
+            const response = await axios.get(`http://localhost:8080/api/attendance/today/${userId}`);
+            if (response.data.success && response.data.today === 1) {
+                setDontShowToday(true);
+            }
+        } catch (error) {
+            console.error("오늘 하루 보지 않기 설정 로드 실패:", error);
+        }
     };
 
-    const items = [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,1,1,2,3];
+    // 출석 데이터를 가져오는 함수
+    const fetchAttendanceData = async () => {
+        try {
+            const response = await axios.get(`http://localhost:8080/api/attendance/${userId}`);
+            if (response.data.success) {
+                const attendanceDays = response.data.days; // 출석한 날짜 배열
+                const updatedItems = Array(32).fill(0); // 모든 날짜를 0으로 초기화
+                attendanceDays.forEach(day => {
+                    if (day >= 1 && day <= 31) {
+                        updatedItems[day] = 1; // 출석한 날짜를 1로 표시
+                    }
+                });
+                setItems(updatedItems); // 배열 업데이트
+            }
+        } catch (error) {
+            console.error("출석 데이터 로드 실패:", error);
+        }
+    };
 
-    if (!isOpen) return null; // 팝업이 열려 있을 때만 렌더링
+    // "오늘 하루 보지 않기" 체크박스를 클릭했을 때 처리
+    const handleDontShowTodayChange = async () => {
+        const newDontShowToday = !dontShowToday;
+        setDontShowToday(newDontShowToday);
+
+        // "오늘 하루 보지 않기"를 체크한 경우, 서버에 저장
+        try {
+            await axios.post(`http://localhost:8080/api/attendance/today`, {
+                userId,
+                today: newDontShowToday ? 1 : 0
+            });
+        } catch (error) {
+            console.error("오늘 하루 보지 않기 설정 저장 실패:", error);
+        }
+    };
+
+    // "오늘 하루 보지 않기" 설정이 되어 있으면 모달을 띄우지 않음
+    if (!isOpen || dontShowToday) return null;
 
     return (
-        /*다시보지 않음 체크창-시간설정 닫기버튼까지 아이콘변경 db에서 0부터 31까지 만든뒤 만약 db에 13이있다면 13번째 배열에 1넣고 아니라면 0*/
         <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
             <div className="bg-white p-4 w-[80rem] h-[40rem] max-w-4xl rounded-xl shadow-2xl relative flex flex-col justify-between items-center overflow-hidden">
-                <h3 className="text-xl font-bold mb-6 absolute top-4 left-1/2 transform -translate-x-1/2">출석체크</h3>
 
                 {/* 캘린더 래퍼 */}
-                <div
-                    className="flex mt-[2.4rem] w-[35rem] h-[45rem] bg-no-repeat justify-center items-center overflow-auto bg-contain bg-[url('https://ifh.cc/g/xD2kY4.jpg')] ">
-
-                    <div className="flex ml-[1.5rem] mt-[7.5rem] gap-0 grid grid-cols-7 w-[110rem] h-[25rem]"
-                         >
+                <div className="flex w-[38rem] h-[45rem] bg-no-repeat justify-center items-center overflow-auto bg-contain bg-[url('https://ifh.cc/g/v3LcXf.png')]">
+                    <div className="flex ml-[1.5rem] mt-[7.5rem] gap-0 grid grid-cols-7 w-[110rem] h-[25rem]">
                         {items.map((item, index) => (
-                            <div
-                                key={index} // 고유 키 필요
-                                className="flex mb-[2rem]"
-                            >
+                            <div key={index} className="flex mb-[2rem]">
                                 <FaRegCircle
                                     size="55"
-                                    className={`text-black cursor-pointer ${item == 0  ? "invisible" : "visible"}`}
+                                    className={`cursor-pointer ${item === 1 ? "text-green-500" : "text-gray-300"}`}
                                 />
-
                             </div>
                         ))}
                     </div>
                 </div>
 
-                <button
-                    className="absolute top-2 right-2 text-xl"
-                    onClick={onClose} // 팝업 닫기
-                >
+                {/* "오늘 하루 보지 않기" 체크박스 */}
+                <div className="flex items-center mt-4">
+                    <input
+                        type="checkbox"
+                        checked={dontShowToday}
+                        onChange={handleDontShowTodayChange}
+                        className="mr-2"
+                    />
+                    <span>오늘 하루 보지 않기</span>
+                </div>
+
+                {/* 모달 닫기 버튼 */}
+                <button className="absolute top-2 right-2 text-xl" onClick={onClose}>
                     &times;
                 </button>
             </div>
