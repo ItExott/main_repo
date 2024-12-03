@@ -19,7 +19,6 @@ import Buyform from "./pages/Buyform.jsx";
 import MyPage from "./pages/MyPage.jsx";
 import ChangeUser from "./pages/ChangeUser.jsx";
 import DeleteUser from "./pages/DeleteUser.jsx";
-import Footer from "./components/footer.jsx";
 
 function App() {
     const [loginStatus, setLoginStatus] = useState(false);
@@ -123,7 +122,6 @@ function App() {
                 <Route path="/MyPage" element={<MyPage/>} /> {/* 마이페이지 */}
                 <Route path="/MyPage/DeleteUser" element={<DeleteUser/>} /> {/* 마이페이지 */}
             </Routes>
-            <Footer/>
         </div>
     );
 }

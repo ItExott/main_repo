@@ -5,12 +5,19 @@ import axios from "axios";
 import DaumPostcode from "react-daum-postcode";
 
 const SignUp = () => {
+    const formatPhoneNumber = (number) => {
+        if (number.length === 11 && /^\d{11}$/.test(number)) {
+            return number.replace(/(\d{3})(\d{4})(\d{4})/, "$1-$2-$3");
+        }
+        return number;
+    };
+    const location = useLocation();
     const [formData, setFormData] = useState({
         userId: "",
         userpw: "",
         passwordConfirm: "",
         address: "",
-        phoneNumber: "",
+        phoneNumber:  formatPhoneNumber(location.state?.phoneNumber || ""),
         email: "",
         name: "",
         userType: "individual",
@@ -22,9 +29,8 @@ const SignUp = () => {
     const [secondaddress, setsecondaddress] = useState("");
     const [isIdAvailable, setIsIdAvailable] = useState(null); // 아이디 사용 가능 여부
     const [idCheckMessage, setIdCheckMessage] = useState(""); // 중복 체크 메시지
-    const location = useLocation();
+
     const [isadressModalOpen, setIsadressModalOpen] = useState(false);  // 팝업 상태
-    const { phoneNumber } = location.state || { phoneNumber: "" }; // 전화번호 기본값 설정
     const [errors, setErrors] = useState({});
     const navigate = useNavigate();  // useNavigate 훅을 사용해 페이지 이동 처리
 
@@ -41,29 +47,26 @@ const SignUp = () => {
         setsecondaddress(value); // 상세주소 상태 저장
     };
 
-    const formatPhoneNumber = (number) => {
-        if (number.length === 11 && /^\d{11}$/.test(number)) {
-            return number.replace(/(\d{3})(\d{4})(\d{4})/, "$1-$2-$3");
-        }
-        return number;
-    };
 
     const handleemailChange = (e) => {
         const { name, value } = e.target;
 
         if (name === "emailId") {
-            setemailid(value);  // 이메일 아이디 업데이트
+            // 이메일 아이디 업데이트
+            setemailid(value);
+            setFormData({
+                ...formData,
+                email: value && emailDomain ? `${value}@${emailDomain}` : "",
+            });
         } else if (name === "emailDomain") {
-            setemailDomain(value);  // 이메일 도메인 업데이트
+            // 이메일 도메인 업데이트
+            setemailDomain(value);
+            setFormData({
+                ...formData,
+                email: emailId && value ? `${emailId}@${value}` : "",
+            });
         }
-
-        // emailId와 emailDomain을 결합하여 email 상태 업데이트
-        setFormData({
-            ...formData,
-            email: emailId && emailDomain ? emailId + "@" + emailDomain : formData.email,
-        });
     };
-
     const onaddress = () => {
         setIsadressModalOpen(true);
     };
@@ -146,18 +149,16 @@ const SignUp = () => {
             return;
         }
 
-        const formattedPhoneNumber = formatPhoneNumber(phoneNumber);
-
         setFormData({
             ...formData,
-            address: firstaddress + " " + secondaddress,
-            phoneNumber: formattedPhoneNumber,
+            address: firstaddress + " " + secondaddress
         });
 
 
         // 백엔드로 데이터 전송
         axios.post("http://localhost:8080/api/signup", formData)
             .then(response => {
+                console.log("최종 전송 데이터:", formData);
                 if (response.data.success) {
                     navigate('/Complete_SignUp', {
                         state: { name: formData.name }
@@ -367,7 +368,7 @@ const SignUp = () => {
                                         <a className="flex p-2 text-lg w-[5rem] text-gray-500">전화번호</a>
                                         <div
                                             className="flex h-[1.5rem] border-l border-gray-300 mt-[0.5rem] mr-[1rem] ml-[2.1rem]"></div>
-                                        <a className="flex mt-[0.6rem]">{formatPhoneNumber(phoneNumber)}</a>
+                                        <a className="flex mt-[0.6rem]">{formData.phoneNumber}</a>
                                     </div>
                                     {errors.phoneNumber && <p className="text-red-500">{errors.phoneNumber}</p>}
                                 </div>
