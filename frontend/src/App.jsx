@@ -17,7 +17,6 @@ import Cart from "./pages/Cart.jsx";
 import MBL_CRTFC from "./pages/MBL_CRTFC.jsx";
 import Buyform from "./pages/Buyform.jsx";
 import MyPage from "./pages/MyPage.jsx";
-import Footer from "./components/footer.jsx";
 import ChangeUser from "./pages/ChangeUser.jsx";
 import DeleteUser from "./pages/DeleteUser.jsx";
 
@@ -121,9 +120,8 @@ function App() {
                 <Route path="/Cart" element={<Cart />} /> {/* 장바구니 */}
                 <Route path="/Buyform" element={<Buyform money={money} setMoney={setMoney} />} /> {/* 결제 창 */}
                 <Route path="/MyPage" element={<MyPage/>} /> {/* 마이페이지 */}
-                <Route path="/MyPage/DeleteUser" element={<DeleteUser handleLogout={handleLogout} />} />
+                <Route path="/MyPage/DeleteUser" element={<DeleteUser/>} /> {/* 마이페이지 */}
             </Routes>
-            <Footer/>
         </div>
     );
 }

@@ -4,6 +4,7 @@ import { FaRegCircle } from "react-icons/fa6";
 import axios from "axios";
 
 const Attendance = ({ userId, isOpen, onClose, onDateSelect }) => {
+
     const [items, setItems] = useState(Array(32).fill(0)); // 0으로 초기화된 배열 (0~31)
     const [dontShowToday, setDontShowToday] = useState(false); // "오늘 하루 보지 않기" 상태
 
@@ -72,13 +73,14 @@ const Attendance = ({ userId, isOpen, onClose, onDateSelect }) => {
             <div className="bg-white p-4 w-[80rem] h-[40rem] max-w-4xl rounded-xl shadow-2xl relative flex flex-col justify-between items-center overflow-hidden">
 
                 {/* 캘린더 래퍼 */}
-                <div className="flex w-[38rem] h-[45rem] bg-no-repeat justify-center items-center overflow-auto bg-contain bg-[url('https://ifh.cc/g/v3LcXf.png')]">
-                    <div className="flex ml-[1.5rem] mt-[7.5rem] gap-0 grid grid-cols-7 w-[110rem] h-[25rem]">
+                <div className="flex w-[38rem] h-[45rem] bg-no-repeat justify-start items-start overflow-auto bg-contain bg-[url('https://ifh.cc/g/v3LcXf.png')]">
+                    <div className="ml-[3.7rem] mt-[14.3rem] gap-0 grid grid-cols-7 w-[29.2rem] h-[21rem] cursor-default">
                         {items.map((item, index) => (
-                            <div key={index} className="flex mb-[2rem]">
-                                <FaRegCircle
-                                    size="55"
-                                    className={`cursor-pointer ${item === 1 ? "text-green-500" : "text-gray-300"}`}
+                            <div key={index} className="w-[3rem] cursor-default  h-[3rem]">
+                                <img
+
+                                     src="https://ifh.cc/g/cS80R0.png"
+                                    className={`cursor-default w-[3rem] ${item === 1 ? "visible" : "invisible"}`}
                                 />
                             </div>
                         ))}
