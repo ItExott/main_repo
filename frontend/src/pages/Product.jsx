@@ -34,6 +34,53 @@ const Product= ({ userProfile }) => {
     const [isExpanded2, setIsExpanded2] = useState(false);
     const [isLoggedIn, setIsLoggedIn] = useState(false);
     const [userId, setUserId] = useState(null);
+    const [isinquiryOpen, setIsinquiryOpen] = useState(false);
+    const [userData, setUserData] = useState(null);
+    const { id } = useParams();
+    const [category, setCategory] = useState("");
+    const [title, setTitle] = useState("");
+    const [question, setQuestion] = useState("");
+    const [inquiryData, setInquiryData] = useState(null); // inquiryData 상태 변수
+
+    const handleinquiryToggle = () => {
+        setIsinquiryOpen(!isinquiryOpen);
+    };
+
+    const handleSubmitInquiry = async () => {
+        // 모든 필드가 채워졌는지 확인
+        if (!category || !title || !question) {
+            alert("모든 필드를 입력해주세요.");
+            return;
+        }
+
+        const inquiryData = {
+            userId,
+            phone: userData.phonenumber,
+            category,
+            inqtitle: title,
+            inqcontent: question,
+            inqdate: new Date().toISOString().split('T')[0],
+            id,
+        };
+
+        try {
+            const response = await axios.post(
+                "http://localhost:8080/api/inquiry",
+                inquiryData,
+                { withCredentials: true }
+            );
+
+            if (response.data.success) {
+                alert("문의가 성공적으로 저장되었습니다.");
+                setIsinquiryOpen(false); // 성공적으로 저장되면 모달 닫기
+            } else {
+                alert("문의 저장에 실패했습니다. 다시 시도해주세요.");
+            }
+        } catch (error) {
+            console.error("문의 저장 오류:", error);
+            alert("문의 저장 중 오류가 발생했습니다.");
+        }
+    };
 
     // 로그인 정보 불러오는 db문
     useEffect(() => {
@@ -45,6 +92,7 @@ const Product= ({ userProfile }) => {
 
                 if (response.data.success) {
                     setIsLoggedIn(true);
+                    setUserData(response.data);
                     setUserId(response.data.userId);
                 } else {
                     setIsLoggedIn(false);
@@ -57,8 +105,30 @@ const Product= ({ userProfile }) => {
         checkLoginStatus();
     }, []);
 
+    useEffect(() => {
+        if (isLoggedIn && id) {
+            const fetchInquiryData = async () => {
+                try {
+                    // prodid와 userId를 사용하여 해당 데이터를 가져옵니다.
+                    const response = await axios.get("http://localhost:8080/api/inquiries", {
+                        params: { userId, id }, // userId와 prodid를 함께 전달
+                    });
+                    setInquiryData(response.data); // 응답 데이터 설정
+                } catch (error) {
+                    console.error("데이터 가져오기 실패", error);
+                }
+            };
+
+            fetchInquiryData();
+        }
+    }, [isLoggedIn, userId, id]); // 로그인 여부, userId, prodid가 바뀔 때마다 호출
+
+    if (!inquiryData) {
+        return <div>로딩 중...</div>; // 데이터가 로딩되지 않았을 때
+    }
+
     // 상품 정보 가져오는 db문
-    const { id } = useParams();
+
     const [productData, setProductData] = useState({
         iconpicture: "",
         prodid: "",
@@ -515,10 +585,16 @@ const Product= ({ userProfile }) => {
                                              src="https://ifh.cc/g/yfCrXk.png"/>
                                     </div>
                                 </div>
+                                <div className="flex justify-end items-center mt-4 w-full h-[3rem]">
+                                    <div
+                                        className="flex h-[3rem] w-[6rem] items-center justify-center rounded-xl border border-red-400 text-red-400 hover:bg-red-400 hover:text-white cursor-pointer hover:scale-110 transition-transform ease-in-out duration-500">
+                                        <a className="flex">리뷰 작성하기</a>
+                                    </div>
+                                </div>
                             </div>
                         )}
                         {activeTab === '상품 문의' && (
-                            <div>
+                            <div className="flex flex-col">
                                 <div onClick={() => setIsExpanded(!isExpanded)}
                                      className="flex mx-auto flex-row items-center mt-[1rem] hover:bg-gray-200 cursor-pointer bg-gray-100 shadow-xl border-[0.1rem] border-gray-600 rounded-lg w-[50rem] h-[7rem]">
                                     <div
@@ -652,14 +728,109 @@ const Product= ({ userProfile }) => {
                                         </p>
                                     </div>
                                 )}
+                                <div className="flex justify-end items-center mt-4 w-full h-[3rem]">
+                                    <div onClick={handleinquiryToggle} className="flex h-[3rem] w-[6rem] items-center justify-center rounded-xl border border-red-400 text-red-400 hover:bg-red-400 hover:text-white cursor-pointer hover:scale-110 transition-transform ease-in-out duration-500">
+                                        <a className="flex">문의 작성하기</a>
+                                    </div>
+                                </div>
                             </div>
-
                         )}
+
                     </div>
-                    <div className="flex divider divide-gray-600 ml-[4rem] w-[60rem]"></div>
-                    <div className="flex h-[20rem]"></div>
                 </div>
             </div>
+            {isinquiryOpen && (
+                <div className="fixed top-0 left-0 w-full h-full bg-black bg-opacity-50 flex items-center justify-center z-50">
+                    <div className="bg-white w-[50rem] p-6 rounded-lg shadow-lg">
+                        {/* Title */}
+                        <h2 className="text-2xl font-bold text-red-400">상품 문의</h2>
+                        <div className="w-full border-b-2 border-red-400 mt-4"></div>
+                        {/* Form */}
+                        <div className="space-y-4 p-6">
+                            <div
+                                className="flex flex-row w-[15rem] h-full border border-red-400 rounded-xl items-center">
+                                <a className="text-red-400 items-start w-[6rem] ml-[1rem] flex">아이디</a>
+                                <div className="w-[10rem] flex items-center justify-center h-[2.5rem] rounded-lg">
+                                    <a className="flex w-full mb-[0.2rem]">{userId}</a>
+                                </div>
+                            </div>
+                            <div
+                                className="flex flex-row w-[20rem] h-full border border-red-400 rounded-xl items-center">
+                                <a className="text-red-400 items-start w-[5rem] ml-[1rem] flex">전화번호</a>
+                                <div className="w-[10rem] flex items-center justify-center h-[2.5rem] rounded-lg">
+                                    <a className="flex w-full mb-[0.2rem]">{userData.phonenumber}</a>
+                                </div>
+                            </div>
+                            <div
+                                className="flex flex-row w-[20rem] h-full border border-red-400 rounded-xl items-center">
+                                <a className="text-red-400 items-start w-[4.3rem] ml-[1rem] flex">카테고리</a>
+                                <select
+                                    id="category"
+                                    value={category} // 상태 바인딩
+                                    onChange={(e) => setCategory(e.target.value)}
+                                    className="w-[15rem] flex items-center border-none justify-center h-[2.5rem] rounded-xl">
+                                    <option value="" disabled selected>
+                                        카테고리를 선택하세요
+                                    </option>
+                                    <option value="option1">결제 문의</option>
+                                    <option value="option2">등록 문의</option>
+                                    <option value="option3">기간 문의</option>
+                                    <option value="option4">환불 / 취소 문의</option>
+                                </select>
+                            </div>
+                            <div
+                                className="flex flex-row w-full h-full border border-red-400 rounded-xl items-center">
+                                <a className="text-red-400 items-start w-[5rem] ml-[1rem] flex">문의 제목</a>
+                                <input
+                                    id="title"
+                                    type="text"
+                                    value={title} // 상태 바인딩
+                                    onChange={(e) => setTitle(e.target.value)}
+                                    className="w-full flex items-start border-none justify-center h-[2.5rem] rounded-xl"
+                                    placeholder="제목을 입력하세요"
+                                    required
+                                />
+                            </div>
+
+                            {/* Question */}
+                            <div className="flex flex-col w-full h-full border border-red-400 rounded-xl items-center">
+                                <div className="flex flex-row w-full h-full">
+                                    <a className="text-red-400 w-[5rem] ml-[1rem] items-center flex">문의 내용</a>
+                                    <textarea
+                                        id="question"
+                                        rows="5"
+                                        value={question} // 상태 바인딩
+                                        onChange={(e) => setQuestion(e.target.value)}
+                                        className="w-full h-[13rem] flex border-none justify-center rounded-xl"
+                                        placeholder="문의 내용을 입력하세요"
+                                        required
+                                    ></textarea>
+                                </div>
+                            </div>
+                            <p className="text-xs text-gray-500">
+                                아래 영역을 드래그하여 입력창 크기를 조절할 수 있습니다.
+                            </p>
+
+                            {/* Buttons */}
+                            <div className="flex justify-end space-x-3">
+                                <button
+                                    className="px-4 py-2 border border-red-400 hover:scale-110 transition-transform ease-in-out duration-500 text-red-400 rounded-lg hover:bg-red-400 hover:text-white"
+                                    onClick={() => setIsinquiryOpen(false)}
+                                >
+                                    닫기
+                                </button>
+                                <button
+                                    className="px-4 py-2 bg-red-400 hover:scale-110 hover:text-red-400 hover:bg-white hover:border-red-400 hover:border transition-transform ease-in-out duration-500 text-white rounded-lg"
+                                    onClick={handleSubmitInquiry}
+                                >
+                                    작성완료
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
+
         </div>
 
     )

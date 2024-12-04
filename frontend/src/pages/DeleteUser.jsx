@@ -2,7 +2,7 @@ import React, {useEffect, useState} from "react";
 import axios from "axios";
 import {useNavigate} from "react-router-dom";
 
-const DeleteUser = () => {
+const DeleteUser = ({ handleLogout }) => {
     const [isChecked, setIsChecked] = useState(false); // 체크박스 상태
     const [selectedReason, setSelectedReason] = useState(""); // 라디오 버튼 상태
     const [showPopup, setShowPopup] = useState(false);
@@ -115,7 +115,7 @@ const DeleteUser = () => {
                             }
                         }}
                     >
-                        <a className="text-xl">수정정보 저장</a>
+                        <a className="text-xl">회원 탈퇴</a>
                     </div>
                 </div>
             </div>
@@ -130,6 +130,7 @@ const DeleteUser = () => {
                                     setShowPopup(false); // 팝업 닫기
                                     handleDelete(); // 탈퇴 실행
                                     goHome();
+                                    handleLogout();
                                 }}
                             >
                                 예

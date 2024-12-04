@@ -60,27 +60,27 @@ const Mypage = () => {
                 console.error("Error fetching subscriptions:", error);
             }
         };
-            // 관심 짐 목록 가져오기
-            const fetchLikedItems = async () => {
-                try {
-                    const response = await axios.get('http://localhost:8080/api/user/liked-items', { withCredentials: true });
+        // 관심 짐 목록 가져오기
+        const fetchLikedItems = async () => {
+            try {
+                const response = await axios.get('http://localhost:8080/api/user/liked-items', { withCredentials: true });
 
-                    if (response.data && response.data.length > 0) {
-                        setLikedItems(response.data);  // 관심 제품 데이터를 상태에 저장
-                    } else {
-                        console.log('No liked items found');
-                    }
-                } catch (error) {
-                    console.error("Error fetching liked items:", error);
+                if (response.data && response.data.length > 0) {
+                    setLikedItems(response.data);  // 관심 제품 데이터를 상태에 저장
+                } else {
+                    console.log('No liked items found');
                 }
-            };
+            } catch (error) {
+                console.error("Error fetching liked items:", error);
+            }
+        };
 
-            // API 호출
-            fetchUserData();
-            fetchRecentItems();
-            fetchSubscriptions();  // 구독 상품 목록 추가
-            fetchLikedItems();  // 관심 짐 목록 추가
-        }, []);  // 데이터 가져오는 구문
+        // API 호출
+        fetchUserData();
+        fetchRecentItems();
+        fetchSubscriptions();  // 구독 상품 목록 추가
+        fetchLikedItems();  // 관심 짐 목록 추가
+    }, []);  // 데이터 가져오는 구문
 
     if (!userData) {
         return (
