@@ -20,14 +20,14 @@ import Attendance from "../popup/Attendance";
 import Login from "../popup/Login.jsx";
 
 
-const Home = () => {
+const Home = (loginStatus) => {
     const [isFocused, setIsFocused] = useState(false); // 검색창 포커스 상태
     const [query, setQuery] = useState(""); // 검색어
     const [showSuggestions, setShowSuggestions] = useState(false); // 추천 검색어 박스 표시 여부
     const [isCalendarOpen, setIsCalendarOpen] = useState(false); // 출석체크 달력 팝업 상태
     const [isLoggedIn, setIsLoggedIn] = useState(false); // 로그인 상태 (로그인 여부)
     const [activeTab, setActiveTab] = useState('weight');
-
+    const [dontShowToday, setDontShowToday] = useState(false); // "오늘 하루 보지 않기" 상태
     const location = useLocation();
     const { openLoginModal: locationOpenLoginModal = false } = location.state || {};
 
@@ -36,25 +36,21 @@ const Home = () => {
 
     // 로그인 상태 확인 db문
     const [userId, setUserId] = useState(null);
+
+
+
+
     useEffect(() => {
         const checkLoginStatus = async () => {
             try {
                 const response = await axios.get('http://localhost:8080/api/userinfo', {
-                    withCredentials: true, // 세션을 확인하려면 반드시 필요
+                    withCredentials: true, // 세션 확인
                 });
 
                 if (response.data.success) {
                     setIsLoggedIn(true);
                     setUserId(response.data.userId);
-                    // "오늘 하루 보지 않기" 설정 확인
-                    const today = new Date().toISOString().split('T')[0]; // 오늘 날짜
-                    const dontShowDate = localStorage.getItem('dontShowAttendance');
 
-                    // 설정되지 않았거나 자정을 넘겼다면 팝업 표시
-                    if (dontShowDate == today) {
-                        setIsCalendarOpen(true); // 출석 체크 팝업 열기
-
-                    }
 
                 } else {
                     setIsLoggedIn(false);
@@ -66,6 +62,35 @@ const Home = () => {
 
         checkLoginStatus();
     }, []);
+
+    useEffect(() => {
+        const checkAttendance = async () => {
+
+            if (loginStatus.loginStatus) {
+                try {
+                    const attendanceResponse = await axios.get(`http://localhost:8080/api/attendance/today/${userId}`);
+                    if (attendanceResponse.data.success) {
+                        const dontShowToday = attendanceResponse.data.today === 1;
+                        setDontShowToday(dontShowToday);
+
+                        // 출석 체크 팝업 열림 조건
+                        if (!dontShowToday) {
+                            setIsCalendarOpen(true);
+                        }
+                    }
+                } catch (error) {
+                    console.error("출석 체크 상태 확인 실패", error);
+                }
+            }
+        };
+        checkAttendance();
+    }, [loginStatus]); // 로그인 상태와 userId 변경 시 호출
+
+    useEffect(() => {
+        if (openLoginModal) {
+            document.getElementById('my_modal_3').showModal();
+        }
+    }, [openLoginModal]);
 
     useEffect(() => {
         const handleBeforeUnload = () => {

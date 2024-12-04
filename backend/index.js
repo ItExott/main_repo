@@ -209,41 +209,72 @@ app.post('/api/signup', (req, res) => {
 });
 
     // 로그인 API
-    app.post('/api/login', (req, res) => {
-        const { userid, userpw, profileimg, money } = req.body;
+app.post('/api/login', (req, res) => {
+    const { userid, userpw, profileimg, money } = req.body;
+    const query = 'SELECT * FROM users WHERE userid = ? AND userpw = ?';
+    db.query(query, [userid, userpw, profileimg, money], (err, results) => {
+        if (err) {
+            console.error('Database query error:', err);
+            return res.status(500).json({ success: false, message: 'Internal server error' });
+        }
+        if (results.length > 0) {
+            req.session.userId = userid;
+            req.session.name = results[0].name;
+            req.session.profileimg = results[0].profileimg;
+            req.session.money = results[0].money;
+            req.session.phonenumber = results[0].phonenumber;
+            // 출석 정보 업데이트
+            const currentDate = new Date();
+            const currentDay = currentDate.getDate(); // 일(day)만 추출
 
-        const query = 'SELECT * FROM users WHERE userid = ? AND userpw = ?';
-        db.query(query, [userid, userpw, profileimg, money], (err, results) => {
-            if (err) {
-                console.error('Database query error:', err);
-                return res.status(500).json({ success: false, message: 'Internal server error' });
-            }
+            // 기존 출석 정보 가져오기
+            const getAttendanceQuery = `SELECT attendance FROM attendance WHERE userid = ?`;
+            db.query(getAttendanceQuery, [userid], (getErr, getResults) => {
+                if (getErr) {
+                    console.error('Error fetching attendance:', getErr);
+                    return res.status(500).json({ message: '출석 정보 조회 실패' });
+                }
 
-            if (results.length > 0) {
-                req.session.userId = userid;
-                req.session.name = results[0].name;
-                req.session.profileimg = results[0].profileimg;
-                req.session.money = results[0].money;
-                req.session.phonenumber = results[0].phonenumber;
+                // 기존 출석 정보가 있으면 JSON으로 파싱, 없으면 빈 배열로 시작
+                let attendance = [];
+                if (getResults.length > 0 && getResults[0].attendance) {
+                    attendance = JSON.parse(getResults[0].attendance); // 기존 출석 정보 배열로 파싱
+                }
 
-                req.session.save(err => {
-                    if (err) {
-                        console.error('Session save error:', err);
-                        return res.status(500).json({ success: false, message: 'Session save error' });
+                // 새로운 출석 날짜가 이미 존재하는지 확인
+                if (!attendance.includes(currentDay)) {
+                    attendance.push(currentDay); // 새로운 날짜 추가
+                }
+                // 업데이트 쿼리 (출석 정보 저장)
+                const updateAttendanceQuery = `UPDATE attendance SET attendance = ? WHERE userid = ?;`;
+                db.query(updateAttendanceQuery, [ JSON.stringify(attendance),userid], (updateErr) => {
+                    if (updateErr) {
+                        console.error('Error updating attendance:', updateErr);
+                        return res.status(500).json({ message: '출석 정보 저장 실패' });
                     }
-                    res.json({
-                        success: true,
-                        name: results[0].name,
-                        profileimg : results[0].profileimg,
-                        phonenumber: results[0].phonenumber,
-                        money : results[0].money,
-                        message: '로그인 성공' });
+
+                    // 세션 저장 후 응답
+                    req.session.save(err => {
+                        if (err) {
+                            console.error('Session save error:', err);
+                            return res.status(500).json({ success: false, message: 'Session save error' });
+                        }
+                        res.json({
+                            success: true,
+                            name: results[0].name,
+                            profileimg: results[0].profileimg,
+                            phonenumber: results[0].phonenumber,
+                            money: results[0].money,
+                            message: '로그인 성공'
+                        });
+                    });
                 });
-            } else {
-                res.json({ success: false, message: 'Invalid username or password' });
-            }
-        });
+            });
+        } else {
+            res.json({ success: false, message: 'Invalid username or password' });
+        }
     });
+});
 
 // 로그아웃 API
 app.post('/api/logout', (req, res) => {
@@ -347,18 +378,17 @@ app.get('/api/attendance/:userId', (req, res) => {
     const { userId } = req.params;
 
     // 쿼리 실행
-    const query = 'SELECT attendance FROM attendance WHERE userid = ?';
+    const getAttendanceQuery = `SELECT attendance FROM attendance WHERE userid = ?`;
 
-    db.query(query, [userId], (err, results) => {
+    db.query(getAttendanceQuery, [userId], (err, results) => {
         if (err) {
             console.error("출석 데이터 로드 오류:", err);
-            return res.status(500).json({ success: false, error: '서버 오류' });
+            return res.status(500).json({ message: '서버 오류' });
         }
 
-        // 결과가 없을 경우 처리
         if (results.length > 0) {
-            // 출석 정보 (attendance)를 가져와서 문자열을 처리
-            const attendanceDays = results[0].attendance.split(',').map(day => parseInt(day.trim()));
+            // 출석 정보가 있으면 문자열을 배열로 파싱
+            let attendanceDays = results[0]?.attendance ? JSON.parse(results[0].attendance) : [];
 
             // 출석일을 1~31 범위로 필터링
             const days = attendanceDays.filter(day => day >= 1 && day <= 31);
@@ -366,8 +396,7 @@ app.get('/api/attendance/:userId', (req, res) => {
             // 출석일 반환
             res.json({ success: true, days });
         } else {
-            // 해당 유저의 출석 데이터가 없을 경우
-            res.status(404).json({ success: false, error: '출석 데이터가 없습니다.' });
+            res.status(404).json({ success: false, message: '출석 데이터가 없습니다.' });
         }
     });
 });

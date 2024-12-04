@@ -19,6 +19,7 @@ import Buyform from "./pages/Buyform.jsx";
 import MyPage from "./pages/MyPage.jsx";
 import ChangeUser from "./pages/ChangeUser.jsx";
 import DeleteUser from "./pages/DeleteUser.jsx";
+import Footer from "./components/footer.jsx";
 
 function App() {
     const [loginStatus, setLoginStatus] = useState(false);
@@ -105,7 +106,7 @@ function App() {
                 handleLogout={handleLogout}
             />
             <Routes>
-                <Route path="/" element={<Home />} /> {/* 홈 */}
+                <Route path="/" element={<Home  loginStatus={loginStatus}/>} /> {/* 홈 */}
                 <Route path="/Agree_to_terms" element={<Agree_to_terms />} />  {/* 회원가입 시작 */}
                 <Route path="/Agree_to_terms/MBL_CRTFC" element={<MBL_CRTFC />} />
                 <Route path="/Agree_to_terms/MBL_CRTFC/SignUp" element={<SignUp />} />
@@ -122,6 +123,7 @@ function App() {
                 <Route path="/MyPage" element={<MyPage/>} /> {/* 마이페이지 */}
                 <Route path="/MyPage/DeleteUser" element={<DeleteUser/>} /> {/* 마이페이지 */}
             </Routes>
+            <Footer></Footer>
         </div>
     );
 }
