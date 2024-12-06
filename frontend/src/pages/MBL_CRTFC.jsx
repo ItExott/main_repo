@@ -67,25 +67,7 @@ const MBL_CRTFC = () => {
     };
 
     // 폼 검증 함수
-    const validateForm = () => {
-        const newErrors = {};
 
-        if (!formData.phoneNumber) newErrors.phoneNumber = "휴대전화번호를 입력하세요.";
-        if (!formData.inputCode) newErrors.inputCode = "인증번호를 입력하세요.";
-
-        // 인증번호 확인
-        if (formData.inputCode !== formData.verificationCode) {
-            newErrors.inputCode = "인증번호가 일치하지 않습니다.";
-        }
-
-        // 인증번호 유효시간 체크 (3분)
-        if (codeGenerationTime && Date.now() - codeGenerationTime > 180000) {
-            newErrors.phoneNumber = "인증번호가 만료되었습니다. 다시 인증해주세요.";
-        }
-
-        setErrors(newErrors);
-        return Object.keys(newErrors).length === 0;
-    };
     const generateRandomCode = () => {
         const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
         let result = '';
