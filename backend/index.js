@@ -1177,6 +1177,31 @@ app.delete("/api/users", (req, res) => {
     });
 });
 
+app.post('/api/inquiry', (req, res) => {
+    const { userId, phone, category, inqtitle, inqcontent, inqdate, id } = req.body;
+
+    // 모든 필드가 채워졌는지 확인
+    if (!userId || !phone || !category || !inqtitle || !inqcontent || !inqdate) {
+        return res.status(400).json({ success: false, message: '모든 필드를 입력해주세요.' });
+    }
+
+    // MySQL INSERT 쿼리
+    const sql = `
+        INSERT INTO product_inquiry (userid, phone, category, inqtitle, inqcontent, inqdate, prodid)
+        VALUES (?, ?, ?, ?, ?, ?, ?)
+    `;
+
+    db.query(sql, [userId, phone, category, inqtitle, inqcontent, inqdate, id], (err, results) => {
+        if (err) {
+            console.error('문의 저장 중 오류 발생:', err);
+            return res.status(500).json({ success: false, message: '서버 오류가 발생했습니다.' });
+        }
+
+        return res.status(200).json({ success: true, message: '문의가 성공적으로 저장되었습니다.' });
+    });
+});
+
+
 
 
 app.use('/uploads', express.static(path.join(__dirname, 'src/uploads')));

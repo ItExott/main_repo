@@ -183,7 +183,7 @@ const Home = (loginStatus) => {
                     modules={[Pagination, Autoplay]}
                     className="shadow-xl rounded-xl"
                 >
-                    <SwiperSlide><img className="slide1" src="https://ifh.cc/g/djK3KG.gif" alt="Slide 1"/></SwiperSlide>
+                    <SwiperSlide><img className="slide1" src="https://ifh.cc/g/aJojk3.png" alt="Slide 1"/></SwiperSlide>
                 </Swiper>
             </div>
             <div className="flex flex-col mt-[5rem] items-start w-full justify-start"> {/*카테고리별 제품 한눈에 보기*/}
