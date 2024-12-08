@@ -6,7 +6,7 @@ const multer = require('multer');
 const path = require('path');
 const fs = require('fs');
 let todaySettings = {}; // { userId: todaySetting } 형태로 저장
-
+const bcrypt = require('bcrypt');
 const app = express();
 const port = 8080;
 
@@ -270,7 +270,7 @@ app.post('/api/login', (req, res) => {
                 });
             });
         } else {
-            res.json({ success: false, message: 'Invalid username or password' });
+            res.json({ success: false, message: '아이디 또는 비밀번호가 일치하지 않습니다.' });
         }
     });
 });
@@ -402,9 +402,83 @@ app.get('/api/attendance/:userId', (req, res) => {
     });
 });
 
+// 사용자 아이디 찾기 API
+app.post('/api/findUserId', (req, res) => {
+    const { name, phoneNumber } = req.body;
 
+    // 콘솔에 입력 데이터 출력 (디버깅용)
+    console.log('입력 데이터:', { name, phoneNumber });
 
+    // 이름과 전화번호가 전달되었는지 확인
+    if (!name || !phoneNumber) {
+        return res.status(400).json({
+            success: false,
+            message: '이름과 전화번호를 모두 입력해주세요.',
+        });
+    }
 
+    // SQL 쿼리: 이름과 전화번호로 사용자 검색
+    const query = 'SELECT userid FROM users WHERE name = ? AND phonenumber = ?';
+
+    db.query(query, [name, phoneNumber], (err, results) => {
+        if (err) {
+            console.error('쿼리 오류:', err);
+            return res.status(500).json({
+                success: false,
+                message: '서버 오류가 발생했습니다.',
+            });
+        }
+
+        // 결과 처리: 아이디가 존재하면 응답, 없으면 에러 메시지
+        if (results.length > 0) {
+            const userId = results[0].userid; // `userid` 컬럼에서 값 가져오기
+            console.log('찾은 아이디:', userId); // 디버깅용 로그
+            return res.json({
+                success: true,
+                userId: userId,
+            });
+        } else {
+            console.log('일치하는 사용자 없음.');
+            return res.status(404).json({
+                success: false,
+                message: '이름과 전화번호가 일치하는 아이디가 없습니다.',
+            });
+        }
+    });
+});
+
+app.post('/api/resetPassword', (req, res) => {
+    const { userId, name, phoneNumber, tempPassword } = req.body;
+
+    // 유효성 검사
+    if (!userId || !name || !phoneNumber || !tempPassword) {
+        return res.status(400).json({ success: false, message: '모든 필드를 입력해주세요.' });
+    }
+
+    // SQL 쿼리: ID, 이름, 전화번호로 사용자 검증
+    const query = 'SELECT * FROM users WHERE userid = ? AND name = ? AND phonenumber = ?';
+    db.query(query, [userId, name, phoneNumber], (err, results) => {
+        if (err) {
+            console.error('쿼리 오류:', err);
+            return res.status(500).json({ success: false, message: '서버 오류가 발생했습니다.' });
+        }
+
+        if (results.length > 0) {
+            // 일치하는 사용자가 있으면 비밀번호 업데이트
+            const updateQuery = 'UPDATE users SET userpw = ? WHERE userid = ?';
+            db.query(updateQuery, [tempPassword, userId], (err, updateResult) => {
+                if (err) {
+                    console.error('비밀번호 업데이트 오류:', err);
+                    return res.status(500).json({ success: false, message: '비밀번호 업데이트에 실패했습니다.' });
+                }
+
+                res.json({ success: true, message: '비밀번호가 재설정되었습니다.', tempPassword });
+            });
+        } else {
+            res.status(404).json({ success: false, message: '사용자를 찾을 수 없습니다.' });
+        }
+    });
+});
 
 // "오늘 하루 보지 않기" 상태 저장
 function resetTodaySettingsAtMidnight() {
