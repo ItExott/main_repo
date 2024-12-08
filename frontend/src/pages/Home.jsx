@@ -3,24 +3,23 @@ import MainBox from "../components/MainBox.jsx";
 {/*모듈 import문*/}
 import React, { useState, useEffect, useRef } from "react";
 import { Swiper, SwiperSlide } from "swiper/react";
-import { Pagination, Autoplay, Scrollbar } from "swiper";
 import 'swiper/css';
 import 'swiper/css/navigation';
 import 'swiper/css/pagination';
 import 'swiper/css/effect-coverflow';
 import 'swiper/css/scrollbar';
+import 'swiper/css/autoplay'; // Autoplay 스타일 시트
+import { Autoplay } from 'swiper';
 import axios from "axios";
 {/*아이콘 import문*/}
-import { useLocation } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { BiSearch } from "react-icons/bi";
 import { FaLocationDot } from "react-icons/fa6";
 {/*컴포넌트 동기화문*/}
-import MainCard from "../components/MainCard.jsx";
 import Attendance from "../popup/Attendance";
-import Login from "../popup/Login.jsx";
 
 
-const Home = (loginStatus) => {
+const Home = ({loginStatus}) => {
     const [isFocused, setIsFocused] = useState(false); // 검색창 포커스 상태
     const [query, setQuery] = useState(""); // 검색어
     const [showSuggestions, setShowSuggestions] = useState(false); // 추천 검색어 박스 표시 여부
@@ -30,6 +29,9 @@ const Home = (loginStatus) => {
     const [dontShowToday, setDontShowToday] = useState(false); // "오늘 하루 보지 않기" 상태
     const location = useLocation();
     const { openLoginModal: locationOpenLoginModal = false } = location.state || {};
+    const [category_products, setcategory_Products] = useState([]);
+    const navigate = useNavigate();
+    const [userType, setUserType] = useState("individual");
 
     const [openLoginModal, setOpenLoginModal] = useState(locationOpenLoginModal); // 초기값을 locationOpenLoginModal로 설정
     const inputRef = useRef(null);
@@ -37,54 +39,62 @@ const Home = (loginStatus) => {
     // 로그인 상태 확인 db문
     const [userId, setUserId] = useState(null);
 
-
-
-
     useEffect(() => {
-        const checkLoginStatus = async () => {
+        const fetchProducts = async () => {
             try {
-                const response = await axios.get('http://localhost:8080/api/userinfo', {
-                    withCredentials: true, // 세션 확인
+                const response = await axios.get("http://localhost:8080/category/products", {
+                    params: { category: activeTab }, // activeTab을 카테고리로 사용
                 });
-
-                if (response.data.success) {
-                    setIsLoggedIn(true);
-                    setUserId(response.data.userId);
-
-
-                } else {
-                    setIsLoggedIn(false);
-                }
+                setcategory_Products(response.data);
             } catch (error) {
-                console.error('로그인 상태 확인 실패', error);
+                console.error("Error fetching products:", error);
             }
         };
+        fetchProducts();
+    }, [activeTab]); // activeTab이 변경될 때 호출
 
-        checkLoginStatus();
-    }, []);
 
     useEffect(() => {
-        const checkAttendance = async () => {
-
-            if (loginStatus.loginStatus) {
+        const handleLoginStatusChange = async () => {
+            if (loginStatus) {
                 try {
-                    const attendanceResponse = await axios.get(`http://localhost:8080/api/attendance/today/${userId}`);
-                    if (attendanceResponse.data.success) {
-                        const dontShowToday = attendanceResponse.data.today === 1;
-                        setDontShowToday(dontShowToday);
+                    // 로그인 상태에서 사용자 정보를 가져옴
+                    const response = await axios.get('http://localhost:8080/api/userinfo', {
+                        withCredentials: true,
+                    });
 
-                        // 출석 체크 팝업 열림 조건
-                        if (!dontShowToday) {
-                            setIsCalendarOpen(true);
+                    if (response.data.success) {
+                        setUserId(response.data.userId);
+                        setUserType(response.data.userType);
+
+                        // userType이 'individual'일 때만 출석 체크 확인
+                        if (response.data.userType === 'individual') {
+                            const attendanceResponse = await axios.get(
+                                `http://localhost:8080/api/attendance/today/${response.data.userId}`
+                            );
+                            if (attendanceResponse.data.success) {
+                                const dontShowToday = attendanceResponse.data.today === 1;
+                                setDontShowToday(dontShowToday);
+
+                                if (!dontShowToday) {
+                                    setIsCalendarOpen(true); // 출석 체크 모달 열기
+                                }
+                            }
                         }
                     }
                 } catch (error) {
-                    console.error("출석 체크 상태 확인 실패", error);
+                    console.error('Error fetching user info or attendance:', error);
                 }
+            } else {
+                // 로그아웃 상태일 때 모달 닫기
+                setIsCalendarOpen(false);
+                setUserId(null);
+                setUserType("guest");
             }
         };
-        checkAttendance();
-    }, [loginStatus]); // 로그인 상태와 userId 변경 시 호출
+
+        handleLoginStatusChange();
+    }, [loginStatus]);
 
     useEffect(() => {
         if (openLoginModal) {
@@ -126,6 +136,7 @@ const Home = (loginStatus) => {
             document.getElementById('my_modal_3').showModal();  // 로그인 모달을 띄운다
         }
     }, [openLoginModal]); // openLoginModal 값이 변경될 때마다 실행
+
     useEffect(() => {
         const handleBeforeUnload = () => {
             // 새로고침 시 state에 { openLoginModal: false } 설정
@@ -140,23 +151,49 @@ const Home = (loginStatus) => {
             window.removeEventListener('beforeunload', handleBeforeUnload);
         };
     }, []);
+
     useEffect(() => {
-        setOpenLoginModal(locationOpenLoginModal); // location에서 받은 값으로 openLoginModal 초기화
-    }, [locationOpenLoginModal]);
+        // locationOpenLoginModal과 userType을 확인하여 openLoginModal을 설정
+        if (locationOpenLoginModal && userType === 'individual') {
+            setOpenLoginModal(locationOpenLoginModal); // location에서 받은 값으로 openLoginModal 초기화
+        } else {
+            setOpenLoginModal(false); // userType이 individual이 아니면 modal을 닫음
+        }
+    }, [locationOpenLoginModal, userType]);  // locationOpenLoginModal과 userType이 변경될 때마다 실행
+
 
 
     const handleTabChange = (tab) => {
         setActiveTab(tab);
     };
 
+    const saveRecentlyViewed = (id) => {
+        const recentlyViewed = JSON.parse(localStorage.getItem('recentlyViewed')) || [];
+        if (!recentlyViewed.includes(id)) {
+            recentlyViewed.push(id);
+        }
+        if (recentlyViewed.length > 5) {
+            recentlyViewed.shift();
+        }
+        localStorage.setItem('recentlyViewed', JSON.stringify(recentlyViewed));
+    };
+
+    const handleClick = (id) => {
+        // Save to local storage (optional)
+        saveRecentlyViewed(id);
+        navigate(`/product/${id}`);  // Navigate to the product detail page
+    };
+
     return (
         <div className="flex flex-col h-full w-full items-center justify-center">
-            <Attendance
-                isOpen={isCalendarOpen}
-                onClose={() => setIsCalendarOpen(false)} // 팝업 닫기
-                onDateSelect={handleDateSelect} // 날짜 선택 시 처리 함수
-                userId={userId} // userId 전달
-            />
+            {userType === "individual" && (
+                <Attendance
+                    isOpen={isCalendarOpen}
+                    onClose={() => setIsCalendarOpen(false)} // Close popup
+                    onDateSelect={handleDateSelect} // Handle date selection
+                    userId={userId} // Pass userId
+                />
+            )}
             {/* 검색창 */}
             <div className="flex flex-row h-14 w-[35rem] items-center justify-center shadow-md rounded-xl relative">
                 <div className="flex flex-row w-1/5 cursor-pointer">
@@ -176,57 +213,197 @@ const Home = (loginStatus) => {
                 <BiSearch size="20"
                           className="mr-3 mt-1 cursor-pointer hover:scale-150 transition-transform ease-in-out duration-500"/>
             </div>
-            {/* MainCard들 */}
+            {/* MainCard */}
             <div className="flex flex-row w-full h-[32rem] mt-6 items-center justify-center shadow-xl rounded-xl">
-                <Swiper
-                    pagination={{dynamicBullets: true}}
-                    modules={[Pagination, Autoplay]}
-                    className="shadow-xl rounded-xl"
-                >
-                    <SwiperSlide><img className="slide1" src="https://ifh.cc/g/aJojk3.png" alt="Slide 1"/></SwiperSlide>
-                </Swiper>
-            </div>
-            <div className="flex flex-col mt-[5rem] items-start w-full justify-start"> {/*카테고리별 제품 한눈에 보기*/}
-                <a className="text-xl">카테고리 한 눈에 보기</a>
-            <div className="flex items-start mt-4 space-x-8 mb-4">
-                <div
-                    onClick={() => handleTabChange('weight')}
-                    className={`cursor-pointer hover:scale-110 transition-transform ease-in-out duration-500 ${activeTab === 'weight' ? 'text-red-400 border-b-2 border-red-400' : 'text-red-400'}`}
-                >
-                    헬스
-                </div>
-                <div
-                    onClick={() => handleTabChange('swim')}
-                    className={`cursor-pointer hover:scale-110 transition-transform ease-in-out duration-500 ${activeTab === 'swim' ? 'text-red-400 border-b-2 border-red-400' : 'text-red-400'}`}
-                >
-                    수영
-                </div>
-                <div
-                    onClick={() => handleTabChange('climbing')}
-                    className={`cursor-pointer hover:scale-110 transition-transform ease-in-out duration-500 ${activeTab === 'climbing' ? 'text-red-400 border-b-2 border-red-400' : 'text-red-400'}`}
-                >
-                    클라이밍
-                </div>
-                <div
-                    onClick={() => handleTabChange('pilates')}
-                    className={`cursor-pointer hover:scale-110 transition-transform ease-in-out duration-500 ${activeTab === 'pilates' ? 'text-red-400 border-b-2 border-red-400' : 'text-red-400'}`}
-                >
-                    필라테스
-                </div>
-                <div
-                    onClick={() => handleTabChange('crossfit')}
-                    className={`cursor-pointer hover:scale-110 transition-transform ease-in-out duration-500 ${activeTab === 'crossfit' ? 'text-red-400 border-b-2 border-red-400' : 'text-red-400'}`}
-                >
-                    크로스핏
-                </div>
-            </div>
-                {activeTab === 'weight' && (
-                    <div className="w-full">
-                        <MainBox/>
-                    </div>
-                    )}
+                <img className="shadow-xl rounded-xl" src="https://ifh.cc/g/aJojk3.png"/>
+
             </div>
 
+            <div className="flex w-full h-[12rem] mt-[3rem] items-center justify-center shadow-xl rounded-md">
+                <Swiper
+                    spaceBetween={10} // 이미지 간의 간격
+                    slidesPerView={1} // 한 번에 보여줄 이미지 개수
+                    modules={[Autoplay]}
+                    autoplay={{delay: 3000, disableOnInteraction: false}} // 자동 슬라이드 설정
+                    loop // 반복 재생
+                >
+                    <SwiperSlide>
+                        <img
+                            className="w-full h-full object-fill rounded-md"
+                            src="https://ifh.cc/g/dt71lm.png"
+                            alt="Ad Banner 1"
+                        />
+                    </SwiperSlide>
+                    <SwiperSlide>
+                        <img
+                            className="w-full h-full object-fill rounded-md"
+                            src="https://ifh.cc/g/g4f9hh.png"
+                            alt="Ad Banner 2"
+                        />
+                    </SwiperSlide>
+                    <SwiperSlide>
+                        <img
+                            className="w-full h-full object-fill rounded-md"
+                            src="https://ifh.cc/g/GA8AY9.png"
+                            alt="Ad Banner 3"
+                        />
+                    </SwiperSlide>
+                </Swiper>
+            </div>
+            <div
+                className="flex flex-col items-start p-[1.8rem] h-[26rem] w-full mt-[3rem] justify-start"> {/*카테고리별 제품 한눈에 보기*/}
+                <a className="text-2xl w-[13rem] h-[3rem] text-black items-center flex justify-center rounded-xl">카테고리 한
+                    눈에 보기</a>
+                <div className="w-full border-b-2 border-red-400 mt-4"></div>
+                <div className="flex items-start ml-[1rem] mt-4 space-x-8 mb-4">
+                    <div
+                        onClick={() => handleTabChange('weight')}
+                        className={`cursor-pointer hover:scale-110 transition-transform ease-in-out duration-500 ${activeTab === 'weight' ? 'text-red-400 border-b-2 border-red-400' : 'text-red-400'}`}
+                    >
+                        헬스
+                    </div>
+                    <div
+                        onClick={() => handleTabChange('swim')}
+                        className={`cursor-pointer hover:scale-110 transition-transform ease-in-out duration-500 ${activeTab === 'swim' ? 'text-red-400 border-b-2 border-red-400' : 'text-red-400'}`}
+                    >
+                        수영
+                    </div>
+                    <div
+                        onClick={() => handleTabChange('climbing')}
+                        className={`cursor-pointer hover:scale-110 transition-transform ease-in-out duration-500 ${activeTab === 'climbing' ? 'text-red-400 border-b-2 border-red-400' : 'text-red-400'}`}
+                    >
+                        클라이밍
+                    </div>
+                    <div
+                        onClick={() => handleTabChange('pilates')}
+                        className={`cursor-pointer hover:scale-110 transition-transform ease-in-out duration-500 ${activeTab === 'pilates' ? 'text-red-400 border-b-2 border-red-400' : 'text-red-400'}`}
+                    >
+                        필라테스
+                    </div>
+                    <div
+                        onClick={() => handleTabChange('crossfit')}
+                        className={`cursor-pointer hover:scale-110 transition-transform ease-in-out duration-500 ${activeTab === 'crossfit' ? 'text-red-400 border-b-2 border-red-400' : 'text-red-400'}`}
+                    >
+                        크로스핏
+                    </div>
+                </div>
+                {activeTab === 'weight' && (
+                    <div
+                        className="flex flex-row w-full h-[16rem] items-center bg-white justify-center shadow-xl rounded-3xl">
+                        {category_products.map((product) => (
+                            <MainBox
+                                key={product.prodid}
+                                iconpicture={product.iconpicture}
+                                prodtitle={product.prodtitle}
+                                onClick={() => handleClick(product.prodid)}
+                            />
+                        ))}
+                    </div>
+                )}
+                {activeTab === 'swim' && (
+                    <div
+                        className="flex flex-row w-full h-[16rem] items-center bg-white justify-center shadow-xl rounded-3xl">
+                        {category_products.map((product) => (
+                            <MainBox
+                                key={product.prodid}
+                                iconpicture={product.iconpicture}
+                                prodtitle={product.prodtitle}
+                                onClick={() => handleClick(product.prodid)}
+                            />
+                        ))}
+                    </div>
+                )}
+                {activeTab === 'climbing' && (
+                    <div
+                        className="flex flex-row w-full h-[16rem] items-center bg-white justify-center shadow-xl rounded-3xl">
+                        {category_products.map((product) => (
+                            <MainBox
+                                key={product.prodid}
+                                iconpicture={product.iconpicture}
+                                prodtitle={product.prodtitle}
+                                onClick={() => handleClick(product.prodid)}
+                            />
+                        ))}
+                    </div>
+                )}
+                {activeTab === 'pilates' && (
+                    <div
+                        className="flex flex-row w-full h-[16rem] items-center bg-white justify-center shadow-xl rounded-3xl">
+                        {category_products.map((product) => (
+                            <MainBox
+                                key={product.prodid}
+                                iconpicture={product.iconpicture}
+                                prodtitle={product.prodtitle}
+                                onClick={() => handleClick(product.prodid)}
+                            />
+                        ))}
+                    </div>
+                )}
+                {activeTab === 'crossfit' && (
+                    <div
+                        className="flex flex-row w-full h-[16rem] items-center bg-white justify-center shadow-xl rounded-3xl">
+                        {category_products.map((product) => (
+                            <MainBox
+                                key={product.prodid}
+                                iconpicture={product.iconpicture}
+                                prodtitle={product.prodtitle}
+                                onClick={() => handleClick(product.prodid)}
+                            />
+                        ))}
+                    </div>
+                )}
+            </div>
+            <div
+                className="flex flex-col items-start p-[1.8rem] h-[26rem] w-full mt-[3rem] justify-start"> {/*카테고리별 제품 한눈에 보기*/}
+                <a className="text-2xl w-full h-[3rem] text-black items-start flex justify-start rounded-xl">패키지 상품</a>
+                <div className="w-full border-b-2 border-red-400 mt-4"></div>
+                <div className="flex flex-row rounded-3xl p-6 w-full h-[25rem] items-center">
+                    <div
+                        className="h-[20rem] justify-center flex p-10 flex-col shadow-md w-[20rem] rounded-full bg-white border-4 border-red-400">
+                        <a className="text-3xl">1+1 등록 패키지</a>
+                        <ul className="list-disc text-gray-400">
+                            <li><a className="text-lg">두 종류의 운동을 등록하고 싶은데 하나하나 찾아보기 귀찮을 때!</a></li>
+                            <li><a className="text-lg">두 개 등록할 건데 더 할인되는 건 없을까?</a></li>
+                        </ul>
+                        <a className="text-2xl mt-[0.5rem] text-red-400">있습니다,</a>
+                        <a className="text-2xl whitespace-nowrap text-red-400">오직 FIT PLAY에서!</a>
+                    </div>
+                    <div className="flex w-[15rem] h-[15rem] bg-white shadow-md ml-[2rem]"></div>
+                    <div className="flex w-[15rem] h-[15rem] bg-white shadow-md ml-[2rem]"></div>
+                    <div className="flex w-[15rem] h-[15rem] bg-white shadow-md ml-[2rem]"></div>
+                </div>
+            </div>
+            <div
+                className="flex flex-col items-start p-[1.8rem] h-[26rem] w-full mt-[3rem] justify-start"> {/*카테고리별 제품 한눈에 보기*/}
+                <a className="text-2xl w-full h-[3rem] text-black items-start flex justify-start rounded-xl">추천 대회</a>
+                <div className="w-full border-b-2 border-red-400 mt-4"></div>
+                <div className="flex rounded-3xl p-6 space-x-8 w-full h-[25rem] justify-center items-center">
+                    <div
+                        className="flex flex-col w-[20rem] items-center h-[20rem] hover:scale-110 transition-transform ease-in-out duration-500 bg-white shadow-md">
+                        <img src="https://ifh.cc/g/TlJJq0.png"/>
+                        <div
+                            onClick={() => window.open('https://winterrun.kr/', '_blank')}
+                            className="h-[4rem] w-[12rem] mt-[1rem] text-red-400 border items-center justify-center rounded-xl text-xl border-red-400 flex hover:bg-red-400 hover:text-white cursor-pointer">바로가기
+                        </div>
+                    </div>
+                    <div
+                        className="flex flex-col w-[20rem] items-center h-[20rem] hover:scale-110 transition-transform ease-in-out duration-500 bg-white shadow-md">
+                        <img src="https://ifh.cc/g/ON4Ngl.jpg"/>
+                        <div
+                            onClick={() => window.open('https://bodybuilding.or.kr/contest_kr/?q=YToxOntzOjEyOiJrZXl3b3JkX3R5cGUiO3M6MzoiYWxsIjt9&bmode=view&idx=81076702&t=board', '_blank')}
+                            className="h-[4rem] w-[12rem] mt-[1rem] text-red-400 border items-center justify-center rounded-xl text-xl border-red-400 flex hover:bg-red-400 hover:text-white cursor-pointer">바로가기
+                        </div>
+                    </div>
+                    <div
+                        className="flex flex-col w-[20rem] items-center h-[20rem] hover:scale-110 transition-transform ease-in-out duration-500 bg-white shadow-md">
+                        <img src="https://ifh.cc/g/sWOGm8.jpg"/>
+                        <div
+                            onClick={() => window.open('https://irun.kr/product/%EC%95%84%EC%9D%B4%EB%9F%B0-2024-%EA%B4%91%EB%B3%B5%EC%A0%88-815-%EA%B7%B8%EB%9E%80%ED%8F%B0%EB%8F%84/561/category/44/display/1/', '_blank')}
+                            className="h-[4rem] w-[12rem] mt-[1rem] text-red-400 border items-center justify-center rounded-xl text-xl border-red-400 flex hover:bg-red-400 hover:text-white cursor-pointer">바로가기
+                        </div>
+                    </div>
+                </div>
+            </div>
 
         </div>
     );

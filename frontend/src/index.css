@@ -139,6 +139,18 @@ button:focus-visible {
   background: black !important;
 }
 
+.swiper-pagination {
+  font-size: 16px; /* 글씨 크기 */
+  color: white; /* 글씨 색상 */
+  background-color: rgba(0, 0, 0, 0.6); /* 배경색: 검은색, 불투명도 80% */
+  border-radius: 1.5rem; /* 둥근 모서리 (rounded-3xl에 해당하는 정도) */
+  width: 4.5rem; /* 너비 설정 */
+  height: 2rem; /* 높이 설정 */
+  display: flex; /* Flexbox 설정 */
+  align-items: center; /* 세로 중앙 정렬 */
+  justify-content: center; /* 가로 중앙 정렬 */
+}
+
 .swiper-scrollbar {
   background-color: rgb(243 244 246); /* 스크롤바 배경색 조정 */
   border-radius: 10px; /* 스크롤바의 둥근 모서리 조정 */

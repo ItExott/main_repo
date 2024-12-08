@@ -29,9 +29,8 @@ const Product= ({ userProfile }) => {
     const RestSectionRef = useRef(null);
     const [showFullImages, setShowFullImages] = useState(false);
     const [activeTab, setActiveTab] = useState('전체 리뷰');
-    const [isExpanded, setIsExpanded] = useState(false);
-    const [isExpanded1, setIsExpanded1] = useState(false);
-    const [isExpanded2, setIsExpanded2] = useState(false);
+    const [expandedIndex, setExpandedIndex] = useState(null);
+    const [inquiries, setInquiries] = useState([]);
     const [isLoggedIn, setIsLoggedIn] = useState(false);
     const [userId, setUserId] = useState(null);
     const [isinquiryOpen, setIsinquiryOpen] = useState(false);
@@ -40,11 +39,42 @@ const Product= ({ userProfile }) => {
     const [category, setCategory] = useState("");
     const [title, setTitle] = useState("");
     const [question, setQuestion] = useState("");
-    const [inquiryData, setInquiryData] = useState(null); // inquiryData 상태 변수
 
     const handleinquiryToggle = () => {
         setIsinquiryOpen(!isinquiryOpen);
     };
+
+    useEffect(() => {
+        const fetchInquiries = async () => {
+            try {
+                // 요청 시작 시 로그 출력
+                console.log("Fetching inquiries for product ID:", id);
+
+                const response = await axios.get(`http://localhost:8080/api/product_inquiry/${id}`);
+
+                // 응답을 받았을 때 전체 응답을 로그로 출력
+                console.log("Response received:", response);
+
+                // 응답 데이터가 배열인지 확인하고 상태를 업데이트
+                if (Array.isArray(response.data)) {
+                    console.log("Inquiries data:", response.data);
+                    setInquiries(response.data); // 응답이 배열인 경우 바로 설정
+                } else if (response.data && Array.isArray(response.data.data)) {
+                    console.log("Inquiries data inside data:", response.data.data);
+                    setInquiries(response.data.data); // 응답이 객체 내부에 배열인 경우
+                } else {
+                    console.error("Unexpected data format:", response.data);
+                    setInquiries([]); // 데이터를 초기화
+                }
+            } catch (error) {
+                // 오류가 발생했을 때 오류 메시지를 로그로 출력
+                console.error("Error fetching inquiries:", error);
+                setInquiries([]); // 에러 발생 시 초기화
+            }
+        };
+
+        fetchInquiries();
+    }, [id]);
 
     const handleSubmitInquiry = async () => {
         // 모든 필드가 채워졌는지 확인
@@ -53,13 +83,15 @@ const Product= ({ userProfile }) => {
             return;
         }
 
+        const inqdate = new Date().toISOString().slice(0, 19).replace("T", " ");
+
         const inquiryData = {
             userId,
             phone: userData.phonenumber,
             category,
             inqtitle: title,
             inqcontent: question,
-            inqdate: new Date().toISOString().split('T')[0],
+            inqdate,
             id,
         };
 
@@ -105,30 +137,7 @@ const Product= ({ userProfile }) => {
         checkLoginStatus();
     }, []);
 
-    useEffect(() => {
-        if (isLoggedIn && id) {
-            const fetchInquiryData = async () => {
-                try {
-                    // prodid와 userId를 사용하여 해당 데이터를 가져옵니다.
-                    const response = await axios.get("http://localhost:8080/api/inquiries", {
-                        params: { userId, id }, // userId와 prodid를 함께 전달
-                    });
-                    setInquiryData(response.data); // 응답 데이터 설정
-                } catch (error) {
-                    console.error("데이터 가져오기 실패", error);
-                }
-            };
-
-            fetchInquiryData();
-        }
-    }, [isLoggedIn, userId, id]); // 로그인 여부, userId, prodid가 바뀔 때마다 호출
-
-    if (!inquiryData) {
-        return <div>로딩 중...</div>; // 데이터가 로딩되지 않았을 때
-    }
-
     // 상품 정보 가져오는 db문
-
     const [productData, setProductData] = useState({
         iconpicture: "",
         prodid: "",
@@ -167,9 +176,9 @@ const Product= ({ userProfile }) => {
                     axios
                         .post("http://localhost:8080/recently-viewed", {
                             productId: response.data.prodid,
-                            userId: userId,
-                        })
-                        .then((response) => {
+                            userId: userProfile.userId,
+                        }, { withCredentials: true })
+                .then((response) => {
                             console.log("Product saved to recently viewed:", response.data);
                         })
                         .catch((error) => {
@@ -180,7 +189,7 @@ const Product= ({ userProfile }) => {
             .catch((error) => {
                 console.error("Error fetching product data:", error);
             });
-    }, [id, userProfile, userId]);
+    }, [id, userProfile]);
 
 
     {/*const문*/}
@@ -595,141 +604,70 @@ const Product= ({ userProfile }) => {
                         )}
                         {activeTab === '상품 문의' && (
                             <div className="flex flex-col">
-                                <div onClick={() => setIsExpanded(!isExpanded)}
-                                     className="flex mx-auto flex-row items-center mt-[1rem] hover:bg-gray-200 cursor-pointer bg-gray-100 shadow-xl border-[0.1rem] border-gray-600 rounded-lg w-[50rem] h-[7rem]">
-                                    <div
-                                        className="flex flex-col h-[6rem] border-r-[0.1rem] border-gray-400 items-center w-[10rem]">
-                                        <FaCircleUser className="flex mt-[0.6rem] h-[4rem] w-[4rem]"/>
-                                        <a className="flex font-bold mt-[0.5rem] items-center text-xs">김기사</a>
-                                    </div>
-                                    <div className="flex flex-col w-[30rem]">
-                                        <div className="flex flex-row">
-                                            <a className="text-xs font-semibold text-gray-600 ml-[1.3rem]">환불 / 구매</a>
-                                        </div>
-                                        <a className="text-sm font-bold ml-[1.3rem] mt-[0.3rem]">환불 문의 드립니다.</a>
-                                        <div className="flex flex-row w-[20rem]">
-                                            <a className="text-xs font-bold text-gray-500 ml-[1.4rem] mt-[0.2rem]">답변
-                                                완료</a>
-                                            <a className="text-xs font-bold text-gray-500 ml-[0.2rem] mt-[0.2rem]">·
-                                                pjk***</a>
-                                        </div>
-                                    </div>
-                                    <div className="flex">
-                                        {isExpanded ? (
-                                            <FaAngleUp
-                                                className="flex items-center justify-center w-[2rem] h-[2rem] ml-[5rem]"/>
-                                        ) : (
-                                            <FaAngleDown
-                                                className="flex items-center justify-center w-[2rem] h-[2rem] ml-[5rem]"/>
-                                        )}
-                                    </div>
-                                </div>
-                                {isExpanded && (
-                                    <div
-                                        className="mt-2 bg-gray-50 border-[0.1rem] border-gray-300 rounded-lg p-4 w-[50rem] mx-auto shadow-md">
-                                        <p className="text-sm text-gray-700">
-                                            안녕하세요, 고객님. 환불 관련 문의 사항에 대해 답변드립니다. 환불 절차는 구매일로부터 7일 이내에 신청 가능합니다.
-                                        </p>
-                                        <p className="text-sm text-gray-700 mt-2">
-                                            자세한 내용은 고객센터로 문의해 주세요. 감사합니다.
-                                        </p>
+                                {inquiries.map((inquiry, index) => (
+                                    <div key={index} className="flex flex-col">
                                         <div
-                                            className="mt-[1rem] bg-gray-50 border-[0.1rem] border-gray-300 rounded-lg p-4 w-[48rem] mx-auto shadow-md">
-                                            <div className="flex items-center flex-row">
-                                                <FaCheckCircle/>
-                                                <a className="text-xm ml-[0.3rem] text-gray-700">답변 내용</a>
+                                            onClick={() => setExpandedIndex(expandedIndex === index ? null : index)}
+                                            className="flex mx-auto flex-row items-center mt-[1rem] hover:bg-gray-200 cursor-pointer bg-gray-100 shadow-xl border-[0.1rem] border-gray-600 rounded-lg w-[50rem] h-full"
+                                        >
+                                            <div
+                                                className="flex flex-col h-[6rem] border-r-[0.1rem] border-gray-400 items-center w-[10rem]">
+                                                <FaCircleUser className="flex mt-[0.6rem] h-[4rem] w-[4rem]"/>
+                                                <a className="flex font-bold mt-[0.5rem] items-center text-xs">{inquiry.name}</a>
                                             </div>
-                                            <p className="text-sm mt-2 text-gray-700">
-                                                안녕하세요, 고객님. 환불 관련 문의 사항에 대해 답변드립니다. 환불 절차는 구매일로부터 7일 이내에 신청 가능합니다.
-                                            </p>
-                                            <p className="text-sm text-gray-700">
-                                                자세한 내용은 고객센터로 문의해 주세요. 감사합니다.
-                                            </p>
+                                            <div className="flex flex-col h-full w-[30rem] mt-[2rem]">
+                                                <div className="flex flex-row items-center h-[1rem]">
+                                                    <a className="flex text-xs font-semibold text-red-400 ml-[1.3rem]">{inquiry.category} •</a>
+                                                    <a className="flex text-xs font-semibold text-red-400 mb-[0.2rem] ml-[0.2rem]">{inquiry.userid}</a>
+                                                    <a className="flex text-xs font-bold text-red-400 ml-[0.2rem]">
+                                                        • {inquiry.status || '답변 대기 중'}
+                                                    </a>
+                                                </div>
+                                                <a className="flex text-sm font-bold ml-[1.3rem]">{inquiry.inqtitle}</a>
+                                                <a className="flex text-xs font-bold ml-[1.3rem] mt-[0.3rem]">{inquiry.inqcontent}</a>
+                                                <a className="flex text-xs font-bold ml-[1.3rem] mt-[0.3rem]">
+                                                    작성 일자 : {new Date(inquiry.inqdate).toLocaleString('ko-KR', {
+                                                    year: 'numeric',
+                                                    month: '2-digit',
+                                                    day: '2-digit',
+                                                    hour: '2-digit',
+                                                    minute: '2-digit',
+                                                    hour12: false,
+                                                })}
+                                                </a>
+                                            </div>
+                                            <div className="flex">
+                                                {expandedIndex === index ? (
+                                                    <FaAngleUp
+                                                        className="flex items-center justify-center w-[2rem] h-[2rem] ml-[5rem]"/>
+                                                ) : (
+                                                    <FaAngleDown
+                                                        className="flex items-center justify-center w-[2rem] h-[2rem] ml-[5rem]"/>
+                                                )}
+                                            </div>
                                         </div>
-                                    </div>
-                                )}
-                                <div onClick={() => setIsExpanded1(!isExpanded1)}
-                                     className="flex mx-auto flex-row items-center mt-[1rem] hover:bg-gray-200 cursor-pointer bg-gray-100 shadow-xl border-[0.1rem] border-gray-600 rounded-lg w-[50rem] h-[7rem]">
-                                    <div
-                                        className="flex flex-col h-[6rem] border-r-[0.1rem] border-gray-400 items-center w-[10rem]">
-                                        <FaCircleUser className="flex mt-[0.6rem] h-[4rem] w-[4rem]"/>
-                                        <a className="flex font-bold mt-[0.5rem] items-center text-xs">김기사</a>
-                                    </div>
-                                    <div className="flex flex-col w-[30rem]">
-                                        <div className="flex flex-row">
-                                            <a className="text-xs font-semibold text-gray-600 ml-[1.3rem]">환불 / 구매</a>
-                                        </div>
-                                        <a className="text-sm font-bold ml-[1.3rem] mt-[0.3rem]">환불 문의 드립니다.</a>
-                                        <div className="flex flex-row w-[20rem]">
-                                            <a className="text-xs font-bold text-gray-500 ml-[1.4rem] mt-[0.2rem]">답변
-                                                완료</a>
-                                            <a className="text-xs font-bold text-gray-500 ml-[0.2rem] mt-[0.2rem]">·
-                                                pjk***</a>
-                                        </div>
-                                    </div>
-                                    <div className="flex">
-                                        {isExpanded1 ? (
-                                            <FaAngleUp
-                                                className="flex items-center justify-center w-[2rem] h-[2rem] ml-[5rem]"/>
-                                        ) : (
-                                            <FaAngleDown
-                                                className="flex items-center justify-center w-[2rem] h-[2rem] ml-[5rem]"/>
+                                        {expandedIndex === index && inquiry.ansertitle && inquiry.ansercontent && (
+                                            <div
+                                                className="mt-[1rem] flex flex-col bg-gray-50 border-[0.1rem] border-gray-300 rounded-lg p-4 w-[48rem] mx-auto shadow-md">
+                                                <div className="flex items-center flex-row">
+                                                    <FaCheckCircle/>
+                                                    <a className="text-xm ml-[0.3rem] text-gray-700">답변 내용</a>
+                                                    <a className="text-xm ml-[14rem] text-gray-700">
+                                                        {inquiry.ansertitle}
+                                                    </a>
+                                                </div>
+                                                <a className="text-sm mt-2 text-gray-700">
+                                                    {inquiry.ansercontent}
+                                                </a>
+                                            </div>
                                         )}
                                     </div>
-                                </div>
-                                {isExpanded1 && (
-                                    <div
-                                        className="mt-2 bg-gray-50 border-[0.1rem] border-gray-300 rounded-lg p-4 w-[50rem] mx-auto shadow-md">
-                                        <p className="text-sm text-gray-700">
-                                            안녕하세요, 고객님. 환불 관련 문의 사항에 대해 답변드립니다. 환불 절차는 구매일로부터 7일 이내에 신청 가능합니다.
-                                        </p>
-                                        <p className="text-sm text-gray-700 mt-2">
-                                            자세한 내용은 고객센터로 문의해 주세요. 감사합니다.
-                                        </p>
-                                    </div>
-                                )}
-                                <div onClick={() => setIsExpanded2(!isExpanded2)}
-                                     className="flex mx-auto flex-row items-center mt-[1rem] hover:bg-gray-200 cursor-pointer bg-gray-100 shadow-xl border-[0.1rem] border-gray-600 rounded-lg w-[50rem] h-[7rem]">
-                                    <div
-                                        className="flex flex-col h-[6rem] border-r-[0.1rem] border-gray-400 items-center w-[10rem]">
-                                        <FaCircleUser className="flex mt-[0.6rem] h-[4rem] w-[4rem]"/>
-                                        <a className="flex font-bold mt-[0.5rem] items-center text-xs">김기사</a>
-                                    </div>
-                                    <div className="flex flex-col w-[30rem]">
-                                        <div className="flex flex-row">
-                                            <a className="text-xs font-semibold text-gray-600 ml-[1.3rem]">환불 / 구매</a>
-                                        </div>
-                                        <a className="text-sm font-bold ml-[1.3rem] mt-[0.3rem]">환불 문의 드립니다.</a>
-                                        <div className="flex flex-row w-[20rem]">
-                                            <a className="text-xs font-bold text-gray-500 ml-[1.4rem] mt-[0.2rem]">답변
-                                                완료</a>
-                                            <a className="text-xs font-bold text-gray-500 ml-[0.2rem] mt-[0.2rem]">·
-                                                pjk***</a>
-                                        </div>
-                                    </div>
-                                    <div className="flex">
-                                        {isExpanded2 ? (
-                                            <FaAngleUp
-                                                className="flex items-center justify-center w-[2rem] h-[2rem] ml-[5rem]"/>
-                                        ) : (
-                                            <FaAngleDown
-                                                className="flex items-center justify-center w-[2rem] h-[2rem] ml-[5rem]"/>
-                                        )}
-                                    </div>
-                                </div>
-                                {isExpanded2 && (
-                                    <div
-                                        className="mt-2 bg-gray-50 border-[0.1rem] border-gray-300 rounded-lg p-4 w-[50rem] mx-auto shadow-md">
-                                        <p className="text-sm text-gray-700">
-                                            안녕하세요, 고객님. 환불 관련 문의 사항에 대해 답변드립니다. 환불 절차는 구매일로부터 7일 이내에 신청 가능합니다.
-                                        </p>
-                                        <p className="text-sm text-gray-700 mt-2">
-                                            자세한 내용은 고객센터로 문의해 주세요. 감사합니다.
-                                        </p>
-                                    </div>
-                                )}
+                                ))}
                                 <div className="flex justify-end items-center mt-4 w-full h-[3rem]">
-                                    <div onClick={handleinquiryToggle} className="flex h-[3rem] w-[6rem] items-center justify-center rounded-xl border border-red-400 text-red-400 hover:bg-red-400 hover:text-white cursor-pointer hover:scale-110 transition-transform ease-in-out duration-500">
+                                    <div
+                                        onClick={handleinquiryToggle}
+                                        className="flex h-[3rem] w-[6rem] items-center justify-center rounded-xl border border-red-400 text-red-400 hover:bg-red-400 hover:text-white cursor-pointer hover:scale-110 transition-transform ease-in-out duration-500"
+                                    >
                                         <a className="flex">문의 작성하기</a>
                                     </div>
                                 </div>
@@ -740,7 +678,8 @@ const Product= ({ userProfile }) => {
                 </div>
             </div>
             {isinquiryOpen && (
-                <div className="fixed top-0 left-0 w-full h-full bg-black bg-opacity-50 flex items-center justify-center z-50">
+                <div
+                    className="fixed top-0 left-0 w-full h-full bg-black bg-opacity-50 flex items-center justify-center z-50">
                     <div className="bg-white w-[50rem] p-6 rounded-lg shadow-lg">
                         {/* Title */}
                         <h2 className="text-2xl font-bold text-red-400">상품 문의</h2>
@@ -772,10 +711,10 @@ const Product= ({ userProfile }) => {
                                     <option value="" disabled selected>
                                         카테고리를 선택하세요
                                     </option>
-                                    <option value="option1">결제 문의</option>
-                                    <option value="option2">등록 문의</option>
-                                    <option value="option3">기간 문의</option>
-                                    <option value="option4">환불 / 취소 문의</option>
+                                    <option value="결제 문의">결제 문의</option>
+                                    <option value="등록 문의">등록 문의</option>
+                                    <option value="기간 문의">기간 문의</option>
+                                    <option value="환불 / 취소 문의">환불 / 취소 문의</option>
                                 </select>
                             </div>
                             <div

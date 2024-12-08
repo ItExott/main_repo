@@ -240,7 +240,6 @@ app.post('/api/login', (req, res) => {
                 if (getResults.length > 0 && getResults[0].attendance) {
                     attendance = JSON.parse(getResults[0].attendance); // 기존 출석 정보 배열로 파싱
                 }
-
                 // 새로운 출석 날짜가 이미 존재하는지 확인
                 if (!attendance.includes(currentDay)) {
                     attendance.push(currentDay); // 새로운 날짜 추가
@@ -292,7 +291,7 @@ app.get('/api/userinfo', (req, res) => {
     if (req.session && req.session.userId) {
         const userId = req.session.userId;
 
-        const query = 'SELECT money,email,userpw FROM users WHERE userId = ?';
+        const query = 'SELECT money,email,userpw, userType FROM users WHERE userId = ?';
 
         db.query(query, [userId], (err, results) => {
             if (err) {
@@ -304,6 +303,7 @@ app.get('/api/userinfo', (req, res) => {
                 const money = results[0].money;
                 const email = results[0].email;
                 const userpw = results[0].userpw;
+                const userType = results[0].userType;
                 const profileImgUrl = req.session.profileimg || '/uploads/default-profile.png';
                 res.json({
                     success: true,
@@ -313,7 +313,8 @@ app.get('/api/userinfo', (req, res) => {
                     phonenumber: req.session.phonenumber,
                     money: money,
                     userpw: userpw,
-                    email: email
+                    email: email,
+                    userType: userType
                 });
             } else {
                 console.log("사용자가 존재하지 않음");
@@ -1105,7 +1106,7 @@ app.delete("/api/users", (req, res) => {
 
 app.post('/api/inquiry', (req, res) => {
     const { userId, phone, category, inqtitle, inqcontent, inqdate, id } = req.body;
-
+    const name = req.session.name;
     // 모든 필드가 채워졌는지 확인
     if (!userId || !phone || !category || !inqtitle || !inqcontent || !inqdate) {
         return res.status(400).json({ success: false, message: '모든 필드를 입력해주세요.' });
@@ -1113,11 +1114,11 @@ app.post('/api/inquiry', (req, res) => {
 
     // MySQL INSERT 쿼리
     const sql = `
-        INSERT INTO product_inquiry (userid, phone, category, inqtitle, inqcontent, inqdate, prodid)
-        VALUES (?, ?, ?, ?, ?, ?, ?)
+        INSERT INTO product_inquiry (userid, phone, category, inqtitle, inqcontent, inqdate, prodid, name)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?)
     `;
 
-    db.query(sql, [userId, phone, category, inqtitle, inqcontent, inqdate, id], (err, results) => {
+    db.query(sql, [userId, phone, category, inqtitle, inqcontent, inqdate, id, name], (err, results) => {
         if (err) {
             console.error('문의 저장 중 오류 발생:', err);
             return res.status(500).json({ success: false, message: '서버 오류가 발생했습니다.' });
@@ -1127,7 +1128,109 @@ app.post('/api/inquiry', (req, res) => {
     });
 });
 
+app.get('/api/product_inquiry/:id', (req, res) => {
+    const { id } = req.params;
 
+    const query = `
+        SELECT
+            prodid, 
+            category, 
+            inqtitle, 
+            inqcontent, 
+            inqdate, 
+            phone, 
+            userid, 
+            name, 
+            ansertitle, 
+            ansercontent,
+            CASE 
+                WHEN ansertitle IS NOT NULL AND ansercontent IS NOT NULL THEN '답변 완료'
+                ELSE '답변 대기 중'
+            END AS status
+        FROM product_inquiry
+        WHERE prodid = ?
+        ORDER BY inqdate DESC
+        LIMIT 3;
+    `;
+
+    db.query(query, [id], (err, results) => {
+        if (err) {
+            console.error('쿼리 실행 오류:', err);
+            res.status(500).json({ error: '데이터베이스 오류' });
+            return;
+        }
+        res.json(results); // 결과 반환
+    });
+});
+
+
+app.get('/category/products', (req, res) => {
+    const category = req.query.category; // 프론트에서 전달된 category 값
+    const query = `
+        SELECT prodid, iconpicture, prodtitle 
+        FROM product 
+        WHERE category = ? 
+        ORDER BY prodid DESC 
+        LIMIT 3
+    `;
+    db.query(query, [category], (err, results) => {
+        if (err) {
+            res.status(500).send(err);
+        } else {
+            res.json(results);
+        }
+    });
+});
+
+app.post('/api/products', upload.fields([
+    { name: 'iconpicture' },
+    { name: 'prodpicture' },
+    { name: 'prodcontent1' },
+    { name: 'prodcontent2' },
+    { name: 'prodcontent3' },
+    { name: 'prodcontent4' },
+    { name: 'facility_pictures' }
+]), (req, res) => {
+    // Body와 File로부터 값을 가져옴
+    const { prodtitle, category, prodsmtitle, prodaddress, address, prodprice, prodprice2, prodprice3, prodprice4, userId } = req.body;
+
+    // 파일이 있을 경우 업로드 경로 설정
+    const iconPicture = req.files.iconpicture ? `/uploads/${req.files.iconpicture[0].filename}` : null;
+    const prodPicture = req.files.prodpicture ? `/uploads/${req.files.prodpicture[0].filename}` : null;
+    const prodContent = [
+        req.files.prodcontent1 ? `/uploads/${req.files.prodcontent1[0].filename}` : null,
+        req.files.prodcontent2 ? `/uploads/${req.files.prodcontent2[0].filename}` : null,
+        req.files.prodcontent3 ? `/uploads/${req.files.prodcontent3[0].filename}` : null,
+        req.files.prodcontent4 ? `/uploads/${req.files.prodcontent4[0].filename}` : null,
+    ];
+    const facilityPictures = req.body.facility_pictures ? JSON.parse(req.body.facility_pictures) : [];
+
+    // MySQL에 데이터 삽입
+    const sql = `
+    INSERT INTO product (
+        userid, category, prodtitle, iconpicture,
+        prodcontent1, prodcontent2, prodcontent3, prodcontent4,
+        prodsmtitle, prodaddress, address, prodpicture, prodprice, 
+        prodprice2, prodprice3, prodprice4, facility_pictures
+    ) 
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`;
+
+    const values = [
+        userId, category, prodtitle, iconPicture, prodContent[0], prodContent[1], prodContent[2], prodContent[3],
+        prodsmtitle, prodaddress, address,
+        prodPicture, prodprice, prodprice2, prodprice3, prodprice4,
+        JSON.stringify(facilityPictures),
+    ];
+
+    // MySQL 쿼리 실행
+    db.query(sql, values, (err, result) => {
+        if (err) {
+            console.error("Error inserting product:", err);
+            return res.status(500).json({ message: "제품 등록 실패", error: err });
+        }
+        res.status(200).json({ message: "제품이 성공적으로 등록되었습니다.", productId: result.insertId });
+    });
+});
 
 
 app.use('/uploads', express.static(path.join(__dirname, 'src/uploads')));

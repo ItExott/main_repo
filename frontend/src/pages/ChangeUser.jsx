@@ -3,7 +3,7 @@ import axios from "axios";
 import { FaCamera } from "react-icons/fa";
 import {useNavigate} from "react-router-dom";
 
-const ChangeUser = () => {
+const ChangeUser = ({ setUserProfile }) => {
     const [userData, setUserData] = useState(null);
     const [isChecked, setIsChecked] = useState(false);
     const [isModalOpen, setIsModalOpen] = useState(false);
@@ -210,7 +210,13 @@ const ChangeUser = () => {
 
     const formattedPhoneNumber = formatPhoneNumber(userData.phonenumber);
 
-    const goMyPage = () => navigate("/MyPage");
+    const goMyPage = () => {
+        setUserProfile((prevProfile) => ({
+            ...prevProfile,
+            profileimg: userData.profileimg,
+        }));
+        navigate("/MyPage");
+    }
 
     return(
         <div className="flex flex-col mt-[1rem] h-full items-center justify-center mx-28"> {/* 전체 틀 */}

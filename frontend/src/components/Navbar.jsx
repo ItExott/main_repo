@@ -5,15 +5,17 @@ import { FaShoppingBasket } from "react-icons/fa";
 import { FaPlaystation } from "react-icons/fa6";
 import axios from "axios";
 import ChargePopup from "../popup/ChargePopup.jsx";
-import myPage from "../pages/MyPage.jsx";
+import { FaBell } from "react-icons/fa6";
 
-const Navbar = ({ loginStatus, setLoginStatus, userProfile, setUserProfile, money, setMoney, handleLogout }) => {
+const Navbar = ({ loginStatus, setLoginStatus, userProfile, setUserProfile, money, setMoney, handleLogout, userType }) => {
     const displayMoney = money || 0; // Default money to 0 if not available
     const navigate = useNavigate();
     const [isDropdownVisible, setDropdownVisible] = useState(false);
     const timeoutRef = useRef(null);
     const [isChargePopupVisible, setChargePopupVisible] = useState(false);
     const [isFetching, setIsFetching] = useState(false); // Track fetch status
+    const [isNotificationVisible, setNotificationVisible] = useState(false);
+    const [isManagePopupVisible, setManagePopupVisible] = useState(false);
 
     useEffect(() => {
         const storedLoginStatus = sessionStorage.getItem("loginStatus");
@@ -44,6 +46,7 @@ const Navbar = ({ loginStatus, setLoginStatus, userProfile, setUserProfile, mone
                         sessionStorage.setItem("loginStatus", "true");
                         sessionStorage.setItem("userProfile", JSON.stringify(response.data.profileimg));
                         sessionStorage.setItem("money", response.data.money);
+                        sessionStorage.setItem("userType", response.data.userType);
                     } else {
                         setLoginStatus(false);
                         setUserProfile(null);
@@ -51,6 +54,7 @@ const Navbar = ({ loginStatus, setLoginStatus, userProfile, setUserProfile, mone
                         sessionStorage.removeItem("loginStatus");
                         sessionStorage.removeItem("userProfile");
                         sessionStorage.removeItem("money");
+                        sessionStorage.removeItem("userType");
                     }
                 } catch (error) {
                     console.error("Failed to fetch user info:", error);
@@ -62,6 +66,10 @@ const Navbar = ({ loginStatus, setLoginStatus, userProfile, setUserProfile, mone
             fetchUserInfo(); // 서버에서 사용자 정보를 가져오는 함수 호출
         }
     }, [loginStatus, setLoginStatus, setUserProfile, setMoney, isFetching]);
+
+
+    const handleOpenNotification = () => setNotificationVisible(true);
+    const handleCloseNotification = () => setNotificationVisible(false);
 
     // Dropdown behavior for navigation
     const showDropdown = () => {
@@ -84,6 +92,7 @@ const Navbar = ({ loginStatus, setLoginStatus, userProfile, setUserProfile, mone
     const goclimbing = () => navigate("/product_Main/climbing");
     const goswim = () => navigate("/product_Main/swim");
     const gomypage = () => navigate("/MyPage");
+    const goAddProduct = () => navigate("/AddProduct");
 
     // Handle charge popup visibility
     const handleOpenChargePopup = () => {
@@ -152,9 +161,36 @@ const Navbar = ({ loginStatus, setLoginStatus, userProfile, setUserProfile, mone
             </div>
 
             <div className="navbar-end">
-                <div onClick={gocart} className="flex rounded-full w-[3rem] h-[3rem] border-[0.2rem] cursor-pointer hover:scale-110 transition-transform ease-in-out duration-500 mb-[0.38rem] mr-[0.7rem] border-red-400">
-                    <FaShoppingBasket className="w-[2.4rem] items-center justify-center fill-red-400 h-[2.4rem] ml-[0.1rem]" />
-                </div>
+                {loginStatus ? (
+                    // If the user is logged in
+                    userType === "admin" || userType === "gymManager" ? (
+                        <div onClick={handleOpenNotification} className="flex rounded-full w-[3rem] h-[3rem] border-[0.2rem] cursor-pointer hover:scale-110 transition-transform ease-in-out duration-500 mb-[0.38rem] mr-[0.7rem] border-red-400">
+                            <FaBell className="w-[2.4rem] items-center mt-[0.1rem] justify-center fill-red-400 h-[2.4rem] ml-[0.1rem]" />
+                        </div>
+                    ) : (
+                        <div onClick={gocart} className="flex rounded-full w-[3rem] h-[3rem] border-[0.2rem] cursor-pointer hover:scale-110 transition-transform ease-in-out duration-500 mb-[0.38rem] mr-[0.7rem] border-red-400">
+                            <FaShoppingBasket className="w-[2.4rem] items-center justify-center fill-red-400 h-[2.4rem] ml-[0.1rem]" />
+                        </div>
+                    )
+                ) : (
+                    <div onClick={gocart} className="flex rounded-full w-[3rem] h-[3rem] border-[0.2rem] cursor-pointer hover:scale-110 transition-transform ease-in-out duration-500 mb-[0.38rem] mr-[0.7rem] border-red-400">
+                        <FaShoppingBasket className="w-[2.4rem] items-center justify-center fill-red-400 h-[2.4rem] ml-[0.1rem]" />
+                    </div>
+                )}
+                {isNotificationVisible && (
+                    <div className="absolute top-[6rem] right-[9.5rem] bg-white shadow-lg p-5 rounded-lg z-50 border border-gray-300">
+                        <h3 className="text-lg w-[15rem] font-semibold mb-2">알림</h3>
+                        <div className="flex flex-col">
+                            <a>ㅇㅇ</a>
+                        <button
+                            onClick={handleCloseNotification}
+                            className="mt-4 px-4 py-2 bg-red-400 hover:border hover:border-red-400 hover:bg-white hover:scale-110 transition-transform ease-in-out duration-500 hover:text-red-400 text-white rounded-lg"
+                        >
+                            닫기
+                        </button>
+                        </div>
+                    </div>
+                )}
                 <div className="dropdown dropdown-end">
                     <div tabIndex={0} role="btn" className="btn btn-ghost btn-circle avatar">
                         {loginStatus && userProfile && userProfile.profileimg ? (
@@ -180,35 +216,67 @@ const Navbar = ({ loginStatus, setLoginStatus, userProfile, setUserProfile, mone
                         <div
                             className="h-full rounded-md items-start fill-red-400 hover:fill-white text-red-400 hover:scale-110 hover:bg-red-400 hover:text-white transition-transform ease-in-out duration-500 justify-start p-3 flex flex-col border-red-400 border-[0.1rem]"
                         >
-                            <div className="flex flex-row">
-                                <a className="text-xs">핏머니 ·</a>
-                                <FaPlaystation className="ml-[0.1rem]" />
-                                <a className="text-xs">PLAY 증권</a>
-                            </div>
                             {loginStatus ? (
-                                <p className="text-xl flex">{Number(displayMoney).toLocaleString()}원</p>
+                                <>
+                                    {userType === "gymManager" ? (
+                                        // Gym Manager 뷰
+                                        <>
+                                            <p className="text-xl flex">{`등록한 제품 수: 개`}</p>
+                                            <div className="flex flex-row mt-[1rem] ml-[7.2rem]">
+                                                <div
+                                                    className="w-[2.5rem] bg-red-400 text-white hover:text-red-400 shadow-md cursor-pointer hover:scale-125 transition-transform ease-in-out duration-500 hover:bg-white h-[1.4rem] flex items-center justify-center rounded-xl"
+                                                >
+                                                    <a className="flex mt-[0.15rem]">관리</a>
+                                                </div>
+                                                <div
+                                                    onClick={goAddProduct}
+                                                    className="w-[2.5rem] text-red-400 hover:text-white bg-white border-[0.1rem] cursor-pointer hover:scale-125 hover:bg-red-400 transition-transform ease-in-out duration-500 border-red-400 ml-[0.2rem] shadow-md h-[1.4rem] flex items-center justify-center rounded-xl"
+                                                >
+                                                    <a className="flex mt-[0.1rem]">등록</a>
+                                                </div>
+                                            </div>
+                                        </>
+                                    ) : (
+                                        // 일반 사용자 뷰
+                                        <>
+                                            <div className="flex flex-row">
+                                                <a className="text-xs">핏머니 ·</a>
+                                                <FaPlaystation className="ml-[0.1rem]"/>
+                                                <a className="text-xs">PLAY 증권</a>
+                                            </div>
+                                            <p className="text-xl flex">{Number(displayMoney).toLocaleString()}원</p>
+                                            <div className="flex flex-row ml-[7.2rem]">
+                                                <div
+                                                    onClick={handleOpenChargePopup}
+                                                    className="w-[2.5rem] bg-red-400 text-white hover:text-red-400 shadow-md cursor-pointer hover:scale-125 transition-transform ease-in-out duration-500 hover:bg-white h-[1.4rem] flex items-center justify-center rounded-xl"
+                                                >
+                                                    <a className="flex mt-[0.15rem]">충전</a>
+                                                </div>
+                                                <div
+                                                    className="w-[2.5rem] text-red-400 hover:text-white bg-white border-[0.1rem] cursor-pointer hover:scale-125 hover:bg-red-400 transition-transform ease-in-out duration-500 border-red-400 ml-[0.2rem] shadow-md h-[1.4rem] flex items-center justify-center rounded-xl"
+                                                >
+                                                    <a className="flex mt-[0.1rem]">선물</a>
+                                                </div>
+                                            </div>
+                                        </>
+                                    )}
+                                </>
                             ) : (
                                 <p>로그인되지 않았습니다.</p>
                             )}
-                            {loginStatus && (
-                                <div className="flex flex-row ml-[7.2rem]">
-                                    <div onClick={handleOpenChargePopup} className="w-[2.5rem] bg-red-400 text-white  hover:text-red-400 shadow-md cursor-pointer hover:scale-125 transition-transform ease-in-out duration-500 hover:bg-white h-[1.4rem] flex itmes-center justify-center rounded-xl">
-                                        <a className="flex mt-[0.15rem]">충전</a>
-                                    </div>
-                                    <div
-                                        className="w-[2.5rem] text-red-400 hover:text-white bg-white border-[0.1rem] cursor-pointer hover:scale-125 hover:bg-red-400 transition-transform ease-in-out duration-500 border-red-400 ml-[0.2rem] shadow-md h-[1.4rem] flex itmes-center justify-center rounded-xl">
-                                        <a className="flex mt-[0.1rem]">선물</a>
-                                    </div>
-                                </div>
-                            )}
                         </div>
-                        {isChargePopupVisible && (
+
+                        {isChargePopupVisible && userType !== "gymManager" && (
                             <ChargePopup
                                 userProfile={userProfile}
                                 closePopup={handleCloseChargePopup}
                                 confirmCharge={handleConfirmCharge}
                                 setMoney={setMoney}
                             />
+                        )}
+
+                        {isManagePopupVisible && userType === "gymManager" && (
+                            dd
                         )}
                         {loginStatus ? (
                             <div onClick={handleLogout} className="border-[0.1rem] text-red-400 hover:text-white hover:bg-red-400 cursor-pointer hover:scale-110 transition-transform ease-in-out duration-500 text-start rounded-xl shadow-md border-red-400">

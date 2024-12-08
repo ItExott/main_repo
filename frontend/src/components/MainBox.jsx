@@ -1,31 +1,18 @@
 import React from "react";
-import {Swiper, SwiperSlide} from "swiper/react";
-import {Scrollbar} from "swiper";
-import MainCard from "./MainCard.jsx";
 
-const MainBox = () => {
 
+const MainBox = ({ iconpicture, prodtitle, onClick  }) => {
     return (
-        <div className="flex flex-row w-full h-[16rem] border-2 border-red-400 items-center justify-center shadow-xl rounded-md">
-            <Swiper
-                slidesPerView="auto"
-                spaceBetween={-120}
-                centeredSlides={false}
-                scrollbar={{
-                    hide: false,
-                    draggable: true,
-                    dragSize: 200,
-                }}
-                modules={[Scrollbar]}
-                className="flex w-full"
-            >
-                <SwiperSlide className="maincard-slide flex ml-[5rem] justify-center w-auto h-auto"><MainCard text="카드1"
-                                                                                               sor="https://ifh.cc/g/QqVy3C.png"/></SwiperSlide>
-                <SwiperSlide className="maincard-slide flex ml-[14rem] justify-center w-auto h-auto"><MainCard text="카드2"
-                                                                                                sor="https://ifh.cc/g/M0Yaqq.png"/></SwiperSlide>
-            </Swiper>
-        </div>
-    )
-}
+            <div onClick={onClick} className="w-[15rem] border-2 shadow-md border-red-500 rounded-3xl m-8 cursor-pointer hover:scale-110 transition-transform ease-in-out duration-500 overflow-hidden">
+                <img
+                    src={iconpicture}
+                    className="flex w-full h-[10rem]"
+                />
+                <div>
+                    <div className="font-bold w-full items-center flex  justify-center h-[2.5rem] text-lg">{prodtitle}</div>
+                </div>
+            </div>
+    );
+};
 
 export default MainBox;
