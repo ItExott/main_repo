@@ -6,6 +6,7 @@ import { FaPlaystation } from "react-icons/fa6";
 import axios from "axios";
 import ChargePopup from "../popup/ChargePopup.jsx";
 import { FaBell } from "react-icons/fa6";
+import { FaWindowClose } from "react-icons/fa";
 
 const Navbar = ({ loginStatus, setLoginStatus, userProfile, setUserProfile, money, setMoney, handleLogout, userType }) => {
     const displayMoney = money || 0; // Default money to 0 if not available
@@ -16,6 +17,9 @@ const Navbar = ({ loginStatus, setLoginStatus, userProfile, setUserProfile, mone
     const [isFetching, setIsFetching] = useState(false); // Track fetch status
     const [isNotificationVisible, setNotificationVisible] = useState(false);
     const [isManagePopupVisible, setManagePopupVisible] = useState(false);
+    const [alertlist, setAlertlist] = useState([]); // alertlist 상태 (제품 id 리스트)
+    const [productInfo, setProductInfo] = useState({});
+    const [productCount, setProductCount] = useState(0);
 
     useEffect(() => {
         const storedLoginStatus = sessionStorage.getItem("loginStatus");
@@ -34,20 +38,145 @@ const Navbar = ({ loginStatus, setLoginStatus, userProfile, setUserProfile, mone
     }, [setLoginStatus, setUserProfile, setMoney]);
 
     useEffect(() => {
+        if (userType === "gymManager") {
+            const fetchProductCount = async () => {
+                try {
+                    const response = await axios.get("http://localhost:8080/user/products/count", { withCredentials: true });
+                    if (response.data.productCount !== undefined) {
+                        setProductCount(response.data.productCount); // 제품 개수 업데이트
+                    }
+                } catch (error) {
+                    console.error("Failed to fetch product count:", error);
+                }
+            };
+
+            fetchProductCount(); // 제품 개수 가져오기
+        }
+    }, [userType]);
+
+    useEffect(() => {
+        const storedAlertlist = sessionStorage.getItem("alertlist");
+        if (storedAlertlist) {
+            setAlertlist(JSON.parse(storedAlertlist)); // sessionStorage에서 alertlist 값을 가져와 설정
+        }
+    }, []);
+
+    const handleAlertClick = (prodid) => {
+        navigate(`/product/${prodid}`); // 클릭 시 해당 제품 페이지로 이동
+        setNotificationVisible(false);
+    };
+
+    const handleRemoveAlert = async (prodid) => {
+        try {
+            const response = await axios.post(
+                "http://localhost:8080/alertlist/remove",
+                { prodid },
+                { withCredentials: true } // 인증 정보 포함
+            );
+
+            if (response.status === 200) {
+                // 서버가 성공적으로 업데이트되었을 때 로컬 상태도 업데이트
+                setAlertlist((prevList) => {
+                    const updatedList = prevList.filter((id) => id !== prodid);
+                    sessionStorage.setItem("alertlist", JSON.stringify(updatedList)); // 세션에 저장
+                    return updatedList;
+                });
+
+                console.log(`Product ${prodid} removed from alertlist successfully`);
+            } else {
+                console.error(`Failed to remove product ${prodid}:`, response.data.message);
+            }
+        } catch (error) {
+            console.error(`Error removing product ${prodid} from alertlist:`, error);
+        }
+    };
+
+
+
+    const renderProductAlerts = () => {
+        return alertlist.map((prodid, index) => (
+            <div
+                onClick={() => handleAlertClick(prodid)} // 제품 클릭 시 상세 페이지로 이동
+                key={index}
+                className="bg-red-400 p-3 mt-[0.5rem] text-white border shadow-md rounded-xl flex items-center justify-between"
+            >
+                {/* 제품 아이콘 */}
+                {productInfo[prodid]?.iconpicture && (
+                    <img
+                        src={productInfo[prodid].iconpicture} // 아이콘 이미지
+                        alt={`Product ${prodid}`}
+                        className="w-10 h-10 mr-2 rounded-lg shadow-md"
+                    />
+                )}
+                <span>{prodid}번 제품에 제품 문의가 들어왔습니다</span>
+                <div
+                    className="h-full w-[1.5rem] cursor-pointer"
+                    onClick={(e) => {
+                        e.stopPropagation(); // X 아이콘 클릭 시 부모 div 클릭 이벤트를 막음
+                        handleRemoveAlert(prodid); // 알림 제거 함수 호출
+                    }}
+                >
+                    <FaWindowClose className="h-full w-[1.5rem] mt-[0.1rem] ml-[0.25rem]" />
+                </div>
+            </div>
+        ));
+    };
+
+
+    const fetchProductInfo = async (prodid) => {
+        setIsFetching(true);
+        try {
+            const response = await axios.get(`http://localhost:8080/product/${prodid}`);
+            if (response.data) {
+                setProductInfo((prevInfo) => ({
+                    ...prevInfo,
+                    [prodid]: response.data // 제품 정보 업데이트
+                }));
+            }
+        } catch (error) {
+            console.error("Error fetching product info:", error);
+        } finally {
+            setIsFetching(false);
+        }
+    };
+
+    useEffect(() => {
+        // 알림 목록에 있는 모든 prodid에 대해 제품 정보 가져오기
+        alertlist.forEach((prodid) => {
+            if (!productInfo[prodid]) { // 이미 정보가 없다면 API 호출
+                fetchProductInfo(prodid);
+            }
+        });
+    }, [alertlist, productInfo]);
+
+    useEffect(() => {
+        // 로그인 상태일 때만 실행
         if (loginStatus && !sessionStorage.getItem("userProfile") && !isFetching) {
             const fetchUserInfo = async () => {
                 setIsFetching(true);
                 try {
                     const response = await axios.get("http://localhost:8080/api/userinfo", { withCredentials: true });
                     if (response.data.success) {
+                        // 로그인 상태 및 사용자 정보 업데이트
                         setLoginStatus(true);
                         setUserProfile(response.data.profileimg);
                         setMoney(response.data.money);
+
+                        // 세션에 사용자 정보 저장
                         sessionStorage.setItem("loginStatus", "true");
                         sessionStorage.setItem("userProfile", JSON.stringify(response.data.profileimg));
                         sessionStorage.setItem("money", response.data.money);
                         sessionStorage.setItem("userType", response.data.userType);
+
+                        // alertlist 값 설정
+                        if (response.data.alertlist) {
+                            setAlertlist(response.data.alertlist);  // alertlist 값이 있으면 설정
+                            sessionStorage.setItem("alertlist", JSON.stringify(response.data.alertlist)); // 세션에도 저장
+                        } else {
+                            setAlertlist([]); // alertlist가 없으면 빈 배열 설정
+                        }
                     } else {
+                        // 로그인 실패 처리
                         setLoginStatus(false);
                         setUserProfile(null);
                         setMoney(0);
@@ -55,11 +184,12 @@ const Navbar = ({ loginStatus, setLoginStatus, userProfile, setUserProfile, mone
                         sessionStorage.removeItem("userProfile");
                         sessionStorage.removeItem("money");
                         sessionStorage.removeItem("userType");
+                        sessionStorage.removeItem("alertlist");
                     }
                 } catch (error) {
                     console.error("Failed to fetch user info:", error);
                 } finally {
-                    setIsFetching(false); // End the fetch operation
+                    setIsFetching(false); // Fetch 작업 끝
                 }
             };
 
@@ -178,28 +308,29 @@ const Navbar = ({ loginStatus, setLoginStatus, userProfile, setUserProfile, mone
                     </div>
                 )}
                 {isNotificationVisible && (
-                    <div className="absolute top-[6rem] right-[9.5rem] bg-white shadow-lg p-5 rounded-lg z-50 border border-gray-300">
-                        <h3 className="text-lg w-[15rem] font-semibold mb-2">알림</h3>
+                    <div
+                        className="absolute top-[6rem] right-[9.5rem] bg-white shadow-lg p-5 rounded-lg z-50 border border-gray-300">
+                        <h3 className="text-xl w-[15rem] ml-[1.8rem] font-semibold mb-2">알림</h3>
                         <div className="flex flex-col">
-                            <a>ㅇㅇ</a>
-                        <button
-                            onClick={handleCloseNotification}
-                            className="mt-4 px-4 py-2 bg-red-400 hover:border hover:border-red-400 hover:bg-white hover:scale-110 transition-transform ease-in-out duration-500 hover:text-red-400 text-white rounded-lg"
-                        >
-                            닫기
-                        </button>
+                            {renderProductAlerts()} {/* 알림 메시지 렌더링 */}
+                            <button
+                                onClick={handleCloseNotification}
+                                className="mt-4 px-4 py-2 bg-red-400 hover:border hover:border-red-400 hover:bg-white hover:scale-110 transition-transform ease-in-out duration-500 hover:text-red-400 text-white rounded-lg"
+                            >
+                                닫기
+                            </button>
                         </div>
                     </div>
                 )}
                 <div className="dropdown dropdown-end">
                     <div tabIndex={0} role="btn" className="btn btn-ghost btn-circle avatar">
                         {loginStatus && userProfile && userProfile.profileimg ? (
-                                <div className="w-10 rounded-full">
-                                    <img src={`http://localhost:8080${userProfile.profileimg}`} alt="User Avatar" />
-                                        </div>
-                                        ) : (
-                                        <div className="w-10 rounded-full">
-                                        <img src="https://ifh.cc/g/bz6Sap.png" alt="Default Avatar" />
+                            <div className="w-10 rounded-full">
+                                <img src={`http://localhost:8080${userProfile.profileimg}`} alt="User Avatar"/>
+                            </div>
+                        ) : (
+                            <div className="w-10 rounded-full">
+                                <img src="https://ifh.cc/g/bz6Sap.png" alt="Default Avatar" />
                                         </div>
                                         )}
                     </div>
@@ -221,7 +352,7 @@ const Navbar = ({ loginStatus, setLoginStatus, userProfile, setUserProfile, mone
                                     {userType === "gymManager" ? (
                                         // Gym Manager 뷰
                                         <>
-                                            <p className="text-xl flex">{`등록한 제품 수: 개`}</p>
+                                            <p className="text-xl flex">{`등록한 제품 수: ${productCount}개`}</p>
                                             <div className="flex flex-row mt-[1rem] ml-[7.2rem]">
                                                 <div
                                                     className="w-[2.5rem] bg-red-400 text-white hover:text-red-400 shadow-md cursor-pointer hover:scale-125 transition-transform ease-in-out duration-500 hover:bg-white h-[1.4rem] flex items-center justify-center rounded-xl"
@@ -273,10 +404,6 @@ const Navbar = ({ loginStatus, setLoginStatus, userProfile, setUserProfile, mone
                                 confirmCharge={handleConfirmCharge}
                                 setMoney={setMoney}
                             />
-                        )}
-
-                        {isManagePopupVisible && userType === "gymManager" && (
-                            dd
                         )}
                         {loginStatus ? (
                             <div onClick={handleLogout} className="border-[0.1rem] text-red-400 hover:text-white hover:bg-red-400 cursor-pointer hover:scale-110 transition-transform ease-in-out duration-500 text-start rounded-xl shadow-md border-red-400">

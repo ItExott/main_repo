@@ -156,7 +156,9 @@ const Product= ({ userProfile }) => {
         // 데이터 요청
         axios.get(`http://localhost:8080/product/${id}`)
             .then(response => {
-                console.log(response.data); // 백엔드에서 받은 데이터를 로그로 확인
+                const product = response.data;
+
+                console.log("Fetched product data:", product);
                 setProductData({
                     prodid: response.data.prodid,
                     iconpicture: response.data.iconpicture,

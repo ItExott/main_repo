@@ -65,7 +65,7 @@ db.connect(err => {
 });
 
 // 특정 제품 상세 조회 API
-    app.get('/product/:id', (req, res) => {
+app.get('/product/:id', (req, res) => {
     const prodid = req.params.id;
     const userId = req.session.userId;
 
@@ -78,8 +78,37 @@ db.connect(err => {
         if (results.length === 0) {
             return res.status(404).send("Product not found");
         }
-        const product = results[0];
 
+        const product = results[0];
+        const baseUrl = "http://localhost:8080";
+
+        // URL이 상대 경로인 경우 baseUrl 추가
+        const addBaseUrlIfNeeded = (url) => {
+            if (url && !url.startsWith("http://") && !url.startsWith("https://")) {
+                return `${baseUrl}${url}`;
+            }
+            return url; // URL이 이미 전체 경로라면 그대로 반환
+        };
+
+        product.iconpicture = addBaseUrlIfNeeded(product.iconpicture);
+        product.prodpicture = addBaseUrlIfNeeded(product.prodpicture);
+        product.prodcontent1 = addBaseUrlIfNeeded(product.prodcontent1);
+        product.prodcontent2 = addBaseUrlIfNeeded(product.prodcontent2);
+        product.prodcontent3 = addBaseUrlIfNeeded(product.prodcontent3);
+        product.prodcontent4 = addBaseUrlIfNeeded(product.prodcontent4);
+
+        // facility_pictures 처리
+        if (product.facility_pictures) {
+            try {
+                const pictures = JSON.parse(product.facility_pictures);
+                product.facility_pictures = pictures.map(addBaseUrlIfNeeded);
+            } catch (e) {
+                console.error("Error parsing facility_pictures:", e);
+                product.facility_pictures = [];
+            }
+        }
+
+        // 최근 본 제품에 추가
         if (userId) {
             const addRecentViewedQuery = `INSERT INTO recent_viewed_products (userId, prodid) VALUES (?, ?)`;
             db.query(addRecentViewedQuery, [userId, prodid], (err) => {
@@ -89,22 +118,17 @@ db.connect(err => {
             });
         }
 
-        if (product.facility_pictures) {
-            try {
-                product.facility_pictures = JSON.parse(product.facility_pictures);
-            } catch (e) {
-                console.error("Error parsing facility_pictures:", e);
-            }
-        }
         res.json(product);
     });
 });
+
 
 // 카테고리와 제품 조회 API
 app.get('/product_Main/:category', (req, res) => {
     const category = req.params.category;
     const sortOption = req.query.sort || 'prodrating'; // 기본 정렬 기준
     const sortOrder = 'DESC'; // 내림차순 정렬
+    const baseUrl = "http://localhost:8080"; // Base URL
 
     const categoryQuery = `SELECT * FROM divisionsport WHERE category = ?`;
     const productQuery = `SELECT * FROM Product WHERE category = ? ORDER BY ${sortOption} ${sortOrder}`;
@@ -123,22 +147,39 @@ app.get('/product_Main/:category', (req, res) => {
                 console.error("Error fetching product data:", err);
                 return res.status(500).send("Internal server error");
             }
+
+            // URL이 상대 경로인 경우 baseUrl 추가
+            const addBaseUrlIfNeeded = (url) => {
+                if (url && !url.startsWith("http://") && !url.startsWith("https://")) {
+                    return `${baseUrl}${url}`;
+                }
+                return url;
+            };
+
+            const productsWithImagePaths = productResults.map(product => ({
+                ...product,
+                iconpicture: addBaseUrlIfNeeded(product.iconpicture),
+                prodpicture: addBaseUrlIfNeeded(product.prodpicture),
+            }));
+
             res.json({
                 category: categoryResults[0],
-                products: productResults
+                products: productsWithImagePaths
             });
         });
     });
 });
 
 app.get('/recent-products', (req, res) => {
-    const userId = req.session.userId;  // 로그인된 사용자의 ID 가져오기
+    const userId = req.session?.userId;  // 로그인된 사용자의 ID 가져오기
 
     if (!userId) {
         return res.status(401).json({ message: "로그인이 필요합니다." });
     }
 
-    // 최근 본 제품 5개를 시간순으로 조회
+    const baseUrl = "http://localhost:8080"; // Base URL for 이미지 경로
+
+    // 최근 본 제품 6개를 시간순으로 조회
     const query = `
         SELECT p.*
         FROM recent_viewed_products rv
@@ -154,9 +195,24 @@ app.get('/recent-products', (req, res) => {
             return res.status(500).json({ message: "Internal server error" });
         }
 
-        res.json(products);
+        // URL이 상대 경로인 경우 baseUrl 추가
+        const addBaseUrlIfNeeded = (url) => {
+            if (url && !url.startsWith("http://") && !url.startsWith("https://")) {
+                return `${baseUrl}${url}`;
+            }
+            return url;
+        };
+
+        const productsWithImagePaths = products.map(product => ({
+            ...product,
+            iconpicture: addBaseUrlIfNeeded(product.iconpicture),
+            prodpicture: addBaseUrlIfNeeded(product.prodpicture),
+        }));
+
+        res.json(productsWithImagePaths);
     });
 });
+
 app.post('/api/check-userId', async (req, res) => {
     const { userId } = req.body;  // Get userId from the body of the request
 
@@ -291,7 +347,7 @@ app.get('/api/userinfo', (req, res) => {
     if (req.session && req.session.userId) {
         const userId = req.session.userId;
 
-        const query = 'SELECT money,email,userpw, userType FROM users WHERE userId = ?';
+        const query = 'SELECT money,email,userpw, userType, alertlist FROM users WHERE userId = ?';
 
         db.query(query, [userId], (err, results) => {
             if (err) {
@@ -304,6 +360,7 @@ app.get('/api/userinfo', (req, res) => {
                 const email = results[0].email;
                 const userpw = results[0].userpw;
                 const userType = results[0].userType;
+                const alertlist = results[0].alertlist ? JSON.parse(results[0].alertlist) : [];
                 const profileImgUrl = req.session.profileimg || '/uploads/default-profile.png';
                 res.json({
                     success: true,
@@ -314,7 +371,8 @@ app.get('/api/userinfo', (req, res) => {
                     money: money,
                     userpw: userpw,
                     email: email,
-                    userType: userType
+                    userType: userType,
+                    alertlist: alertlist
                 });
             } else {
                 console.log("사용자가 존재하지 않음");
@@ -540,6 +598,7 @@ app.get('/cart-products', (req, res) => {
     }
 
     const userId = req.session.userId;  // Retrieve userId from session
+    const baseUrl = "http://localhost:8080"; // Base URL for 이미지 경로
 
     console.log("Session object:", req.session);
     // Query to get the user's prodlist (cart)
@@ -591,8 +650,23 @@ app.get('/cart-products', (req, res) => {
                 return res.json([]);
             }
 
+            // URL이 상대 경로인 경우 baseUrl 추가
+            const addBaseUrlIfNeeded = (url) => {
+                if (url && !url.startsWith("http://") && !url.startsWith("https://")) {
+                    return `${baseUrl}${url}`;
+                }
+                return url;
+            };
+
+            // 각 제품에 이미지 경로 추가
+            const productsWithImagePaths = products.map(product => ({
+                ...product,
+                iconpicture: addBaseUrlIfNeeded(product.iconpicture),
+                prodpicture: addBaseUrlIfNeeded(product.prodpicture),
+            }));
+
             // Return the product details to the frontend
-            res.json(products);
+            res.json(productsWithImagePaths);
         });
     });
 });
@@ -814,20 +888,22 @@ app.post('/recently-viewed', (req, res) => {
 });
 
 app.get('/api/user/subscriptions', (req, res) => {
-    const userId = req.session.userId;  // 로그인된 사용자의 ID 가져오기
+    const userId = req.session?.userId;  // 로그인된 사용자의 ID 가져오기
 
     if (!userId) {
         return res.status(401).json({ message: "로그인이 필요합니다." });
     }
 
+    const baseUrl = "http://localhost:8080"; // Base URL for 이미지 경로
+
     // buy_product 테이블에서 사용자가 구독한 제품들의 정보 가져오기
     const query = `
         SELECT p.*, b.startdate
         FROM buy_product b
-        JOIN product p ON b.prodid = p.prodid
+                 JOIN product p ON b.prodid = p.prodid
         WHERE b.userid = ?
         ORDER BY b.startdate DESC  -- 구독한 날짜 순으로 정렬
-        LIMIT 6  -- 최근 6개의 구독 제품만 반환
+            LIMIT 6  -- 최근 6개의 구독 제품만 반환
     `;
 
     db.query(query, [userId], (err, products) => {
@@ -836,8 +912,23 @@ app.get('/api/user/subscriptions', (req, res) => {
             return res.status(500).json({ message: "Internal server error" });
         }
 
+        // URL이 상대 경로인 경우 baseUrl 추가
+        const addBaseUrlIfNeeded = (url) => {
+            if (url && !url.startsWith("http://") && !url.startsWith("https://")) {
+                return `${baseUrl}${url}`;
+            }
+            return url;
+        };
+
+        // 각 제품에 이미지 경로 추가
+        const productsWithImagePaths = products.map(product => ({
+            ...product,
+            iconpicture: addBaseUrlIfNeeded(product.iconpicture),
+            prodpicture: addBaseUrlIfNeeded(product.prodpicture),
+        }));
+
         // 구독된 제품 정보를 반환
-        res.json(products);
+        res.json(productsWithImagePaths);
     });
 });
 
@@ -880,19 +971,21 @@ app.post('/api/user/remove-interest', async (req, res) => {
 
 
 app.get('/api/user/liked-items', (req, res) => {
-    const userId = req.session.userId;  // 로그인된 사용자의 ID 가져오기
+    const userId = req.session?.userId;  // 로그인된 사용자의 ID 가져오기
 
     if (!userId) {
         return res.status(401).json({ message: "로그인이 필요합니다." });
     }
 
-    // 관심 제품 목록을 가져오는 쿼리 (예시로 user_liked_products 테이블 사용)
+    const baseUrl = "http://localhost:8080"; // Base URL for 이미지 경로
+
+    // 관심 제품 목록을 가져오는 쿼리
     const query = `
         SELECT p.*
         FROM interest_products i
-        JOIN product p ON i.prodid = p.prodid
+                 JOIN product p ON i.prodid = p.prodid
         WHERE i.userid = ?
-        LIMIT 6  -- 최근 6개의 관심 제품만 반환
+            LIMIT 6  -- 최근 6개의 관심 제품만 반환
     `;
 
     db.query(query, [userId], (err, products) => {
@@ -901,8 +994,23 @@ app.get('/api/user/liked-items', (req, res) => {
             return res.status(500).json({ message: "Internal server error" });
         }
 
+        // URL이 상대 경로인 경우 baseUrl 추가
+        const addBaseUrlIfNeeded = (url) => {
+            if (url && !url.startsWith("http://") && !url.startsWith("https://")) {
+                return `${baseUrl}${url}`;
+            }
+            return url;
+        };
+
+        // 각 제품의 이미지 경로를 변환
+        const productsWithImagePaths = products.map(product => ({
+            ...product,
+            iconpicture: addBaseUrlIfNeeded(product.iconpicture),
+            prodpicture: addBaseUrlIfNeeded(product.prodpicture),
+        }));
+
         // 관심 제품 정보를 반환
-        res.json(products);
+        res.json(productsWithImagePaths);
     });
 });
 
@@ -933,12 +1041,11 @@ app.get('/api/buy-product', (req, res) => {
         return res.status(401).json({ success: false, message: "로그인이 필요합니다." });
     }
 
-    const userId = req.session.userId;  // Retrieve userId from session
-    console.log("Session object:", req.session);
+    const userId = req.session.userId; // Retrieve userId from session
+    const baseUrl = "http://localhost:8080"; // Base URL for 이미지 경로
 
     // Query to get the user's buylist (a single prodid in this case)
     const getBuylistQuery = `SELECT buylist FROM users WHERE userid = ?`;
-    console.log("User ID from session:", userId);  // Log the userId to ensure it's correct
 
     db.query(getBuylistQuery, [userId], (err, results) => {
         if (err) {
@@ -948,14 +1055,10 @@ app.get('/api/buy-product', (req, res) => {
 
         // If no buylist is found, return an error
         if (!results[0] || !results[0].buylist) {
-            console.log("No buylist found for this user.");
             return res.status(404).json({ success: false, message: "구매할 제품이 없습니다." });
         }
 
-        // Get the buylist value (a single prodid, which is stored as TEXT)
         const buylist = results[0].buylist;
-
-        // Convert the buylist to an integer (prodid) since it's stored as a string
         const prodid = parseInt(buylist, 10); // Convert the string to a number
 
         if (isNaN(prodid)) {
@@ -965,8 +1068,6 @@ app.get('/api/buy-product', (req, res) => {
         // Query to fetch product details for the prodid
         const getProductQuery = `SELECT * FROM Product WHERE prodid = ?`;
 
-        console.log("Executing query:", getProductQuery);  // Log the query for debugging
-
         db.query(getProductQuery, [prodid], (err, products) => {
             if (err) {
                 console.error("Error fetching product details:", err);
@@ -975,12 +1076,26 @@ app.get('/api/buy-product', (req, res) => {
 
             // If no product is found, return an empty array
             if (products.length === 0) {
-                console.log("No products found for this prodid.");
                 return res.status(404).json({ success: false, message: "제품 정보를 찾을 수 없습니다." });
             }
 
+            // URL이 상대 경로인 경우 baseUrl 추가
+            const addBaseUrlIfNeeded = (url) => {
+                if (url && !url.startsWith("http://") && !url.startsWith("https://")) {
+                    return `${baseUrl}${url}`;
+                }
+                return url;
+            };
+
+            // 각 제품의 이미지 경로를 변환
+            const productsWithImagePaths = products.map(product => ({
+                ...product,
+                iconpicture: addBaseUrlIfNeeded(product.iconpicture),
+                prodpicture: addBaseUrlIfNeeded(product.prodpicture),
+            }));
+
             // Return the product details to the frontend
-            res.json(products);
+            res.json(productsWithImagePaths[0]); // Return single product since prodid is unique
         });
     });
 });
@@ -1181,12 +1296,13 @@ app.delete("/api/users", (req, res) => {
 app.post('/api/inquiry', (req, res) => {
     const { userId, phone, category, inqtitle, inqcontent, inqdate, id } = req.body;
     const name = req.session.name;
+
     // 모든 필드가 채워졌는지 확인
     if (!userId || !phone || !category || !inqtitle || !inqcontent || !inqdate) {
         return res.status(400).json({ success: false, message: '모든 필드를 입력해주세요.' });
     }
 
-    // MySQL INSERT 쿼리
+    // MySQL INSERT 쿼리 (product_inquiry에 데이터 추가)
     const sql = `
         INSERT INTO product_inquiry (userid, phone, category, inqtitle, inqcontent, inqdate, prodid, name)
         VALUES (?, ?, ?, ?, ?, ?, ?, ?)
@@ -1198,9 +1314,55 @@ app.post('/api/inquiry', (req, res) => {
             return res.status(500).json({ success: false, message: '서버 오류가 발생했습니다.' });
         }
 
-        return res.status(200).json({ success: true, message: '문의가 성공적으로 저장되었습니다.' });
+        // product 테이블에서 prodid에 해당하는 userid 찾기
+        const getProductUserSql = 'SELECT userid FROM product WHERE prodid = ?';
+        db.query(getProductUserSql, [id], (err, productResults) => {
+            if (err) {
+                console.error('제품 정보 조회 중 오류 발생:', err);
+                return res.status(500).json({ success: false, message: '서버 오류가 발생했습니다.' });
+            }
+
+            if (productResults.length > 0) {
+                const productUserId = productResults[0].userid;
+
+                // 해당 userid에 맞는 users 테이블에서 alertlist 조회
+                const getUserAlertListSql = 'SELECT alertlist FROM users WHERE userid = ?';
+                db.query(getUserAlertListSql, [productUserId], (err, userResults) => {
+                    if (err) {
+                        console.error('사용자 정보 조회 중 오류 발생:', err);
+                        return res.status(500).json({ success: false, message: '서버 오류가 발생했습니다.' });
+                    }
+
+                    if (userResults.length > 0) {
+                        let alertlist = userResults[0].alertlist ? JSON.parse(userResults[0].alertlist) : [];
+
+                        // prodid가 alertlist에 이미 없으면 추가
+                        if (!alertlist.includes(id.toString())) {
+                            alertlist.push(id.toString());
+                        }
+
+                        // 업데이트 쿼리 실행
+                        const updateAlertListSql = 'UPDATE users SET alertlist = ? WHERE userid = ?';
+                        db.query(updateAlertListSql, [JSON.stringify(alertlist), productUserId], (err, updateResults) => {
+                            if (err) {
+                                console.error('alertlist 업데이트 중 오류 발생:', err);
+                                return res.status(500).json({ success: false, message: '서버 오류가 발생했습니다.' });
+                            }
+
+                            return res.status(200).json({ success: true, message: '문의가 성공적으로 저장되었습니다.' });
+                        });
+                    } else {
+                        return res.status(404).json({ success: false, message: '사용자를 찾을 수 없습니다.' });
+                    }
+                });
+            } else {
+                return res.status(404).json({ success: false, message: '해당 제품을 찾을 수 없습니다.' });
+            }
+        });
     });
 });
+
+
 
 app.get('/api/product_inquiry/:id', (req, res) => {
     const { id } = req.params;
@@ -1240,6 +1402,8 @@ app.get('/api/product_inquiry/:id', (req, res) => {
 
 app.get('/category/products', (req, res) => {
     const category = req.query.category; // 프론트에서 전달된 category 값
+    const baseUrl = "http://localhost:8080"; // Base URL for 이미지 경로
+
     const query = `
         SELECT prodid, iconpicture, prodtitle 
         FROM product 
@@ -1247,14 +1411,30 @@ app.get('/category/products', (req, res) => {
         ORDER BY prodid DESC 
         LIMIT 3
     `;
+
     db.query(query, [category], (err, results) => {
         if (err) {
             res.status(500).send(err);
         } else {
-            res.json(results);
+            // URL이 상대 경로인 경우 baseUrl 추가
+            const addBaseUrlIfNeeded = (url) => {
+                if (url && !url.startsWith("http://") && !url.startsWith("https://")) {
+                    return `${baseUrl}${url}`;
+                }
+                return url;
+            };
+
+            // 각 결과의 iconpicture 경로 변환
+            const resultsWithImagePaths = results.map(product => ({
+                ...product,
+                iconpicture: addBaseUrlIfNeeded(product.iconpicture),
+            }));
+
+            res.json(resultsWithImagePaths);
         }
     });
 });
+
 
 app.post('/api/products', upload.fields([
     { name: 'iconpicture' },
@@ -1304,6 +1484,103 @@ app.post('/api/products', upload.fields([
         }
         res.status(200).json({ message: "제품이 성공적으로 등록되었습니다.", productId: result.insertId });
     });
+});
+
+app.get('/user/products/count', (req, res) => {
+    const userId = req.session.userId; // 로그인한 유저의 userId
+
+    if (!userId) {
+        return res.status(401).send('User not authenticated');
+    }
+
+    const query = "SELECT COUNT(*) AS productCount FROM Product WHERE userId = ?";
+    db.query(query, [userId], (err, results) => {
+        if (err) {
+            console.error("Error fetching product count:", err);
+            return res.status(500).send("Internal server error");
+        }
+
+        const productCount = results[0].productCount;
+        res.json({ productCount });
+    });
+});
+
+app.post('/alertlist/remove', async (req, res) => {
+    // Check if user is logged in by verifying session
+    if (!req.session || !req.session.userId) {
+        return res.status(401).json({ message: "로그인이 필요합니다." });
+    }
+
+    const userId = req.session.userId; // Retrieve userId from session
+    const { prodid } = req.body; // Get prodid from request body
+
+    console.log("Product ID to remove from alertlist:", prodid); // Log the prodid
+
+    try {
+        // Get the user's alertlist
+        const getAlertlistQuery = `SELECT alertlist FROM users WHERE userid = ?`;
+        db.query(getAlertlistQuery, [userId], (err, results) => {
+            if (err) {
+                console.error("Error fetching alertlist:", err);
+                return res.status(500).json({ message: "Failed to fetch alertlist" });
+            }
+
+            if (!results[0]) {
+                console.log("No alertlist found for this user.");
+                return res.status(404).json({ message: "Alertlist not found" });
+            }
+
+            // Parse the alertlist from the database (stored as a JSON string)
+            const rawAlertlist = results[0]?.alertlist;
+            console.log("Raw alertlist data:", rawAlertlist); // Log the raw alertlist
+
+            let alertlist = [];
+            try {
+                alertlist = rawAlertlist ? JSON.parse(rawAlertlist) : [];
+            } catch (err) {
+                console.error("Error parsing alertlist JSON:", err);
+                return res.status(500).json({ message: "Invalid alertlist format" });
+            }
+
+            console.log("Current alertlist after parsing:", alertlist); // Log the parsed alertlist
+
+            // Check if the product exists in the user's alertlist
+            const productIndex = alertlist.indexOf(prodid);
+
+            if (productIndex === -1) {
+                // If the product is not in the list, return an error
+                return res.status(404).json({ message: "Product not found in alertlist" });
+            }
+
+            // Remove the product from the alertlist
+            alertlist.splice(productIndex, 1);
+
+            console.log("Updated alertlist after removal:", alertlist); // Log the updated alertlist
+
+            // Update the alertlist in the database
+            const updateAlertlistQuery = `UPDATE users SET alertlist = ? WHERE userid = ?`;
+            db.query(updateAlertlistQuery, [JSON.stringify(alertlist), userId], (err, updateResult) => {
+                if (err) {
+                    console.error("Error updating alertlist:", err);
+                    return res.status(500).json({ message: "Failed to update alertlist" });
+                }
+
+                console.log("Update result:", updateResult); // Log the result of the update query
+
+                // Check if the update was successful
+                if (updateResult.affectedRows === 0) {
+                    console.error("No rows were updated, alertlist might not have changed.");
+                    return res.status(500).json({ message: "Failed to update alertlist" });
+                }
+
+                // Return the updated alertlist to the client
+                return res.json({ message: "Product removed from alertlist", updatedAlertlist: alertlist });
+            });
+        });
+    } catch (err) {
+        console.error("Error:", err);
+        return res.status(500).json({ message: "Internal server error" });
+    }
 });
 
 

@@ -100,7 +100,8 @@ const Login = ({ setLoginStatus }) => {
             <div className="flex flex-row mb-[1rem]">
                 <input type="checkbox" className="checkbox rounded-none w-[1rem] h-[1rem]" />
                 <a className="flex text-xs font-black ml-[0.3rem]">아이디 저장</a>
-                <a onClick={togoFindId} className="flex text-xs font-black ml-[12.5rem]">Find ID/Find PW</a>
+                <a onClick={togoFindId} className="flex cursor-pointern dev
+                 text-xs font-black ml-[12.5rem]">Find ID/Find PW</a>
             </div>
             <div className="flex flex-col mt-[1.3rem] items-center justify-center">
                 <div
