@@ -222,7 +222,7 @@ const Navbar = ({ loginStatus, setLoginStatus, userProfile, setUserProfile, mone
     const goswim = () => navigate("/product_Main/swim");
     const gomypage = () => navigate("/MyPage");
     const goAddProduct = () => navigate("/AddProduct");
-
+    const goqapage = () => navigate("/Q&A")
     // Handle charge popup visibility
     const handleOpenChargePopup = () => {
         setChargePopupVisible(true);
@@ -236,6 +236,7 @@ const Navbar = ({ loginStatus, setLoginStatus, userProfile, setUserProfile, mone
         alert(`${amount}원이 충전되었습니다.`);
         setChargePopupVisible(false);
     };
+
 
     return (
         <div className="navbar bg-base-100">
@@ -272,7 +273,7 @@ const Navbar = ({ loginStatus, setLoginStatus, userProfile, setUserProfile, mone
                         <div className="ml-[6rem]">
                             <ul>
                                 <li>NOTICE</li>
-                                <li>Q&A</li>
+                                <li className="cursor-pointer hover:scale-110 transition-transform ease-in-out duration-500" onClick={goqapage}>Q&A</li>
                                 <li>제휴/협력문의</li>
                             </ul>
                         </div>

@@ -21,6 +21,7 @@
     import DeleteUser from "./pages/DeleteUser.jsx";
     import Footer from "./components/footer.jsx"
     import AddProduct from "./pages/AddProduct.jsx"
+    import QApage from "./pages/Q&A.jsx";
 
     function App() {
         const [loginStatus, setLoginStatus] = useState(false);
@@ -141,6 +142,7 @@
                     <Route path="/MyPage" element={<MyPage/>} /> {/* 마이페이지 */}
                     <Route path="/MyPage/DeleteUser" element={<DeleteUser/>} /> {/* 마이페이지 */}
                     <Route path="/AddProduct" element={<AddProduct userProfile={userProfile}/>}/>
+                    <Route path="/Q&A" element={<QApage/>}/>{/*Q&A 페이지*/}
                 </Routes>
                 <Footer/>
             </div>

@@ -1,3 +1,6 @@
+import daisyui from 'daisyui';
+import forms from '@tailwindcss/forms';
+
 /** @type {import('tailwindcss').Config} */
 export default {
   content: [
@@ -20,9 +23,8 @@ export default {
   },
 
     plugins: [
-      require("daisyui"),
-      require("@headlessui/react"),
-      require('@tailwindcss/forms'),
+      daisyui,
+      forms,
     ],
 
   daisyui: {
