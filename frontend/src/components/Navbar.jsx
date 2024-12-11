@@ -222,7 +222,7 @@ const Navbar = ({ loginStatus, setLoginStatus, userProfile, setUserProfile, mone
     const goswim = () => navigate("/product_Main/swim");
     const gomypage = () => navigate("/MyPage");
     const goAddProduct = () => navigate("/AddProduct");
-
+    const goqapage = () => navigate("/Q&A")
     // Handle charge popup visibility
     const handleOpenChargePopup = () => {
         setChargePopupVisible(true);
@@ -236,6 +236,7 @@ const Navbar = ({ loginStatus, setLoginStatus, userProfile, setUserProfile, mone
         alert(`${amount}원이 충전되었습니다.`);
         setChargePopupVisible(false);
     };
+
 
     return (
         <div className="navbar bg-base-100">
@@ -272,7 +273,7 @@ const Navbar = ({ loginStatus, setLoginStatus, userProfile, setUserProfile, mone
                         <div className="ml-[6rem]">
                             <ul>
                                 <li>NOTICE</li>
-                                <li>Q&A</li>
+                                <li className="cursor-pointer hover:scale-110 transition-transform ease-in-out duration-500" onClick={goqapage}>Q&A</li>
                                 <li>제휴/협력문의</li>
                             </ul>
                         </div>
@@ -330,17 +331,17 @@ const Navbar = ({ loginStatus, setLoginStatus, userProfile, setUserProfile, mone
                         ) : (
                             <div className="w-10 rounded-full">
                                 <img src="https://ifh.cc/g/bz6Sap.png" alt="Default Avatar" />
-                                        </div>
-                                        )}
+                            </div>
+                        )}
                     </div>
                     <div
                         tabIndex={0}
                         className="mt-3 z-10 p-2 menu menu-sm dropdown-content bg-white rounded-box w-60"
                     >
                         {loginStatus && (
-                        <div className="border-[0.1rem] text-red-400 hover:bg-red-400 hover:scale-110 transition-transform ease-in-out duration-500 hover:text-white cursor-pointer text-start rounded-md border-red-400">
-                            <a onClick={gomypage} className="ml-[1rem] text-lg">MY PAGE</a>
-                        </div>
+                            <div className="border-[0.1rem] text-red-400 hover:bg-red-400 hover:scale-110 transition-transform ease-in-out duration-500 hover:text-white cursor-pointer text-start rounded-md border-red-400">
+                                <a onClick={gomypage} className="ml-[1rem] text-lg">MY PAGE</a>
+                            </div>
                         )}
 
                         <div
