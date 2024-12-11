@@ -460,6 +460,44 @@ app.get('/api/attendance/:userId', (req, res) => {
     });
 });
 
+app.get('/api/suggestions', async (req, res) => {
+    const { query } = req.query; // 검색어
+
+    try {
+        // 쿼리 실행: prodtitle 뿐만 아니라 다른 필드도 가져오도록 수정
+        db.query(
+            `SELECT * FROM product WHERE prodtitle LIKE ? LIMIT 5`,
+            [`%${query}%`],
+            (err, results) => {
+                if (err) {
+                    console.error(err);
+                    return res.status(500).send('Server error');
+                }
+
+                // 결과가 없으면 빈 배열 반환
+                if (results.length > 0) {
+                    // 결과에서 필요한 필드만 추출하여 반환
+                    const suggestions = results.map(result => ({
+                        prodid: result.prodid,
+                        prodtitle: result.prodtitle,
+                        prodprice: result.prodprice,
+                        prodaddress: result.prodaddress,
+                        prodrating: result.prodrating,
+                        iconpicture: result.iconpicture,
+                    }));
+                    return res.json({ suggestions });
+                } else {
+                    return res.json({ suggestions: [] });
+                }
+            }
+        );
+    } catch (error) {
+        console.error(error);
+        res.status(500).send('Server error');
+    }
+});
+
+
 // 사용자 아이디 찾기 API
 app.post('/api/findUserId', (req, res) => {
     const { name, phoneNumber } = req.body;
