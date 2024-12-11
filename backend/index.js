@@ -1621,6 +1621,23 @@ app.post('/alertlist/remove', async (req, res) => {
     }
 });
 
+app.get('/api/packages', async (req, res) => {
+    try {
+        // 'category'가 'package'인 데이터 3개를 내림차순으로 가져오기
+        db.query('SELECT * FROM product WHERE category = ? ORDER BY prodid DESC LIMIT 3', ['package'], (err, rows) => {
+            if (err) {
+                console.error(err);
+                return res.status(500).send('Error fetching packages');
+            }
+            res.json(rows);
+        });
+    } catch (err) {
+        console.error(err);
+        res.status(500).send('Error fetching packages');
+    }
+});
+
+
 
 app.use('/uploads', express.static(path.join(__dirname, 'src/uploads')));
 

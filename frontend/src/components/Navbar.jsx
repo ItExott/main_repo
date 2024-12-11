@@ -16,7 +16,6 @@ const Navbar = ({ loginStatus, setLoginStatus, userProfile, setUserProfile, mone
     const [isChargePopupVisible, setChargePopupVisible] = useState(false);
     const [isFetching, setIsFetching] = useState(false); // Track fetch status
     const [isNotificationVisible, setNotificationVisible] = useState(false);
-    const [isManagePopupVisible, setManagePopupVisible] = useState(false);
     const [alertlist, setAlertlist] = useState([]); // alertlist 상태 (제품 id 리스트)
     const [productInfo, setProductInfo] = useState({});
     const [productCount, setProductCount] = useState(0);
