@@ -19,6 +19,8 @@ const Navbar = ({ loginStatus, setLoginStatus, userProfile, setUserProfile, mone
     const [alertlist, setAlertlist] = useState([]); // alertlist 상태 (제품 id 리스트)
     const [productInfo, setProductInfo] = useState({});
     const [productCount, setProductCount] = useState(0);
+    const goProductManage = () => navigate("/ProductManage");
+
 
     useEffect(() => {
         const storedLoginStatus = sessionStorage.getItem("loginStatus");
@@ -222,7 +224,7 @@ const Navbar = ({ loginStatus, setLoginStatus, userProfile, setUserProfile, mone
     const goswim = () => navigate("/product_Main/swim");
     const gomypage = () => navigate("/MyPage");
     const goAddProduct = () => navigate("/AddProduct");
-    const goqapage = () => navigate("/Q&A")
+    const goFAQPage = () => navigate("/FAQPage")
     // Handle charge popup visibility
     const handleOpenChargePopup = () => {
         setChargePopupVisible(true);
@@ -273,7 +275,7 @@ const Navbar = ({ loginStatus, setLoginStatus, userProfile, setUserProfile, mone
                         <div className="ml-[6rem]">
                             <ul>
                                 <li>NOTICE</li>
-                                <li className="cursor-pointer hover:scale-110 transition-transform ease-in-out duration-500" onClick={goqapage}>Q&A</li>
+                                <li className="cursor-pointer hover:scale-110 transition-transform ease-in-out duration-500" onClick={goFAQPage}>Q&A</li>
                                 <li>제휴/협력문의</li>
                             </ul>
                         </div>
@@ -355,6 +357,7 @@ const Navbar = ({ loginStatus, setLoginStatus, userProfile, setUserProfile, mone
                                             <p className="text-xl flex">{`등록한 제품 수: ${productCount}개`}</p>
                                             <div className="flex flex-row mt-[1rem] ml-[7.2rem]">
                                                 <div
+                                                    onClick={goProductManage}
                                                     className="w-[2.5rem] bg-red-400 text-white hover:text-red-400 shadow-md cursor-pointer hover:scale-125 transition-transform ease-in-out duration-500 hover:bg-white h-[1.4rem] flex items-center justify-center rounded-xl"
                                                 >
                                                     <a className="flex mt-[0.15rem]">관리</a>

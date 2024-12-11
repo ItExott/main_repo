@@ -22,6 +22,7 @@
     import Footer from "./components/footer.jsx"
     import AddProduct from "./pages/AddProduct.jsx"
     import ProductManage from "./pages/ProductManage.jsx";
+    import FAQPage from "./pages/FAQPage.jsx";
 
     function App() {
         const [loginStatus, setLoginStatus] = useState(false);
@@ -143,6 +144,7 @@
                     <Route path="/MyPage/DeleteUser" element={<DeleteUser/>} /> {/* 마이페이지 */}
                     <Route path="/AddProduct" element={<AddProduct userProfile={userProfile}/>}/>
                     <Route path="/ProductManage" element={<ProductManage />} />  {/* 회원가입 끝 */}
+                    <Route path="/FAQPage" element={<FAQPage />}/>
                 </Routes>
                 <Footer/>
             </div>
