@@ -5,11 +5,14 @@ import { BiSearch } from "react-icons/bi";
 import { FaCaretDown } from "react-icons/fa";
 import ProductCard from "../components/ProductCard.jsx";
 import axios from "axios";
+import SearchCard from "../components/SearchCard.jsx";
 
 const Product_Main = () => {
+    const suggestionsRef = useRef(null);
     const [isFocused, setIsFocused] = useState(false); // 검색창 포커스 상태
     const [query, setQuery] = useState(""); // 검색어
-    const [showSuggestions, setShowSuggestions] = useState(false); // 추천 검색어 박스 표시 여부
+    const [suggestions, setSuggestions] = useState([]); // 추천 검색어
+    const [showSuggestions, setShowSuggestions] = useState(false); // 추천 검색어 표시 여부
     const [selectedOption, setSelectedOption] = useState('평점 순');
     const [products, setProducts] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -64,24 +67,6 @@ const Product_Main = () => {
         setIsDropdownOpen(false);   // 드롭다운 닫기
     };
 
-    // 검색어 입력 변화 처리
-    const handleChange = (e) => {
-        setQuery(e.target.value);
-        setShowSuggestions(e.target.value.length > 0); // 입력이 있으면 추천 박스 표시
-    };
-
-    // 검색창에 포커스 처리
-    const handleFocus = () => {
-        setIsFocused(true); // 포커스 되면 추천 박스 보이기
-        setShowSuggestions(true); // 추천 박스 표시
-    };
-
-    // 검색창에서 포커스를 벗어날 때
-    const handleBlur = () => {
-        setIsFocused(false); // 포커스를 벗어나면 추천 박스 숨기기
-        setShowSuggestions(false);
-    };
-
     const saveRecentlyViewed = (id) => {
         const recentlyViewed = JSON.parse(localStorage.getItem('recentlyViewed')) || [];
         if (!recentlyViewed.includes(id)) {
@@ -98,44 +83,109 @@ const Product_Main = () => {
         saveRecentlyViewed(id);
         navigate(`/product/${id}`);  // Navigate to the product detail page
     };
+    const handleChangesearch = (e) => {
+        const newQuery = e.target.value;
+        setQuery(newQuery);
+
+        if (newQuery.length > 0) {
+            setShowSuggestions(true);  // 검색어가 있을 때만 추천 검색어를 표시
+            fetchSuggestions(newQuery); // 추천 검색어 가져오기
+        } else {
+            setShowSuggestions(false); // 검색어가 없으면 추천 검색어 숨기기
+            setSuggestions([]); // 검색어가 없을 때는 추천 검색어 리스트도 초기화
+        }
+    };
+
+    const fetchSuggestions = async (query) => {
+        try {
+            const response = await axios.get("http://localhost:8080/api/suggestions", {
+                params: { query },
+            });
+            setSuggestions(response.data.suggestions);  // 서버에서 받은 추천 검색어로 상태 업데이트
+        } catch (error) {
+            console.error("Error fetching suggestions:", error);
+            setSuggestions([]);  // 오류가 발생하면 추천 검색어 리스트를 비웁니다
+        }
+    };
+    const handleClearSuggestions = () => {
+        setQuery('');  // 검색어 초기화
+        setSuggestions([]);  // 추천 검색어 초기화
+    };
+    const handleClickid = (id) => {
+        // Save to local storage (optional)
+        saveRecentlyViewed(id);
+        navigate(`/product/${id}`);  // Navigate to the product detail page
+    };
+
+
+    useEffect(() => {
+        const handleClickOutside = (event) => {
+            if (suggestionsRef.current && !suggestionsRef.current.contains(event.target) && inputRef.current && !inputRef.current.contains(event.target)) {
+                setShowSuggestions(false);
+            }
+        };
+
+        document.addEventListener("mousedown", handleClickOutside);
+
+        return () => {
+            document.removeEventListener("mousedown", handleClickOutside);
+        };
+    }, []);
 
     return (
         <div className="flex flex-col h-full items-center mt-[1rem] justify-center mx-56"> {/*전체 틀*/}
-            <div
-                className="flex flex-row h-14 w-[35rem] items-center justify-center shadow-xl rounded-xl relative"> {/*검색창*/}
-                <FaLocationDot size="20" className="ml-3 cursor-pointer mt-[0.06rem]"/> {/* 로케이션 아이콘 */}
-                <div className="flex flex-row w-1/5 cursor-pointer"> {/* 로케이션 박스 */}
-                    <p className="text-sm font-bold text-nowrap ml-[0.5rem]">송파구 마천동</p>
+            <div className="flex flex-row h-14 w-[35rem] items-center justify-center shadow-md rounded-xl relative">
+                <div className="flex flex-row w-1/5 cursor-pointer">
+                    <FaLocationDot size="20" className="ml-3 cursor-pointer mt-[0.05rem]"/>
+                    <p className="text-sm text-nowrap ml-[0.5rem]">송파구 마천동</p>
                 </div>
-                <div className="flex flex-row w-4/5 ml-2"> {/* 검색 박스 */}
+                <div className="flex flex-row w-4/5 ml-2">
                     <input
                         ref={inputRef}
                         type="text"
                         className="grow border-0 text-center mt-1"
                         placeholder="검색"
                         value={query}
-                        onFocus={handleFocus} // 포커스 시 이벤트
-                        onBlur={handleBlur}   // 포커스 벗어나면 숨기기
-                        onChange={handleChange} // 텍스트 입력 시
+                        onChange={handleChangesearch} // 텍스트 입력 시
                     />
                 </div>
                 <BiSearch size="20"
                           className="mr-3 mt-1 cursor-pointer hover:scale-150 transition-transform ease-in-out duration-500"/>
-                {/* 검색 아이콘 */}
 
                 {/* 추천 검색어 박스 */}
-                {isFocused && showSuggestions && (
-                    <div className="absolute top-14 w-[35rem] bg-white border rounded-xl shadow-lg z-10 mt-2">
-                        <div className="flex justify-between mx-3 mt-2">
-                            <p>추천 검색어</p>
-                            <p>전체삭제</p>
+                {showSuggestions && (
+                    <div
+                        className="absolute top-14 w-[49rem] bg-white border bg-opacity-70 rounded-xl shadow-lg z-10 mt-2"
+                        ref={suggestionsRef}>
+                        <div className="flex justify-between items-center mx-3 mt-2">
+                            <p className="flex-grow ml-[4rem] text-center">추천 검색어</p>
+                            <p
+                                onClick={handleClearSuggestions} // 전체삭제 클릭 시 추천 검색어와 입력란 초기화
+                                className="text-blue-500 cursor-pointer ml-4"
+                            >
+                                전체삭제
+                            </p>
                         </div>
-
-                        <ul>
-                            <li className="p-2 hover:bg-gray-100 cursor-pointer">추천 검색어 1</li>
-                            <li className="p-2 hover:bg-gray-100 cursor-pointer">추천 검색어 2</li>
-                            <li className="p-2 hover:bg-gray-100 cursor-pointer">추천 검색어 3</li>
-                            <li className="p-2 hover:bg-gray-100 cursor-pointer">추천 검색어 4</li>
+                        <ul className="flex flex-wrap">
+                            {suggestions.length > 0 ? (
+                                suggestions.map((product) => (
+                                    <li key={product.prodid} className="w-1/3 p-2 hover:bg-gray-100 cursor-pointer">
+                                        <SearchCard
+                                            key={product.prodid}
+                                            id={product.prodid}
+                                            prodtitle={product.prodtitle}
+                                            prodprice={product.prodprice}
+                                            prodaddress={product.prodaddress}
+                                            prodrating={product.prodrating}
+                                            iconpicture={product.iconpicture}
+                                            onClick={() => handleClickid(product.prodid)}
+                                            className="flex"
+                                        />
+                                    </li>
+                                ))
+                            ) : (
+                                <li className="p-2 text-gray-500">추천 검색어가 없습니다.</li>
+                            )}
                         </ul>
                     </div>
                 )}
