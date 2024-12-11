@@ -39,6 +39,22 @@ const Home = ({loginStatus}) => {
     // 로그인 상태 확인 db문
     const [userId, setUserId] = useState(null);
 
+    const [packageProducts, setPackageProducts] = useState([]);
+
+    useEffect(() => {
+        const fetchPackageProducts = async () => {
+            try {
+                const response = await axios.get('http://localhost:8080/api/packages');
+                setPackageProducts(response.data);
+            } catch (error) {
+                console.error('Error fetching package products:', error);
+            }
+        };
+
+        fetchPackageProducts();
+    }, []);
+
+
     useEffect(() => {
         const fetchProducts = async () => {
             try {
@@ -368,9 +384,18 @@ const Home = ({loginStatus}) => {
                         <a className="text-2xl mt-[0.5rem] text-red-400">있습니다,</a>
                         <a className="text-2xl whitespace-nowrap text-red-400">오직 FIT PLAY에서!</a>
                     </div>
-                    <div className="flex w-[15rem] h-[15rem] bg-white shadow-md ml-[2rem]"></div>
-                    <div className="flex w-[15rem] h-[15rem] bg-white shadow-md ml-[2rem]"></div>
-                    <div className="flex w-[15rem] h-[15rem] bg-white shadow-md ml-[2rem]"></div>
+                    {packageProducts.map((product) => (
+                        <div
+                            onClick={() => handleClick(product.prodid)}
+                            key={product.prodid}
+                            className="flex flex-col mt-[1.2rem] border-2 cursor-pointer hover:scale-110 transition-transform ease-in-out duration-500 border-red-400 rounded-xl w-[15rem] h-[15rem] bg-white shadow-md ml-[2rem]"
+                        >
+                            <img src={product.iconpicture} alt={product.prodtitle} className="w-full h-full object-fill rounded-t-xl" />
+                            <div className="p-4">
+                                <h3 className="text-xl font-semibold">{product.prodtitle}</h3>
+                            </div>
+                        </div>
+                    ))}
                 </div>
             </div>
             <div
