@@ -1465,15 +1465,15 @@ app.post('/api/products', upload.fields([
         userid, category, prodtitle, iconpicture,
         prodcontent1, prodcontent2, prodcontent3, prodcontent4,
         prodsmtitle, prodaddress, address, prodpicture, prodprice, 
-        prodprice2, prodprice3, prodprice4, facility_pictures
+        prodprice2, prodprice3, prodprice4, facility_pictures, prodrating
     ) 
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`;
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`;
 
     const values = [
         userId, category, prodtitle, iconPicture, prodContent[0], prodContent[1], prodContent[2], prodContent[3],
         prodsmtitle, prodaddress, address,
         prodPicture, prodprice, prodprice2, prodprice3, prodprice4,
-        JSON.stringify(facilityPictures),
+        JSON.stringify(facilityPictures), 0
     ];
 
     // MySQL 쿼리 실행
@@ -1598,6 +1598,81 @@ app.get('/api/packages', async (req, res) => {
         res.status(500).send('Error fetching packages');
     }
 });
+
+app.get('/products', (req, res) => {
+    // 세션에서 로그인된 사용자 ID 가져오기
+    const userId = req.session.userId;  // 또는 JWT 토큰에서 userId를 추출하는 방식으로 변경
+
+    if (!userId) {
+        // 만약 userId가 없다면(로그인되지 않은 경우), 에러 응답 반환
+        return res.status(401).json({ error: 'User not logged in' });
+    }
+
+    // MySQL 쿼리: 로그인된 사용자 ID에 해당하는 상품 데이터를 가져옵니다.
+    const query = 'SELECT * FROM product WHERE userId = ?';
+
+    db.query(query, [userId], (err, results) => {
+        if (err) {
+            console.error('Database query failed:', err);
+            return res.status(500).json({ error: 'Database query failed' });
+        }
+
+        // 결과를 응답으로 반환
+        res.json(results);
+    });
+});
+
+app.delete('/product/delete', (req, res) => {
+    const { prodid } = req.query;  // URL 쿼리 파라미터에서 prodid를 가져옴
+    const userId = req.session.userId; // 세션에서 userId 가져오기
+
+    // 로그인되지 않은 경우
+    if (!userId) {
+        return res.status(401).json({ error: 'User not logged in' });
+    }
+
+    // prodid가 없을 경우
+    if (!prodid) {
+        return res.status(400).json({ error: 'Product ID is required' });
+    }
+
+    // 1. 자식 테이블인 recent_viewed_products에서 prodid를 삭제
+    const deleteRecentViewedQuery = 'DELETE FROM recent_viewed_products WHERE prodid = ?';
+    db.query(deleteRecentViewedQuery, [prodid], (err) => {
+        if (err) {
+            console.error('Failed to delete from recent_viewed_products:', err);
+            return res.status(500).json({ error: 'Failed to delete from recent_viewed_products' });
+        }
+
+        // 2. 다른 관련 테이블에서 prodid를 삭제 (예: inquiry 테이블 등)
+        const deleteOtherRelatedQuery = 'DELETE FROM product_inquiry WHERE prodid = ?';
+        db.query(deleteOtherRelatedQuery, [prodid], (err) => {
+            if (err) {
+                console.error('Failed to delete from product_inquiry:', err);
+                return res.status(500).json({ error: 'Failed to delete from product_inquiry' });
+            }
+
+            // 3. product 테이블에서 prodid를 삭제
+            const deleteProductQuery = 'DELETE FROM product WHERE prodid = ? AND userId = ?';
+            db.query(deleteProductQuery, [prodid, userId], (err, results) => {
+                if (err) {
+                    console.error('Database query failed:', err);
+                    return res.status(500).json({ error: 'Database query failed' });
+                }
+
+                if (results.affectedRows === 0) {
+                    // 삭제된 레코드가 없으면 권한이 없거나 상품이 존재하지 않음
+                    return res.status(404).json({ error: 'Product not found or not authorized' });
+                }
+
+                res.status(200).json({ message: 'Product deleted successfully' });
+            });
+        });
+    });
+});
+
+
+
 
 
 
