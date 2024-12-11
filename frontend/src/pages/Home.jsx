@@ -17,14 +17,12 @@ import { BiSearch } from "react-icons/bi";
 import { FaLocationDot } from "react-icons/fa6";
 {/*컴포넌트 동기화문*/}
 import Attendance from "../popup/Attendance";
+import SearchCard from "../components/SearchCard.jsx";
 
 
 const Home = ({loginStatus}) => {
-    const [isFocused, setIsFocused] = useState(false); // 검색창 포커스 상태
-    const [query, setQuery] = useState(""); // 검색어
-    const [showSuggestions, setShowSuggestions] = useState(false); // 추천 검색어 박스 표시 여부
+    const suggestionsRef = useRef(null);
     const [isCalendarOpen, setIsCalendarOpen] = useState(false); // 출석체크 달력 팝업 상태
-    const [isLoggedIn, setIsLoggedIn] = useState(false); // 로그인 상태 (로그인 여부)
     const [activeTab, setActiveTab] = useState('weight');
     const [dontShowToday, setDontShowToday] = useState(false); // "오늘 하루 보지 않기" 상태
     const location = useLocation();
@@ -32,7 +30,9 @@ const Home = ({loginStatus}) => {
     const [category_products, setcategory_Products] = useState([]);
     const navigate = useNavigate();
     const [userType, setUserType] = useState("individual");
-
+    const [query, setQuery] = useState(""); // 검색어
+    const [suggestions, setSuggestions] = useState([]); // 추천 검색어
+    const [showSuggestions, setShowSuggestions] = useState(false); // 추천 검색어 표시 여부
     const [openLoginModal, setOpenLoginModal] = useState(locationOpenLoginModal); // 초기값을 locationOpenLoginModal로 설정
     const inputRef = useRef(null);
 
@@ -118,6 +118,8 @@ const Home = ({loginStatus}) => {
         }
     }, [openLoginModal]);
 
+
+
     useEffect(() => {
         const handleBeforeUnload = () => {
             // 새로고침 시 state에 { openLoginModal: false } 설정
@@ -133,11 +135,6 @@ const Home = ({loginStatus}) => {
         };
     }, []); // 빈 배열을 두어 컴포넌트가 마운트될 때만 실행되게 함
 
-    // 검색어 입력 변화 처리
-    const handleChange = (e) => {
-        setQuery(e.target.value);
-        setShowSuggestions(e.target.value.length > 0); // 입력이 있으면 추천 박스 표시
-    };
 
 
     // 출석 체크 날짜 선택 처리
@@ -200,6 +197,56 @@ const Home = ({loginStatus}) => {
         navigate(`/product/${id}`);  // Navigate to the product detail page
     };
 
+
+    const handleChangesearch = (e) => {
+        const newQuery = e.target.value;
+        setQuery(newQuery);
+
+        if (newQuery.length > 0) {
+            setShowSuggestions(true);  // 검색어가 있을 때만 추천 검색어를 표시
+            fetchSuggestions(newQuery); // 추천 검색어 가져오기
+        } else {
+            setShowSuggestions(false); // 검색어가 없으면 추천 검색어 숨기기
+            setSuggestions([]); // 검색어가 없을 때는 추천 검색어 리스트도 초기화
+        }
+    };
+
+    const fetchSuggestions = async (query) => {
+        try {
+            const response = await axios.get("http://localhost:8080/api/suggestions", {
+                params: { query },
+            });
+            setSuggestions(response.data.suggestions);  // 서버에서 받은 추천 검색어로 상태 업데이트
+        } catch (error) {
+            console.error("Error fetching suggestions:", error);
+            setSuggestions([]);  // 오류가 발생하면 추천 검색어 리스트를 비웁니다
+        }
+    };
+    const handleClearSuggestions = () => {
+        setQuery('');  // 검색어 초기화
+        setSuggestions([]);  // 추천 검색어 초기화
+    };
+    const handleClickid = (id) => {
+        // Save to local storage (optional)
+        saveRecentlyViewed(id);
+        navigate(`/product/${id}`);  // Navigate to the product detail page
+    };
+
+
+    useEffect(() => {
+        const handleClickOutside = (event) => {
+            if (suggestionsRef.current && !suggestionsRef.current.contains(event.target) && inputRef.current && !inputRef.current.contains(event.target)) {
+                setShowSuggestions(false);
+            }
+        };
+
+        document.addEventListener("mousedown", handleClickOutside);
+
+        return () => {
+            document.removeEventListener("mousedown", handleClickOutside);
+        };
+    }, []);
+
     return (
         <div className="flex flex-col h-full w-full items-center justify-center">
             {userType === "individual" && (
@@ -211,6 +258,7 @@ const Home = ({loginStatus}) => {
                 />
             )}
             {/* 검색창 */}
+
             <div className="flex flex-row h-14 w-[35rem] items-center justify-center shadow-md rounded-xl relative">
                 <div className="flex flex-row w-1/5 cursor-pointer">
                     <FaLocationDot size="20" className="ml-3 cursor-pointer mt-[0.05rem]"/>
@@ -223,13 +271,51 @@ const Home = ({loginStatus}) => {
                         className="grow border-0 text-center mt-1"
                         placeholder="검색"
                         value={query}
-                        onChange={handleChange} // 텍스트 입력 시
+                        onChange={handleChangesearch} // 텍스트 입력 시
                     />
                 </div>
                 <BiSearch size="20"
                           className="mr-3 mt-1 cursor-pointer hover:scale-150 transition-transform ease-in-out duration-500"/>
-            </div>
-            {/* MainCard */}
+
+                {/* 추천 검색어 박스 */}
+                {showSuggestions && (
+                    <div className="absolute top-14 w-[49rem] bg-white border bg-opacity-70 rounded-xl shadow-lg z-10 mt-2"
+                         ref={suggestionsRef}>
+                        <div className="flex justify-between items-center mx-3 mt-2">
+                            <p className="flex-grow ml-[4rem] text-center">추천 검색어</p>
+                            <p
+                                onClick={handleClearSuggestions} // 전체삭제 클릭 시 추천 검색어와 입력란 초기화
+                                className="text-blue-500 cursor-pointer ml-4"
+                            >
+                                전체삭제
+                            </p>
+                        </div>
+                        <ul className="flex flex-wrap">
+                            {suggestions.length > 0 ? (
+                                suggestions.map((product) => (
+                                    <li key={product.prodid} className="w-1/3 p-2 hover:bg-gray-100 cursor-pointer">
+                                        <SearchCard
+                                            key={product.prodid}
+                                            id={product.prodid}
+                                            prodtitle={product.prodtitle}
+                                            prodprice={product.prodprice}
+                                            prodaddress={product.prodaddress}
+                                            prodrating={product.prodrating}
+                                            iconpicture={product.iconpicture}
+                                            onClick={() => handleClickid(product.prodid)}
+                                            className="flex"
+                                        />
+                                    </li>
+                                ))
+                            ) : (
+                                <li className="p-2 text-gray-500">추천 검색어가 없습니다.</li>
+                            )}
+                        </ul>
+                    </div>
+                )}
+        </div>
+
+    {/* MainCard */}
             <div className="flex flex-row w-full h-[32rem] mt-6 items-center justify-center shadow-xl rounded-xl">
                 <img className="shadow-xl rounded-xl" src="https://ifh.cc/g/aJojk3.png"/>
 
