@@ -23,6 +23,10 @@
     import AddProduct from "./pages/AddProduct.jsx"
     import ProductManage from "./pages/ProductManage.jsx";
     import FAQPage from "./pages/FAQPage.jsx";
+    import ProductAdmin from "./pages/ProductAdmin.jsx";
+    import AdminPage from "./pages/adminPage.jsx";
+    import UserAdmin from "./pages/userAdmin.jsx";
+    import UserEditAdm from "./pages/UserEditAdm.jsx";
 
     function App() {
         const [loginStatus, setLoginStatus] = useState(false);
@@ -138,6 +142,10 @@
                     <Route path="/MyPage/ChangeUser" element={<ChangeUser setUserProfile={setUserProfile}/>}/> {/* 개인정보 변경 */}
                     <Route path="/Product_Main/:category" element={<Product_Main />} /> {/* 카테고리별 제품 */}
                     <Route path="/product/:id" element={<Product userProfile={userProfile} />} /> {/* 제품 상세 */}
+                    <Route path="/productAdmin/:id" element={<ProductAdmin userProfile={userProfile} />} /> {/* 제품 상세 */}
+                    <Route path="/adminPage" element={<AdminPage />} /> {/* 장바구니 */}
+                    <Route path="/UserAdmin/:id" element={<UserAdmin />} /> {/* 장바구니 */}
+                    <Route path="/UserEditAdm/:id" element={<UserEditAdm />} /> {/* 장바구니 */}
                     <Route path="/Cart" element={<Cart />} /> {/* 장바구니 */}
                     <Route path="/Buyform" element={<Buyform money={money} setMoney={setMoney} />} /> {/* 결제 창 */}
                     <Route path="/MyPage" element={<MyPage/>} /> {/* 마이페이지 */}

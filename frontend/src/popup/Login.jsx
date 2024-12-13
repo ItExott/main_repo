@@ -105,9 +105,10 @@ const Login = ({ setLoginStatus }) => {
             <div className="flex flex-col mt-[1.3rem] items-center justify-center">
                 <div
                     className="flex w-[16rem] h-[3rem] cursor-pointer hover:scale-105 transition-transform ease-in-out duration-500 bg-gray-950 border-[0.1rem] border-blue-400 items-center justify-center"
+                    onClick={handleLogin}
                 >
                     <a
-                        onClick={handleLogin}
+
                         className="bg-black text-white text-[1rem]"
                         disabled={isLoading} // 로딩 중에는 버튼 비활성화
                     >

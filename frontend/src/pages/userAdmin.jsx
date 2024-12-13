@@ -29,11 +29,12 @@ const UserAdmin = () => {
         fetchUserData();
     }, [id]);
 
-    const handleEdit = (id) => {
-        if (id) {
-            navigate(`/userEditAdm/${id}`);
+    const handleEdit = (userId) => {
+        if (userId) {
+            navigate(`/userEditAdm/${userId}`);
+        } else {
+            console.error("유효하지 않은 ID:", userId);
         }
-        console.log("유효하지 않은 ID:", id);
     };
 
     const handleDelete = async () => {
@@ -45,7 +46,7 @@ const UserAdmin = () => {
                 const response = await axios.delete(`http://localhost:8080/api/useradmindelete/${id}`);
                 if (response.status === 200) {
                     console.log("유저 정보 삭제 성공");
-                    // 삭제 후 리디렉션 또는 상태 업데이트 추가 가능
+                    navigate("/adminPage"); // 삭제 후 목록 페이지로 리디렉션
                 }
             } catch (error) {
                 console.error("유저 정보 삭제 실패:", error);

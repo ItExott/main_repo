@@ -225,6 +225,7 @@ const Navbar = ({ loginStatus, setLoginStatus, userProfile, setUserProfile, mone
     const gomypage = () => navigate("/MyPage");
     const goAddProduct = () => navigate("/AddProduct");
     const goFAQPage = () => navigate("/FAQPage")
+    const goadminpage = () => navigate("/adminPage")
     // Handle charge popup visibility
     const handleOpenChargePopup = () => {
         setChargePopupVisible(true);
@@ -342,10 +343,14 @@ const Navbar = ({ loginStatus, setLoginStatus, userProfile, setUserProfile, mone
                     >
                         {loginStatus && (
                             <div className="border-[0.1rem] text-red-400 hover:bg-red-400 hover:scale-110 transition-transform ease-in-out duration-500 hover:text-white cursor-pointer text-start rounded-md border-red-400">
-                                <a onClick={gomypage} className="ml-[1rem] text-lg">MY PAGE</a>
+                                <a
+                                    onClick={userType === "admin" ? goadminpage : gomypage}
+                                    className="ml-[1rem] text-lg"
+                                >
+                                    {userType === "admin" ? "ADMIN PAGE" : "MY PAGE"}
+                                </a>
                             </div>
                         )}
-
                         <div
                             className="h-full rounded-md items-start fill-red-400 hover:fill-white text-red-400 hover:scale-110 hover:bg-red-400 hover:text-white transition-transform ease-in-out duration-500 justify-start p-3 flex flex-col border-red-400 border-[0.1rem]"
                         >
@@ -370,8 +375,8 @@ const Navbar = ({ loginStatus, setLoginStatus, userProfile, setUserProfile, mone
                                                 </div>
                                             </div>
                                         </>
-                                    ) : (
-                                        // 일반 사용자 뷰
+                                    ) : userType === "individual" ? (
+                                        // 개인 사용자 뷰 (핏머니)
                                         <>
                                             <div className="flex flex-row">
                                                 <a className="text-xs">핏머니 ·</a>
@@ -393,7 +398,7 @@ const Navbar = ({ loginStatus, setLoginStatus, userProfile, setUserProfile, mone
                                                 </div>
                                             </div>
                                         </>
-                                    )}
+                                    ) : <p className="text-xl">Admin 입니다</p>}
                                 </>
                             ) : (
                                 <p>로그인되지 않았습니다.</p>

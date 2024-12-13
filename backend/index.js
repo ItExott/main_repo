@@ -1660,6 +1660,89 @@ app.get('/products', (req, res) => {
     });
 });
 
+app.get('/api/productsadmin', (req, res) => {
+    const query = 'SELECT * FROM product';
+
+    db.query(query, (err, results) => {
+        if (err) {
+            return res.status(500).json({ error: 'DB 조회 오류' });
+        }
+        res.json(results);
+    });
+});
+app.get("/api/usersadmin", (req, res) => {
+    const query = "SELECT * FROM users";
+
+    db.query(query, (err, results) => {
+        if (err) {
+            console.error("유저 데이터를 가져오는 데 실패했습니다:", err);
+            return res.status(500).json({ error: "유저 데이터를 가져오는 데 실패했습니다." });
+        }
+
+        res.json(results);
+    });
+});
+// 특정 유저 정보 가져오기
+app.get("/api/useradmin/:id", (req, res) => {
+    const userId = req.params.id;
+    const query = "SELECT * FROM users WHERE userid = ?";
+
+    db.query(query, [userId], (err, results) => {
+        if (err) {
+            console.error("유저 정보 가져오기 실패:", err);
+            return res.status(500).json({ error: "유저 정보를 가져오는 데 실패했습니다." });
+        }
+
+        if (results.length === 0) {
+            return res.status(404).json({ error: "해당 유저를 찾을 수 없습니다." });
+        }
+
+        res.json(results[0]);
+    });
+});
+// 유저 정보 수정
+app.put("/api/usereditadmin/:id", (req, res) => {
+    const userId = req.params.id;
+    const { name, phonenumber, address, email, userType, profileimg, userpw } = req.body;
+    const query = `
+        UPDATE users 
+        SET name = ?, phonenumber = ?, address = ?, email = ?, userType = ?, profileimg = ?, userpw = ? 
+        WHERE userid = ?
+    `;
+
+    db.query(query, [name, phonenumber, address, email, userType, profileimg, userpw, userId], (err, results) => {
+        if (err) {
+            console.error("유저 정보 수정 실패:", err);
+            return res.status(500).json({ error: "유저 정보를 수정하는 데 실패했습니다." });
+        }
+
+        if (results.affectedRows === 0) {
+            return res.status(404).json({ error: "해당 유저를 찾을 수 없습니다." });
+        }
+
+        res.json({ message: "유저 정보가 성공적으로 수정되었습니다." });
+    });
+});
+
+// 유저 정보 삭제
+app.delete("/api/useradmindelete/:id", (req, res) => {
+    const userId = req.params.id;
+    const query = "DELETE FROM users WHERE userid = ?";
+
+    db.query(query, [userId], (err, results) => {
+        if (err) {
+            console.error("유저 삭제 실패:", err);
+            return res.status(500).json({ error: "유저 삭제에 실패했습니다." });
+        }
+
+        if (results.affectedRows === 0) {
+            return res.status(404).json({ error: "해당 유저를 찾을 수 없습니다." });
+        }
+
+        res.json({ message: "유저 정보가 성공적으로 삭제되었습니다." });
+    });
+});
+
 app.delete('/product/delete', (req, res) => {
     const { prodid } = req.query;  // URL 쿼리 파라미터에서 prodid를 가져옴
     const userId = req.session.userId; // 세션에서 userId 가져오기
