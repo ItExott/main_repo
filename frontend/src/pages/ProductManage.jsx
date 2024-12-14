@@ -66,7 +66,7 @@ const ProductManage = () => {
 
     // Navigate to the edit product page
     const handleEditProduct = (prodid) => {
-        navigate(`/product/${prodid}`);
+        navigate(`/Fixproduct/${prodid}`);
     };
 
     // Handle delete product

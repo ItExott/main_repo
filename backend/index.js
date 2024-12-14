@@ -1792,10 +1792,76 @@ app.delete('/product/delete', (req, res) => {
     });
 });
 
+app.put('/api/product/update/:id', (req, res) => {
+    const productId = req.params.id;
+    const {
+        prodtitle,
+        prodsmtitle,
+        address,
+        prodcontent1,
+        prodcontent2,
+        prodcontent3,
+        prodcontent4,
+        facility_pictures,
+        prodpicture,
+        iconpicture,
+    } = req.body;
 
+    // SQL query to update the product details
+    const sql = `
+        UPDATE product
+        SET 
+            prodtitle = ?,
+            prodsmtitle = ?,
+            address = ?,
+            prodcontent1 = ?,
+            prodcontent2 = ?,
+            prodcontent3 = ?,
+            prodcontent4 = ?,
+            facility_pictures = ?,
+            prodpicture = ?,
+            iconpicture = ?
+        WHERE prodid = ?
+    `;
 
+    // Use the values to prevent SQL injection
+    const values = [
+        prodtitle,
+        prodsmtitle,
+        address,
+        prodcontent1,
+        prodcontent2,
+        prodcontent3,
+        prodcontent4,
+        JSON.stringify(facility_pictures), // Convert array to JSON string if it's an array
+        prodpicture,
+        iconpicture,
+        productId
+    ];
 
+    db.query(sql, values, (err, result) => {
+        if (err) {
+            console.error('Error updating product:', err);
+            return res.status(500).json({ success: false, message: 'Failed to update product' });
+        }
 
+        // Check if rows were affected
+        if (result.affectedRows > 0) {
+            res.status(200).json({ success: true, message: 'Product updated successfully' });
+        } else {
+            res.status(404).json({ success: false, message: 'Product not found' });
+        }
+    });
+});
+
+app.post('/upload', upload.single('file'), (req, res) => {
+    if (req.file) {
+        const filePath = `/uploads/${req.file.filename}`;
+        res.json({ url: filePath });
+    } else {
+        res.status(400).send('No file uploaded');
+    }
+});
 
 app.use('/uploads', express.static(path.join(__dirname, 'src/uploads')));
 

@@ -27,6 +27,8 @@
     import AdminPage from "./pages/adminPage.jsx";
     import UserAdmin from "./pages/userAdmin.jsx";
     import UserEditAdm from "./pages/UserEditAdm.jsx";
+    import fixproduct from "./pages/Fixproduct.jsx";
+    import Fixproduct from "./pages/Fixproduct.jsx";
 
     function App() {
         const [loginStatus, setLoginStatus] = useState(false);
@@ -54,11 +56,6 @@
             }
         }, []); // 컴포넌트 마운트 시 한번만 실행
 
-        useEffect(() => {
-            if (loginStatus && !userProfile) { // 로그인 상태인데 사용자 프로필이 없을 경우에만 fetchUserInfo 호출
-                fetchUserInfo();
-            }
-        }, [loginStatus, userProfile]);
 
         // API 호출로 사용자 정보 (money와 profileimg) 가져오기
         const fetchUserInfo = async () => {
@@ -152,7 +149,8 @@
                     <Route path="/MyPage/DeleteUser" element={<DeleteUser/>} /> {/* 마이페이지 */}
                     <Route path="/AddProduct" element={<AddProduct userProfile={userProfile}/>}/>
                     <Route path="/ProductManage" element={<ProductManage />} />  {/* 회원가입 끝 */}
-                    <Route path="/FAQPage" element={<FAQPage />}/>
+                    <Route path="/FAQPage" element={<FAQPage/>}/>
+                    <Route path="/Fixproduct/:id" element={<Fixproduct userProfile={userProfile}/>}/>
                 </Routes>
                 <Footer/>
             </div>
