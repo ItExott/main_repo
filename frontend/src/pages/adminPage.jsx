@@ -80,7 +80,10 @@ const AdminPage = () => {
 
     return (
         <div className="flex justify-center items-center flex-col">
-            <h1 className="text-center font-bold text-2xl mt-[2rem]">ADMIN PAGE</h1>
+            <a className="flex items-center mt-[1rem] text-red-400 w-[62rem] font-bold text-xl justify-center">
+                관리자 페이지
+            </a>
+            <div className="w-[56rem] border-b-2 border-red-400 mt-4"></div>
             <div className="flex justify-start w-[54rem] mt-10">
                 <div className="flex flex-row justify-start items-start">
                     <div className="flex justify-center items-center flex-col mr-[1rem]">
