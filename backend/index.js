@@ -10,6 +10,7 @@ const bcrypt = require('bcrypt');
 const app = express();
 const port = 8080;
 
+
 app.use(session({
     secret: 'your-secret-key',  // Replace with your secret key
     resave: false,
@@ -1484,7 +1485,7 @@ app.post('/api/products', upload.fields([
     { name: 'facility_pictures' }
 ]), (req, res) => {
     // Body와 File로부터 값을 가져옴
-    const { prodtitle, category, prodsmtitle, prodaddress, address, prodprice, prodprice2, prodprice3, prodprice4, userId } = req.body;
+    const { prodtitle, category, prodsmtitle, prodaddress, address, prodprice, prodprice2, prodprice3, prodprice4, userId, description, facilities } = req.body;
 
     // 파일이 있을 경우 업로드 경로 설정
     const iconPicture = req.files.iconpicture ? `/uploads/${req.files.iconpicture[0].filename}` : null;
@@ -1497,21 +1498,22 @@ app.post('/api/products', upload.fields([
     ];
     const facilityPictures = req.body.facility_pictures ? JSON.parse(req.body.facility_pictures) : [];
 
+    const selectedFacilities = facilities ? JSON.parse(facilities) : [];
     // MySQL에 데이터 삽입
     const sql = `
     INSERT INTO product (
-        userid, category, prodtitle, iconpicture,
+        userid, category, prodtitle, iconpicture, 
         prodcontent1, prodcontent2, prodcontent3, prodcontent4,
         prodsmtitle, prodaddress, address, prodpicture, prodprice, 
-        prodprice2, prodprice3, prodprice4, facility_pictures, prodrating
+        prodprice2, prodprice3, prodprice4, facility_pictures, prodrating, description, selectedFacilities
     ) 
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`;
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`;
 
     const values = [
         userId, category, prodtitle, iconPicture, prodContent[0], prodContent[1], prodContent[2], prodContent[3],
         prodsmtitle, prodaddress, address,
         prodPicture, prodprice, prodprice2, prodprice3, prodprice4,
-        JSON.stringify(facilityPictures), 0
+        JSON.stringify(facilityPictures), 0, description, JSON.stringify(selectedFacilities)
     ];
 
     // MySQL 쿼리 실행
@@ -1757,40 +1759,50 @@ app.delete('/product/delete', (req, res) => {
         return res.status(400).json({ error: 'Product ID is required' });
     }
 
-    // 1. 자식 테이블인 recent_viewed_products에서 prodid를 삭제
-    const deleteRecentViewedQuery = 'DELETE FROM recent_viewed_products WHERE prodid = ?';
-    db.query(deleteRecentViewedQuery, [prodid], (err) => {
+    // 1. buy_product 테이블에서 해당 제품을 참조하는 레코드 삭제
+    const deleteBuyProductQuery = 'DELETE FROM buy_product WHERE prodid = ?';
+    db.query(deleteBuyProductQuery, [prodid], (err) => {
         if (err) {
-            console.error('Failed to delete from recent_viewed_products:', err);
-            return res.status(500).json({ error: 'Failed to delete from recent_viewed_products' });
+            console.error('Failed to delete from buy_product:', err);
+            return res.status(500).json({ error: 'Failed to delete from buy_product' });
         }
 
-        // 2. 다른 관련 테이블에서 prodid를 삭제 (예: inquiry 테이블 등)
-        const deleteOtherRelatedQuery = 'DELETE FROM product_inquiry WHERE prodid = ?';
-        db.query(deleteOtherRelatedQuery, [prodid], (err) => {
+        // 2. 자식 테이블인 recent_viewed_products에서 prodid를 삭제
+        const deleteRecentViewedQuery = 'DELETE FROM recent_viewed_products WHERE prodid = ?';
+        db.query(deleteRecentViewedQuery, [prodid], (err) => {
             if (err) {
-                console.error('Failed to delete from product_inquiry:', err);
-                return res.status(500).json({ error: 'Failed to delete from product_inquiry' });
+                console.error('Failed to delete from recent_viewed_products:', err);
+                return res.status(500).json({ error: 'Failed to delete from recent_viewed_products' });
             }
 
-            // 3. product 테이블에서 prodid를 삭제
-            const deleteProductQuery = 'DELETE FROM product WHERE prodid = ? AND userId = ?';
-            db.query(deleteProductQuery, [prodid, userId], (err, results) => {
+            // 3. 다른 관련 테이블에서 prodid를 삭제 (예: inquiry 테이블 등)
+            const deleteOtherRelatedQuery = 'DELETE FROM product_inquiry WHERE prodid = ?';
+            db.query(deleteOtherRelatedQuery, [prodid], (err) => {
                 if (err) {
-                    console.error('Database query failed:', err);
-                    return res.status(500).json({ error: 'Database query failed' });
+                    console.error('Failed to delete from product_inquiry:', err);
+                    return res.status(500).json({ error: 'Failed to delete from product_inquiry' });
                 }
 
-                if (results.affectedRows === 0) {
-                    // 삭제된 레코드가 없으면 권한이 없거나 상품이 존재하지 않음
-                    return res.status(404).json({ error: 'Product not found or not authorized' });
-                }
+                // 4. product 테이블에서 prodid를 삭제
+                const deleteProductQuery = 'DELETE FROM product WHERE prodid = ? AND userId = ?';
+                db.query(deleteProductQuery, [prodid, userId], (err, results) => {
+                    if (err) {
+                        console.error('Database query failed:', err);
+                        return res.status(500).json({ error: 'Database query failed' });
+                    }
 
-                res.status(200).json({ message: 'Product deleted successfully' });
+                    if (results.affectedRows === 0) {
+                        // 삭제된 레코드가 없으면 권한이 없거나 상품이 존재하지 않음
+                        return res.status(404).json({ error: 'Product not found or not authorized' });
+                    }
+
+                    res.status(200).json({ message: 'Product deleted successfully' });
+                });
             });
         });
     });
 });
+
 
 app.put('/api/product/update/:id', (req, res) => {
     const productId = req.params.id;
@@ -1798,7 +1810,9 @@ app.put('/api/product/update/:id', (req, res) => {
         prodtitle,
         prodsmtitle,
         address,
+        div1Bg,
         description,
+        selectedFacilities,
         prodcontent1,
         prodcontent2,
         prodcontent3,
@@ -1815,7 +1829,9 @@ app.put('/api/product/update/:id', (req, res) => {
             prodtitle = ?,
             prodsmtitle = ?,
             address = ?,
+            div1Bg = ?,
             description = ?,
+            selectedFacilities = ?,
             prodcontent1 = ?,
             prodcontent2 = ?,
             prodcontent3 = ?,
@@ -1831,7 +1847,9 @@ app.put('/api/product/update/:id', (req, res) => {
         prodtitle,
         prodsmtitle,
         address,
+        div1Bg,
         description,
+        JSON.stringify(selectedFacilities),
         prodcontent1,
         prodcontent2,
         prodcontent3,
@@ -1865,6 +1883,8 @@ app.post('/upload', upload.single('file'), (req, res) => {
         res.status(400).send('No file uploaded');
     }
 });
+
+
 
 app.use('/uploads', express.static(path.join(__dirname, 'src/uploads')));
 

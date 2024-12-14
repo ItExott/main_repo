@@ -23,12 +23,60 @@ const Fixproduct = () => {
     const [userId, setUserId] = useState(null);
     const [userData, setUserData] = useState(null);
     const [showFullImages, setShowFullImages] = useState(false);
+    const [isModalOpen, setIsModalOpen] = useState(false);
+    const [selectedFacilities, setSelectedFacilities] = useState([]);
+    const [currentFacility, setCurrentFacility] = useState('');
+    const [facilityList, setFacilityList] = useState([]);
     const [productData, setProductData] = useState({
         div1Bg: "bg-yellow-200", // 초기 배경색
-        div2Bg: "bg-yellow-200", // 초기 배경색
     });
     const [isPopupOpen, setIsPopupOpen] = useState(false);
     const [targetDiv, setTargetDiv] = useState(null); // 클릭한 대상 div를 구분
+
+    const handleCheckFacility = (facility) => {
+        setSelectedFacilities((prev) =>
+            prev.includes(facility)
+                ? prev.filter((item) => item !== facility) // 이미 선택된 경우 해제
+                : [...prev, facility] // 선택되지 않은 경우 추가
+        );
+    };
+
+    useEffect(() => {
+        // DB에서 가져온 데이터 예시
+        const fetchedFacilities = ['towel', 'shower', 'wifi', 'parking', 'locker', 'wash']; // DB에서 가져온 데이터
+        setFacilityList(fetchedFacilities);
+    }, []);
+
+    const handleSaveFacilities = async () => {
+        try {
+            const updatedProductData = {
+                ...productData,
+                selectedFacilities: selectedFacilities // 선택된 편의시설만 저장
+            };
+
+            console.log("Updated Product Data:", updatedProductData); // 전송되는 데이터 확인
+
+            const response = await axios.put(`http://localhost:8080/api/product/update/${id}`, updatedProductData, {
+                withCredentials: true,
+            });
+
+            if (response.data.success) {
+                alert('편의시설 정보가 성공적으로 업데이트되었습니다.');
+            } else {
+                alert('편의시설 업데이트에 실패했습니다.');
+            }
+
+            setIsModalOpen(false);
+        } catch (error) {
+            console.error('Error saving facilities:', error);
+            alert('편의시설 저장 중 오류가 발생했습니다.');
+        }
+    };
+
+    const handleOpenModal = (facility) => {
+        setCurrentFacility(facility);
+        setIsModalOpen(true);
+    };
 
     const colors = ["bg-yellow-200", "bg-blue-200", "bg-red-200", "bg-green-200", "bg-purple-200"];
 
@@ -81,6 +129,14 @@ const Fixproduct = () => {
             try {
                 const response = await axios.get(`http://localhost:8080/product/${id}`);
                 setProductData(response.data);
+                const fetchedFacilities = JSON.parse(response.data.selectedFacilities);
+
+                // 만약 parsedFacilities가 배열이라면, 상태에 설정
+                if (Array.isArray(fetchedFacilities)) {
+                    setFacilityList(fetchedFacilities); // 편의시설 목록을 배열로 저장
+                } else {
+                    setFacilityList([]); // 만약 배열이 아니면 빈 배열로 초기화
+                }
             } catch (error) {
                 console.error("Error fetching product data:", error);
             }
@@ -215,11 +271,13 @@ const Fixproduct = () => {
             // 저장할 데이터 객체 생성
             const updatedProductData = {
                 ...productData,
-                prodpicture: imageData?.prodpicture || productData.prodpicture, // 기존 값 유지
-                iconpicture: imageData?.iconpicture || productData.iconpicture, // 기존 값 유지
+                prodpicture: imageData?.prodpicture || productData.prodpicture,
+                iconpicture: imageData?.iconpicture || productData.iconpicture,
                 facility_pictures: imageData?.facility_pictures && imageData.facility_pictures.some(pic => pic !== null && pic !== "")
-                    ? imageData.facility_pictures // 업로드된 시설사진이 있을 때만 반영
-                    : productData.facility_pictures // 없으면 기존 값 유지
+                    ? imageData.facility_pictures
+                    : productData.facility_pictures, // 업로드된 시설사진이 있을 때만 반영
+                div1Bg: productData.div1Bg, // Div1 배경색 추가
+                selectedFacilities: selectedFacilities // 선택된 편의시설 저장
             };
 
             console.log("Updated Product Data:", updatedProductData); // 전송되는 데이터 확인
@@ -229,7 +287,7 @@ const Fixproduct = () => {
             });
 
             if (response.data.success) {
-                alert('상품이 성공적으로 업데이트되었습니다.');
+                alert('상품 정보가 성공적으로 업데이트되었습니다.');
             } else {
                 alert('상품 업데이트에 실패했습니다.');
             }
@@ -246,10 +304,15 @@ const Fixproduct = () => {
 
         return (
             <div className="flex flex-col h-full items-center justify-center mx-28">  {/*슬라이더 박스*/}
+                <a className="flex items-center mt-[1rem] text-red-400 w-[62rem] font-bold text-xl justify-center">
+                    제품 수정
+                </a>
+                <div className="w-[62rem] border-b-2 border-red-400 mt-4"></div>
                 <div
                     className="flex justify-start flex-row rounded-3xl border-2 border-gray-950 w-[62rem] h-[22rem] mt-6 items-center">
                     <div className="flex relative items-center w-[42rem] h-[22rem]">
-                        <img className="flex w-[42rem] h-[21.8rem] opacity-30 rounded-l-3xl" src={productData.prodpicture}/>
+                        <img className="flex w-[42rem] h-[21.8rem] opacity-30 rounded-l-3xl"
+                             src={productData.prodpicture}/>
                         <input
                             type="file"
                             className="hidden"
@@ -364,37 +427,36 @@ const Fixproduct = () => {
                                     className="flex flex-col rounded-3xl bg-white justify-center items-center h-[18rem] w-[18rem]">
                                     {/* Div 1 */}
                                     <a
-                                        className={`flex text-sm text-gray-400 ${productData.div1Bg} border-[0.2rem] items-center justify-center rounded-xl w-[12rem] font-bold mt-[1.2rem]`}
+                                        className={`flex text-sm text-gray-400 ${productData.div1Bg} items-center justify-center rounded-xl w-[12rem] font-bold mt-[1.2rem]`}
                                         onClick={() => handleDivClick('div1Bg')}
                                     >
                                         {productData.prodtitle}
                                     </a>
 
-                                    {/* Image and Div 2 */}
                                     <div className="flex items-center justify-center flex-col w-1/2">
                                         <div className="flex w-[8rem] mt-[1rem] h-[8rem]">
                                             <img className="rounded-full opacity-30" src={productData.iconpicture}
                                                  alt="Product Logo"/>
                                         </div>
 
-                                        {/* Div 2 */}
                                         <div
-                                            className={`flex flex-col items-center justify-center ${productData.div2Bg} mt-[1rem] rounded-xl h-[5rem] w-[20rem]`}
-                                            onClick={() => handleDivClick('div2Bg')}
+                                            className={`flex flex-col items-center justify-center ${productData.div1Bg} mt-[1rem] rounded-xl h-[5rem] w-[20rem]`}
+                                            onClick={() => handleDivClick('div1Bg')}
                                         >
                                         <textarea
                                             className="text-xs whitespace-pre-wrap h-[3rem] w-full font-bold text-center"
                                             onChange={(e) => handleInputChange(e, 'description')}
                                             placeholder={productData.description}
-                                                />
+                                        />
                                         </div>
                                     </div>
                                 </div>
 
                                 {isPopupOpen && (
-                                    <div className="fixed top-0 left-0 flex items-center justify-center w-full h-full bg-black bg-opacity-50 z-50">
+                                    <div
+                                        className="fixed top-0 left-0 flex items-center justify-center w-full h-full bg-black bg-opacity-50 z-50">
                                         <div className="bg-white p-4 rounded-lg shadow-lg">
-                                            <h3 className="text-lg font-bold mb-4">색깔 선택</h3>
+                                            <h3 className="text-lg font-bold mb-4">배경색 선택</h3>
                                             <div className="flex space-x-2">
                                                 {colors.map((color) => (
                                                     <div
@@ -405,10 +467,10 @@ const Fixproduct = () => {
                                                 ))}
                                             </div>
                                             <button
-                                                className="mt-4 px-4 py-2 bg-gray-300 rounded-lg"
+                                                className="mt-4 px-4 py-2 bg-red-400 text-white hover:scale-110 cursor-pointer transition-transform ease-in-out duration-500 hover:bg-white hover:text-red-400 hover:border hover:border-red-400 rounded-lg"
                                                 onClick={() => setIsPopupOpen(false)}
                                             >
-                                                Close
+                                                닫기
                                             </button>
                                         </div>
                                     </div>
@@ -416,8 +478,8 @@ const Fixproduct = () => {
 
                                 <div className="border-l border-gray-400 ml-[3.5rem] h-[16rem]"></div>
                                 <div
-                                    className="flex flex-col ml-[3.5rem] rounded-3xl bg-white items-center w-[18rem] h-[18rem]">
-                                    <a className="flex text-sm bg-yellow-200 border-[0.2rem] border-yellow-200 items-center justify-center rounded-xl w-[12rem] font-bold mt-[1.2rem]">
+                                    className="flex flex-col    ml-[3.5rem] rounded-3xl bg-white items-center w-[18rem] h-[18rem]">
+                                    <a className={`flex text-sm ${productData.div1Bg} items-center justify-center rounded-xl w-[12rem] font-bold mt-[1.2rem]`}>
                                         운영 시간 및 이용 안내
                                     </a>
                                     <div className="flex flex-row justify-center mt-[2.8rem] w-[18rem] h-[18rem]">
@@ -440,33 +502,57 @@ const Fixproduct = () => {
                         </div>
                         <div className="flex divider divide-gray-600 ml-[4rem] w-[60rem]"></div>
                         <div
-                            className="flex mx-auto flex-col bg-gray-100 shadow-xl border-[0.1rem] border-gray-600 rounded-lg w-[50rem] h-[9rem]">
+                            className="flex mx-auto flex-col bg-gray-100 shadow-xl border-[0.1rem] border-gray-600 rounded-lg w-[50rem] h-[9rem]"
+                            onClick={() => handleOpenModal('facility')}>
                             <a className="text-lg font-bold mt-[0.5rem] ml-[1rem]">편의 시설</a>
                             <div className="flex flex-row">
-                                <div className="flex flex-col">
-                                    <GiTowel className="mt-[0.5rem] ml-[2.5rem] w-[3rem] h-[3rem]"/>
-                                    <a className="font-bold text-sm mt-[0.4rem] ml-[3.1rem]">수건</a>
-                                </div>
-                                <div className="flex flex-col">
-                                    <FaShower className="mt-[0.5rem] ml-[2.5rem] w-[3rem] h-[3rem]"/>
-                                    <a className="font-bold text-sm mt-[0.4rem] ml-[2.2rem]">샤워시설</a>
-                                </div>
-                                <div className="flex flex-col">
-                                    <FaHandsWash className="mt-[0.5rem] ml-[2.5rem] w-[3rem] h-[3rem]"/>
-                                    <a className="font-bold text-sm mt-[0.4rem] ml-[2.2rem]">세족시설</a>
-                                </div>
-                                <div className="flex flex-col">
-                                    <FaWifi className="mt-[0.5rem] ml-[2.5rem] w-[3rem] h-[3rem]"/>
-                                    <a className="font-bold text-sm mt-[0.4rem] ml-[3.1rem]">Wifi</a>
-                                </div>
-                                <div className="flex flex-col">
-                                    <FaParking className="mt-[0.5rem] ml-[2.5rem] w-[3rem] h-[3rem]"/>
-                                    <a className="font-bold text-sm mt-[0.4rem] ml-[3rem]">주차</a>
-                                </div>
-                                <div className="flex flex-col">
-                                    <PiLockersFill className="mt-[0.5rem] ml-[2.5rem] w-[3rem] h-[3rem]"/>
-                                    <a className="font-bold text-sm mt-[0.4rem] ml-[2.2rem]">개인락커</a>
-                                </div>
+                                {/* 수건 아이콘 (DB에 있는 경우만 표시) */}
+                                {facilityList.includes('towel') && (
+                                    <div className="flex flex-col" onClick={() => handleCheckFacility('towel')}>
+                                        <GiTowel className="mt-[0.5rem] ml-[2.5rem] w-[3rem] h-[3rem]"/>
+                                        <a className="font-bold text-sm mt-[0.4rem] ml-[3.1rem]">수건</a>
+                                    </div>
+                                )}
+
+                                {/* 샤워시설 아이콘 (DB에 있는 경우만 표시) */}
+                                {facilityList.includes('shower') && (
+                                    <div className="flex flex-col" onClick={() => handleCheckFacility('shower')}>
+                                        <FaShower className="mt-[0.5rem] ml-[2.5rem] w-[3rem] h-[3rem]"/>
+                                        <a className="font-bold text-sm mt-[0.4rem] ml-[2.2rem]">샤워시설</a>
+                                    </div>
+                                )}
+
+                                {/* 세족시설 아이콘 (DB에 있는 경우만 표시) */}
+                                {facilityList.includes('wash') && (
+                                    <div className="flex flex-col" onClick={() => handleCheckFacility('wash')}>
+                                        <FaHandsWash className="mt-[0.5rem] ml-[2.5rem] w-[3rem] h-[3rem]"/>
+                                        <a className="font-bold text-sm mt-[0.4rem] ml-[2.2rem]">세족시설</a>
+                                    </div>
+                                )}
+
+                                {/* Wifi 아이콘 (DB에 있는 경우만 표시) */}
+                                {facilityList.includes('wifi') && (
+                                    <div className="flex flex-col" onClick={() => handleCheckFacility('wifi')}>
+                                        <FaWifi className="mt-[0.5rem] ml-[2.5rem] w-[3rem] h-[3rem]"/>
+                                        <a className="font-bold text-sm mt-[0.4rem] ml-[3.1rem]">Wifi</a>
+                                    </div>
+                                )}
+
+                                {/* 주차 아이콘 (DB에 있는 경우만 표시) */}
+                                {facilityList.includes('parking') && (
+                                    <div className="flex flex-col" onClick={() => handleCheckFacility('parking')}>
+                                        <FaParking className="mt-[0.5rem] ml-[2.5rem] w-[3rem] h-[3rem]"/>
+                                        <a className="font-bold text-sm mt-[0.4rem] ml-[3rem]">주차</a>
+                                    </div>
+                                )}
+
+                                {/* 개인락커 아이콘 (DB에 있는 경우만 표시) */}
+                                {facilityList.includes('locker') && (
+                                    <div className="flex flex-col" onClick={() => handleCheckFacility('locker')}>
+                                        <PiLockersFill className="mt-[0.5rem] ml-[2.5rem] w-[3rem] h-[3rem]"/>
+                                        <a className="font-bold text-sm mt-[0.4rem] ml-[2.2rem]">개인락커</a>
+                                    </div>
+                                )}
                             </div>
                         </div>
                         <div className="flex divider divide-gray-600 ml-[4rem] w-[60rem]"></div>
@@ -495,7 +581,7 @@ const Fixproduct = () => {
                                                 onClick={() => handleFacilityImageUpload({target: {files: [null]}}, index)} // 삭제 버튼 클릭 시
                                                 className="absolute top-2 right-2 bg-red-400 items-center flex justify-center w-[1.5rem] h-[1.5rem] hover:text-red-400 text-white rounded-full p-1 hover:bg-white transition-colors"
                                             >
-                                               <a className="flex mt-[0.1rem]">X</a>
+                                                <a className="flex mt-[0.1rem]">X</a>
                                             </button>
 
                                             {/* 업로드 버튼 */}
@@ -522,7 +608,87 @@ const Fixproduct = () => {
                         </div>
                     </div>
                 </div>
-
+                {isModalOpen && (
+                    <div className="fixed inset-0 flex items-center justify-center bg-gray-500 bg-opacity-50">
+                        <div className="bg-white p-5 rounded-xl w-[30rem]">
+                            <h2 className="font-bold text-xl mb-4">편의 시설 선택</h2>
+                            <div className="flex flex-col gap-4">
+                                <div className="flex items-center">
+                                    <FaParking className="w-[2rem] h-[2rem]"/>
+                                    <input
+                                        type="checkbox"
+                                        checked={selectedFacilities.includes('parking')}
+                                        onChange={() => handleCheckFacility('parking')}
+                                        className="ml-2 checked:bg-red-400"
+                                    />
+                                    <label className="ml-2">주차</label>
+                                </div>
+                                <div className="flex items-center">
+                                    <FaWifi className="w-[2rem] h-[2rem]"/>
+                                    <input
+                                        type="checkbox"
+                                        checked={selectedFacilities.includes('wifi')}
+                                        onChange={() => handleCheckFacility('wifi')}
+                                        className="ml-2 checked:bg-red-400"
+                                    />
+                                    <label className="ml-2">Wifi</label>
+                                </div>
+                                <div className="flex items-center">
+                                    <FaHandsWash className="w-[2rem] h-[2rem]"/>
+                                    <input
+                                        type="checkbox"
+                                        checked={selectedFacilities.includes('wash')}
+                                        onChange={() => handleCheckFacility('wash')}
+                                        className="ml-2 checked:bg-red-400"
+                                    />
+                                    <label className="ml-2">세족시설</label>
+                                </div>
+                                <div className="flex items-center">
+                                    <FaShower className="w-[2rem] h-[2rem]"/>
+                                    <input
+                                        type="checkbox"
+                                        checked={selectedFacilities.includes('shower')}
+                                        onChange={() => handleCheckFacility('shower')}
+                                        className="ml-2 checked:bg-red-400"
+                                    />
+                                    <label className="ml-2">샤워시설</label>
+                                </div>
+                                <div className="flex items-center">
+                                    <GiTowel className="w-[2rem] h-[2rem]"/>
+                                    <input
+                                        type="checkbox"
+                                        checked={selectedFacilities.includes('towel')}
+                                        onChange={() => handleCheckFacility('towel')}
+                                        className="ml-2 checked:bg-red-400"
+                                    />
+                                    <label className="ml-2">수건</label>
+                                </div>
+                                <div className="flex items-center">
+                                    <PiLockersFill className="w-[2rem] h-[2rem]"/>
+                                    <input
+                                        type="checkbox"
+                                        checked={selectedFacilities.includes('locker')}
+                                        onChange={() => handleCheckFacility('locker')}
+                                        className="ml-2 checked:bg-red-400"
+                                    />
+                                    <label className="ml-2">개인락커</label>
+                                </div>
+                            </div>
+                            <button
+                                className="mt-2 bg-red-400 text-white hover:scale-110 cursor-pointer transition-transform ease-in-out duration-500 hover:bg-white hover:text-red-400 hover:border hover:border-red-400 rounded-lg"
+                                onClick={() => setIsModalOpen(false)} // 취소 버튼 클릭 시 모달 닫기
+                            >
+                                저장
+                            </button>
+                            <button
+                                className="mt-2 ml-4 bg-white border border-red-400 text-red-400 hover:scale-110 cursor-pointer transition-transform ease-in-out duration-500 hover:bg-red-400 hover:text-white rounded-lg"
+                                onClick={() => setIsModalOpen(false)} // 취소 버튼 클릭 시 모달 닫기
+                            >
+                                취소
+                            </button>
+                        </div>
+                    </div>
+                )}
             </div>
 
         )

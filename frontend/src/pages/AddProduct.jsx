@@ -1,5 +1,9 @@
 import React, { useState } from "react";
 import {useNavigate} from "react-router-dom";
+import {FaHandsWash, FaParking, FaWifi} from "react-icons/fa";
+import {FaShower} from "react-icons/fa6";
+import {GiTowel} from "react-icons/gi";
+import {PiLockersFill} from "react-icons/pi";
 
 const AddProduct = ({userProfile}) => {
     const [productName, setProductName] = useState("");
@@ -18,6 +22,19 @@ const AddProduct = ({userProfile}) => {
     });
     const [introductionImages, setIntroductionImages] = useState([]);
     const [facilityImages, setFacilityImages] = useState([]);
+    const [selectedFacilities, setSelectedFacilities] = useState([]);
+
+    const handleCheckFacility = (facility) => {
+        setSelectedFacilities((prevSelectedFacilities) => {
+            if (prevSelectedFacilities.includes(facility)) {
+                // 이미 선택되어 있으면, 배열에서 해당 시설을 제거
+                return prevSelectedFacilities.filter((item) => item !== facility);
+            } else {
+                // 선택되지 않았다면 배열에 추가
+                return [...prevSelectedFacilities, facility];
+            }
+        });
+    };
 
     const handleImageUpload = (e, setImageState, maxCount) => {
         const files = Array.from(e.target.files);
@@ -30,6 +47,13 @@ const AddProduct = ({userProfile}) => {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
+
+        // 필수 입력 값들이 모두 채워졌는지 확인
+        if (!productName || !category || !address || !detailedAddress || !pricing.oneMonth) {
+            alert("모든 제품 정보를 입력해 주세요.");
+            return;
+        }
+
         // FormData 생성
         const formData = new FormData();
 
@@ -57,6 +81,8 @@ const AddProduct = ({userProfile}) => {
         const facilityImagesArray = facilityImages.map((img) => `/uploads/${img.name}`);
         formData.append("facility_pictures", JSON.stringify(facilityImagesArray));
 
+        formData.append("facilities", JSON.stringify(selectedFacilities));
+
         if (userProfile) {
             formData.append("userId", userProfile.userId);
         }
@@ -80,12 +106,14 @@ const AddProduct = ({userProfile}) => {
         }
     };
 
+
     return (
         <div className="flex flex-col mt-[1rem] h-full items-center justify-center mx-28">
             <a className="flex items-center text-red-400 w-[62rem] font-bold text-xl justify-center">
                 제품 등록
             </a>
             <div className="w-[62rem] border-b-2 border-red-400 mt-4"></div>
+
             <form onSubmit={handleSubmit}>
                 {/* 제품 이름 및 아이콘 */}
                 <div className="flex items-center mt-[2rem] mb-4">
@@ -185,7 +213,7 @@ const AddProduct = ({userProfile}) => {
                                     type="number"
                                     value={pricing[key]}
                                     onChange={(e) =>
-                                        setPricing((prev) => ({ ...prev, [key]: e.target.value }))
+                                        setPricing((prev) => ({...prev, [key]: e.target.value}))
                                     }
                                     className="p-2 border rounded-lg"
                                     placeholder={`${label} 금액 입력`}
@@ -194,6 +222,69 @@ const AddProduct = ({userProfile}) => {
                         );
                     })}
                 </div>
+                <div className="flex flex-row h-full justify-center items-center border border-gray-500 mb-4 w-full p-2 gap-8 rounded-xl">
+                    <div className="flex flex-col items-center">
+                        <FaParking className="w-[2rem] h-[2rem]"/>
+                        <input
+                            type="checkbox"
+                            checked={selectedFacilities.includes('parking')}
+                            onChange={() => handleCheckFacility('parking')}
+                            className="ml-2 checked:bg-red-400 mt-1 mr-2"
+                        />
+                        <label className="ml-2 mr-2">주차</label>
+                    </div>
+                    <div className="flex flex-col items-center">
+                        <FaWifi className="w-[2rem] h-[2rem]"/>
+                        <input
+                            type="checkbox"
+                            checked={selectedFacilities.includes('wifi')}
+                            onChange={() => handleCheckFacility('wifi')}
+                            className="ml-2 checked:bg-red-400 mt-1 mr-2"
+                        />
+                        <label className="ml-2 mr-2">Wifi</label>
+                    </div>
+                    <div className="flex flex-col items-center">
+                        <FaHandsWash className="w-[2rem] h-[2rem]"/>
+                        <input
+                            type="checkbox"
+                            checked={selectedFacilities.includes('wash')}
+                            onChange={() => handleCheckFacility('wash')}
+                            className="ml-2 checked:bg-red-400 mt-1"
+                        />
+                        <label className="ml-2">세족시설</label>
+                    </div>
+                    <div className="flex flex-col items-center">
+                        <FaShower className="w-[2rem] h-[2rem]"/>
+                        <input
+                            type="checkbox"
+                            checked={selectedFacilities.includes('shower')}
+                            onChange={() => handleCheckFacility('shower')}
+                            className="ml-2 checked:bg-red-400 mt-1"
+                        />
+                        <label className="ml-2">샤워시설</label>
+                    </div>
+                    <div className="flex flex-col items-center">
+                        <GiTowel className="w-[2rem] h-[2rem]"/>
+                        <input
+                            type="checkbox"
+                            checked={selectedFacilities.includes('towel')}
+                            onChange={() => handleCheckFacility('towel')}
+                            className="ml-2 checked:bg-red-400 mt-1"
+                        />
+                        <label className="ml-2">수건</label>
+                    </div>
+                    <div className="flex flex-col items-center">
+                        <PiLockersFill className="w-[2rem] h-[2rem]"/>
+                        <input
+                            type="checkbox"
+                            checked={selectedFacilities.includes('locker')}
+                            onChange={() => handleCheckFacility('locker')}
+                            className="ml-2 checked:bg-red-400 mt-1"
+                        />
+                        <label className="ml-2">개인락커</label>
+                    </div>
+                </div>
+
 
                 {/* 제품 소개 이미지 */}
                 <div className="flex flex-col mb-4">

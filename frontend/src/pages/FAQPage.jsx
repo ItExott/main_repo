@@ -40,7 +40,7 @@ const FAQPage = () => {
         <div className="min-h-screen bg-white py-6 shadow-lg">
             {/* 페이지 제목 */}
             <div className="text-center mb-6">
-                <h1 className="text-3xl font-bold text-red-500">Q&A</h1>
+                <h1 className="text-3xl font-bold text-red-400">Q&A</h1>
                 <p className="text-gray-500 mt-2">자주 묻는 질문을 확인해보세요.</p>
             </div>
 
@@ -60,10 +60,10 @@ const FAQPage = () => {
                 {["주요질문", "결제/환불", "회원정보", "등록/결제", "짐정보"].map((cat) => (
                     <button
                         key={cat}
-                        className={`px-4 py-2 text-sm font-semibold border-b-2 ${
+                        className={`px-4 py-2 text-sm font-semibold border-b-2 ${   
                             filter === cat
-                                ? "text-red-500 border-red-500"
-                                : "text-gray-500 border-transparent"
+                                ? "text-white bg-red-400 hover:scale-110 transition-transform ease-in-out duration-500"
+                                : "text-red-400 bg-white border border-red-400 hover:scale-110 transition-transform ease-in-out duration-500 border-transparent"
                         }`}
                         onClick={() => handleCategoryChange(cat)} // 카테고리 변경 시 열려있는 FAQ 닫기
                     >
@@ -93,7 +93,7 @@ const FAQPage = () => {
                             </span>
                         </button>
                         {openFAQ === index && (
-                            <p className="bg-white text-gray-700 p-4 ml-6 border border-gray-300 rounded-md shadow-sm">
+                            <p className="bg-white text-gray-700 p-4 border border-gray-300 rounded-md shadow-sm">
                                 {faq.answer}
                             </p>
                         )}

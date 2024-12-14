@@ -83,6 +83,7 @@ const Product_Main = () => {
         saveRecentlyViewed(id);
         navigate(`/product/${id}`);  // Navigate to the product detail page
     };
+
     const handleChangesearch = (e) => {
         const newQuery = e.target.value;
         setQuery(newQuery);
@@ -239,7 +240,7 @@ const Product_Main = () => {
             </div>
 
             {/* Displaying Products */}
-            <div className="flex flex-row w-[62rem] h-[35rem]">
+            <div className="grid grid-cols-3 gap-4 w-[62rem] h-full">
                 {loading ? (
                     <div>로딩 중...</div>  // 로딩 중일 때 표시
                 ) : (

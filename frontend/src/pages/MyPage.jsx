@@ -30,6 +30,9 @@ const Mypage = () => {
             try {
                 const response = await axios.get('http://localhost:8080/api/userinfo', { withCredentials: true });
                 setUserData(response.data);
+                if (response.data.userType === 'gymManager') {
+                    setActiveTab('recentItems');  // recentItems 탭만 활성화
+                }
             } catch (error) {
                 console.error("Error fetching user data", error);
             }
@@ -91,6 +94,9 @@ const Mypage = () => {
     }
 
     const handleTabChange = (tab) => {
+        if (userData.userType === 'gymManager' && tab !== 'recentItems') {
+            return;
+        }
         setActiveTab(tab);
     };
 
@@ -100,6 +106,8 @@ const Mypage = () => {
 
     const goChangeUser = () => navigate("/MyPage/ChangeUser");
     const goDeleteUser = () => navigate("/MyPage/DeleteUser");
+
+    const isGymManager = userData.userType === 'gymManager';
 
     return (
         <div className="flex flex-col mt-[1rem] h-full items-center justify-center mx-28">
@@ -139,24 +147,30 @@ const Mypage = () => {
             </div>
 
             <div className="flex mt-6 space-x-8 mb-6">
-                <div
-                    onClick={() => handleTabChange('subscriptions')}
-                    className={`cursor-pointer hover:scale-110 transition-transform ease-in-out duration-500 ${activeTab === 'subscriptions' ? 'text-red-400 border-b-2 border-red-400' : 'text-red-400'}`}
-                >
-                    구독 짐
-                </div>
-                <div
-                    onClick={() => handleTabChange('recentItems')}
-                    className={`cursor-pointer hover:scale-110 transition-transform ease-in-out duration-500 ${activeTab === 'recentItems' ? 'text-red-400 border-b-2 border-red-400' : 'text-red-400'}`}
-                >
-                    최근 본 짐
-                </div>
-                <div
-                    onClick={() => handleTabChange('likedItems')}
-                    className={`cursor-pointer hover:scale-110 transition-transform ease-in-out duration-500 ${activeTab === 'likedItems' ? 'text-red-400 border-b-2 border-red-400' : 'text-red-400'}`}
-                >
-                    관심 짐
-                </div>
+                {!isGymManager && (
+                    <>
+                        <div
+                            onClick={() => handleTabChange('subscriptions')}
+                            className={`cursor-pointer hover:scale-110 transition-transform ease-in-out duration-500 ${activeTab === 'subscriptions' ? 'text-red-400 border-b-2 border-red-400' : 'text-red-400'}`}
+                        >
+                            구독 짐
+                        </div>
+                        <div
+                            onClick={() => handleTabChange('likedItems')}
+                            className={`cursor-pointer hover:scale-110 transition-transform ease-in-out duration-500 ${activeTab === 'likedItems' ? 'text-red-400 border-b-2 border-red-400' : 'text-red-400'}`}
+                        >
+                            관심 짐
+                        </div>
+                    </>
+                )}
+                {(isGymManager || userData.userType === 'individual') && (
+                    <div
+                        onClick={() => handleTabChange('recentItems')}
+                        className={`cursor-pointer hover:scale-110 transition-transform ease-in-out duration-500 ${activeTab === 'recentItems' ? 'text-red-400 border-b-2 border-red-400' : 'text-red-400'}`}
+                    >
+                        최근 본 짐
+                    </div>
+                )}
             </div>
             {activeTab === 'subscriptions' && (
                 <div className="w-full">
@@ -174,6 +188,7 @@ const Mypage = () => {
                     {isPopupOpen && selectedItem && (
                         <div className="fixed inset-0 bg-black bg-opacity-60 flex justify-center items-center z-50">
                             <div className="bg-white justify-center p-6 rounded-lg shadow-lg w-[42rem] h-[28rem] flex flex-col">
+                                {/* Close Button */}
                                 <div className="flex justify-end w-full h-[1rem] items-center cursor-pointer">
                                     <div
                                         onClick={CloseCard}
@@ -182,20 +197,44 @@ const Mypage = () => {
                                         X
                                     </div>
                                 </div>
+
                                 <div className="flex flex-row">
+                                    {/* Image */}
                                     <img
                                         src={selectedItem.iconpicture}
                                         alt={selectedItem.prodtitle}
                                         className="w-[20rem] ml-[2rem] h-[20rem] rounded-full"
                                     />
+
+                                    {/* Text Information */}
                                     <div className="flex flex-col ml-[3rem] mt-[3rem]">
-                                        <h3 className="text-xl text-red-400">{selectedItem.prodtitle}</h3>
+                                        <h3 className="text-xl text-red-400 font-semibold">
+                                            {selectedItem.prodtitle}
+                                        </h3>
+
+                                        <div className="mt-6">
+                                            {/* 운동 시작일 */}
+                                            <p className="text-red-400 text-lg cursor-pointer border-b-2 border-red-400 pb-2 mb-4 hover:scale-110 transition-transform duration-500 shadow-md p-2 rounded-lg hover:bg-red-400 hover:text-white">
+                                                운동 시작일: <span className="font-bold">{new Date(selectedItem.startdate).toLocaleDateString('ko-KR')}</span>
+                                            </p>
+
+                                            {/* 결제일자 */}
+                                            <p className="text-red-400 text-lg cursor-pointer border-b-2 border-red-400 pb-2 mb-4 hover:scale-110 transition-transform duration-500 shadow-md p-2 rounded-lg hover:bg-red-400 hover:text-white">
+                                                결제일자: <span className="font-bold">{new Date(selectedItem.date).toLocaleDateString('ko-KR')}</span>
+                                            </p>
+
+                                            {/* 가격 */}
+                                            <p className="text-red-400 text-lg cursor-pointer border-b-2 border-red-400 pb-2 hover:scale-110 transition-transform duration-500 shadow-md p-2 rounded-lg hover:bg-red-400 hover:text-white">
+                                                가격: <span className="font-bold">{selectedItem.prodprice.toLocaleString()}원</span>
+                                            </p>
+                                        </div>
                                     </div>
                                 </div>
-
                             </div>
                         </div>
                     )}
+
+
                 </div>
             )}
             {activeTab === 'recentItems' && (

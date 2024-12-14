@@ -296,7 +296,10 @@ const Navbar = ({ loginStatus, setLoginStatus, userProfile, setUserProfile, mone
             <div className="navbar-end">
                 {loginStatus ? (
                     // If the user is logged in
-                    userType === "admin" || userType === "gymManager" ? (
+                    userType === "admin" ? (
+                        // admin은 아무 것도 표시하지 않음
+                        null
+                    ) : userType === "gymManager" ? (
                         <div onClick={handleOpenNotification} className="flex rounded-full w-[3rem] h-[3rem] border-[0.2rem] cursor-pointer hover:scale-110 transition-transform ease-in-out duration-500 mb-[0.38rem] mr-[0.7rem] border-red-400">
                             <FaBell className="w-[2.4rem] items-center mt-[0.1rem] justify-center fill-red-400 h-[2.4rem] ml-[0.1rem]" />
                         </div>
@@ -398,7 +401,7 @@ const Navbar = ({ loginStatus, setLoginStatus, userProfile, setUserProfile, mone
                                                 </div>
                                             </div>
                                         </>
-                                    ) : <p className="text-xl">Admin 입니다</p>}
+                                    ) : <p className="text-xl">관리자 계정</p>}
                                 </>
                             ) : (
                                 <p>로그인되지 않았습니다.</p>

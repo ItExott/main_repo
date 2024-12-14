@@ -5,12 +5,30 @@ import userCard from "../components/userCard.jsx";
 import {useNavigate} from "react-router-dom";
 import {useRecoilSnapshot} from "recoil";
 import UserCard from "../components/userCard.jsx";
+import ReactPaginate from "react-paginate";
+
+
 const AdminPage = () => {
     const navigate = useNavigate();
     const [products, setProducts] = useState([]);
     const [loading, setLoading] = useState(true);
     const [selectedSection, setSelectedSection] = useState("products"); // 관리 모드 상태 추가
     const [users, setUsers] = useState([]); // 유저 목록 상태 추가
+    const itemsPerPage = 6;  // 한 페이지에 표시할 카드 수
+    const [currentPage, setCurrentPage] = useState(0);  // 현재 페이지
+    const [currentItems, setCurrentItems] = useState([]);  // 현재 페이지에 표시할 아이템들
+
+    useEffect(() => {
+        // 현재 페이지에 맞는 아이템을 설정
+        const offset = currentPage * itemsPerPage;
+        setCurrentItems(products.slice(offset, offset + itemsPerPage));
+    }, [currentPage, products]);
+
+    const handlePageChange = (selectedPage) => {
+        setCurrentPage(selectedPage.selected);
+    };
+
+
     // 제품 데이터 가져오기
     useEffect(() => {
         const fetchProducts = async () => {
@@ -68,41 +86,59 @@ const AdminPage = () => {
                     <div className="flex justify-center items-center flex-col mr-[1rem]">
                         {/* 제품관리 버튼 클릭 시 */}
                         <button
-                            className="bg-blue-500 text-white px-4 py-2 rounded mb-4"
+                            className="bg-red-400 hover:bg-white hover:border hover:border-red-400 hover:text-red-400 hover:scale-110 cursor-pointer transition-transform ease-in-out duration-500 text-white px-4 py-2 rounded mb-4"
                             onClick={() => setSelectedSection("products")}
                         >
                             제품관리
                         </button>
                         {/* 유저관리 버튼 클릭 시 */}
                         <button
-                            className="bg-blue-500 text-white px-4 py-2 rounded"
+                            className="bg-red-400 hover:bg-white hover:border hover:border-red-400 hover:text-red-400 hover:scale-110 cursor-pointer transition-transform ease-in-out duration-500 text-white px-4 py-2 rounded"
                             onClick={() => setSelectedSection("users")}
                         >
                             유저관리
                         </button>
                     </div>
 
-                    {/* 조건부 렌더링 */}
                     <div>
                         {selectedSection === "products" ? (
-                            <div className="grid grid-cols-3 gap-4"> {/* 3개의 카드가 한 줄에 배치되도록 설정 */}
-                                {loading ? (
-                                    <p>로딩 중...</p>
-                                ) : (
-                                    products.map((product) => (
-                                        <SearchCard
-                                            key={product.prodid}
-                                            id={product.prodid}
-                                            prodtitle={product.prodtitle}
-                                            prodprice={product.prodprice}
-                                            prodaddress={product.prodaddress}
-                                            prodrating={product.prodrating}
-                                            iconpicture={product.iconpicture}
-                                            onClick={() => handleClickprodid(product.prodid)}
-                                            className="flex"
-                                        />
-                                    ))
-                                )}
+                            <div>
+                                {/* 3개의 카드가 한 줄에 배치되도록 설정 */}
+                                <div className="grid grid-cols-3 gap-4">
+                                    {loading ? (
+                                        <p>로딩 중...</p>
+                                    ) : (
+                                        currentItems.map((product) => (
+                                            <SearchCard
+                                                key={product.prodid}
+                                                id={product.prodid}
+                                                prodtitle={product.prodtitle}
+                                                prodprice={product.prodprice}
+                                                prodaddress={product.prodaddress}
+                                                prodrating={product.prodrating}
+                                                iconpicture={product.iconpicture}
+                                                onClick={() => handleClickprodid(product.prodid)}
+                                                className="flex"
+                                            />
+                                        ))
+                                    )}
+                                </div>
+
+                                {/* 페이지네이션 추가 */}
+                                <div className="flex justify-center mt-4">
+                                    <ReactPaginate
+                                        previousLabel={"이전"}
+                                        nextLabel={"다음"}
+                                        pageCount={Math.ceil(products.length / itemsPerPage)}
+                                        onPageChange={handlePageChange}
+                                        containerClassName={"flex space-x-4"}
+                                        pageClassName={"cursor-pointer px-4 py-2 border border-gray-300 rounded-md"}
+                                        activeClassName={"bg-red-400 text-white"}
+                                        disabledClassName={"text-red-400 flex items-center"}
+                                        previousClassName={"flex items-center"} // 이전 버튼 스타일
+                                        nextClassName={"flex items-center"} // 다음 버튼 스타일
+                                    />
+                                </div>
                             </div>
                         ) : (
                             <div className="grid grid-cols-3 gap-4">
