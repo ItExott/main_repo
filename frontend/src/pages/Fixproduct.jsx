@@ -23,13 +23,35 @@ const Fixproduct = () => {
     const [userId, setUserId] = useState(null);
     const [userData, setUserData] = useState(null);
     const [showFullImages, setShowFullImages] = useState(false);
-    const [productData, setProductData] = useState(null);
+    const [productData, setProductData] = useState({
+        div1Bg: "bg-yellow-200", // 초기 배경색
+        div2Bg: "bg-yellow-200", // 초기 배경색
+    });
+    const [isPopupOpen, setIsPopupOpen] = useState(false);
+    const [targetDiv, setTargetDiv] = useState(null); // 클릭한 대상 div를 구분
+
+    const colors = ["bg-yellow-200", "bg-blue-200", "bg-red-200", "bg-green-200", "bg-purple-200"];
+
     const [imageData, setImageData] = useState({
-        prodpicture: '',
-        iconpicture: '',
+        prodpicture: "",
+        iconpicture: "",
         facility_pictures: [],
     });
     const { id } = useParams();
+
+    const handleDivClick = (divKey) => {
+        setTargetDiv(divKey);
+        setIsPopupOpen(true);
+    };
+
+    // 색상 선택
+    const handleColorSelect = (color) => {
+        setProductData((prevData) => ({
+            ...prevData,
+            [targetDiv]: color, // 선택된 div에 색상 반영
+        }));
+        setIsPopupOpen(false); // 팝업 닫기
+    };
 
     // 로그인 정보 불러오는 db문
     useEffect(() => {
@@ -110,10 +132,10 @@ const Fixproduct = () => {
                         ? response.data.url
                         : response.data.url.replace("http://localhost:8080", "");
 
-                    // 기존 데이터 유지 및 업데이트
-                    setImageData(prevState => ({
+                    // 상태 즉시 업데이트
+                    setProductData(prevState => ({
                         ...prevState,
-                        [field]: filePath || prevState[field],
+                        [field]: filePath, // prodpicture 또는 iconpicture 업데이트
                     }));
                 })
                 .catch(error => console.error("Image upload failed:", error));
@@ -154,9 +176,6 @@ const Fixproduct = () => {
             });
         }
     };
-
-
-
 
 
     const handleInputChange = (e, field) => {
@@ -343,24 +362,57 @@ const Fixproduct = () => {
                                 className="flex flex-row text-sm mx-auto mt-[2rem] bg-gray-100 shadow-xl border-[0.1rem] border-gray-600 items-center justify-center rounded-lg w-[50rem] h-[20rem]">
                                 <div
                                     className="flex flex-col rounded-3xl bg-white justify-center items-center h-[18rem] w-[18rem]">
-                                    <a className="flex text-sm text-gray-400 bg-yellow-200 border-[0.2rem] border-yellow-200 items-center justify-center rounded-xl w-[12rem] font-bold mt-[1.2rem]">
+                                    {/* Div 1 */}
+                                    <a
+                                        className={`flex text-sm text-gray-400 ${productData.div1Bg} border-[0.2rem] items-center justify-center rounded-xl w-[12rem] font-bold mt-[1.2rem]`}
+                                        onClick={() => handleDivClick('div1Bg')}
+                                    >
                                         {productData.prodtitle}
                                     </a>
+
+                                    {/* Image and Div 2 */}
                                     <div className="flex items-center justify-center flex-col w-1/2">
                                         <div className="flex w-[8rem] mt-[1rem] h-[8rem]">
                                             <img className="rounded-full opacity-30" src={productData.iconpicture}
                                                  alt="Product Logo"/>
                                         </div>
+
+                                        {/* Div 2 */}
                                         <div
-                                            className="flex flex-col items-center justify-center bg-yellow-200 mt-[1rem] rounded-xl h-[5rem] w-[20rem]">
-                                            <a className="text-xs font-semibold whitespace-nowrap">안녕하세요! Mining 클라이밍짐를
-                                                소개합니다!</a>
-                                            <a className="text-xs whitespace-nowrap">퍼즐처럼 예쁜 벽에서 등반하고 싶다면,</a>
-                                            <a className="text-xs whitespace-nowrap">바로 여기 Mining 클라이밍짐으로 오시면 됩니다!</a>
-                                            <a className="text-xs whitespace-nowrap">Mining 클라이밍 짐에서 새로운 도전을 시작해 보세요!</a>
+                                            className={`flex flex-col items-center justify-center ${productData.div2Bg} mt-[1rem] rounded-xl h-[5rem] w-[20rem]`}
+                                            onClick={() => handleDivClick('div2Bg')}
+                                        >
+                                        <textarea
+                                            className="text-xs whitespace-pre-wrap h-[3rem] w-full font-bold text-center"
+                                            onChange={(e) => handleInputChange(e, 'description')}
+                                            placeholder={productData.description}
+                                                />
                                         </div>
                                     </div>
                                 </div>
+
+                                {isPopupOpen && (
+                                    <div className="fixed top-0 left-0 flex items-center justify-center w-full h-full bg-black bg-opacity-50 z-50">
+                                        <div className="bg-white p-4 rounded-lg shadow-lg">
+                                            <h3 className="text-lg font-bold mb-4">색깔 선택</h3>
+                                            <div className="flex space-x-2">
+                                                {colors.map((color) => (
+                                                    <div
+                                                        key={color}
+                                                        className={`w-10 h-10 rounded-full cursor-pointer ${color}`}
+                                                        onClick={() => handleColorSelect(color)}
+                                                    ></div>
+                                                ))}
+                                            </div>
+                                            <button
+                                                className="mt-4 px-4 py-2 bg-gray-300 rounded-lg"
+                                                onClick={() => setIsPopupOpen(false)}
+                                            >
+                                                Close
+                                            </button>
+                                        </div>
+                                    </div>
+                                )}
 
                                 <div className="border-l border-gray-400 ml-[3.5rem] h-[16rem]"></div>
                                 <div

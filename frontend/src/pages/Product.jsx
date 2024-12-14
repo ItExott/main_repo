@@ -143,6 +143,7 @@ const Product= ({ userProfile }) => {
         prodid: "",
         prodtitle: "",
         prodrating: "",
+        description: "",
         address: "",
         prodpicture: "",
         prodcontent1: "",
@@ -163,6 +164,7 @@ const Product= ({ userProfile }) => {
                     prodid: response.data.prodid,
                     iconpicture: response.data.iconpicture,
                     prodtitle: response.data.prodtitle,
+                    description : response.data.description,
                     prodrating: response.data.prodrating,
                     address: response.data.address,
                     prodpicture: response.data.prodpicture,
@@ -324,12 +326,8 @@ const Product= ({ userProfile }) => {
                                         <img className="rounded-full" src={productData.iconpicture} alt="Product Logo"/>
                                     </div>
                                     <div
-                                        className="flex flex-col items-center justify-center bg-yellow-200 mt-[1rem] rounded-xl h-[5rem] w-[20rem]">
-                                        <a className="text-xs font-semibold whitespace-nowrap">안녕하세요! Mining 클라이밍짐를
-                                            소개합니다!</a>
-                                        <a className="text-xs whitespace-nowrap">퍼즐처럼 예쁜 벽에서 등반하고 싶다면,</a>
-                                        <a className="text-xs whitespace-nowrap">바로 여기 Mining 클라이밍짐으로 오시면 됩니다!</a>
-                                        <a className="text-xs whitespace-nowrap">Mining 클라이밍 짐에서 새로운 도전을 시작해 보세요!</a>
+                                        className="flex flex-col items-center p-2 justify-center bg-yellow-200 mt-[1rem] rounded-xl h-[5rem] w-[20rem]">
+                                        <a className="text-xs font-semibold whitespace-pre-wrap">{productData.description}</a>
                                     </div>
                                 </div>
                             </div>
