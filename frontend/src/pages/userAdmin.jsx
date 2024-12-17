@@ -86,13 +86,13 @@ const UserAdmin = () => {
             <div className="flex justify-between mt-8">
                 <button
                     onClick={() => handleEdit(userData.userid)} // 함수 래핑을 통해 클릭 시에만 실행
-                    className="bg-blue-500 text-white px-6 py-2 rounded-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50"
+                    className="bg-white text-red-400 border border-red-400 px-6 hover:scale-110 transition-transform ease-in-out duration-500 py-2 rounded-md hover:bg-red-400 hover:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50"
                 >
                     유저 정보 수정
                 </button>
                 <button
                     onClick={handleDelete}
-                    className="bg-red-400 text-white px-6 py-2 rounded-md hover:bg-red-500 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-opacity-50"
+                    className="bg-red-400 text-white px-6 py-2 rounded-md hover:bg-white hover:scale-110 transition-transform ease-in-out duration-500 hover:text-red-400 hover:border hover:border-red-400 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-opacity-50"
                 >
                     유저 정보 삭제
                 </button>

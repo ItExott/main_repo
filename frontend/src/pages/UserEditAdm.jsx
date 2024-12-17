@@ -155,14 +155,14 @@ const UserEditAdm = () => {
                     <button
                         type="button"
                         onClick={() => navigate(`/userAdmin/${id}`)}
-                        className="bg-gray-500 text-white px-6 py-2 rounded-md hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-opacity-50"
+                        className="bg-white text-red-400 px-6 py-2 hover:scale-110 transition-transform ease-in-out duration-500 rounded-md hover:bg-red-400 hover:text-white border border-red-400 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-opacity-50"
                     >
                         취소
                     </button>
 
                     <button
                         type="submit"
-                        className="bg-red-400 text-white px-6 py-2 rounded-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50"
+                        className="bg-red-400 text-white px-6 py-2 hover:scale-110 transition-transform ease-in-out duration-500 rounded-md hover:bg-white hover:text-red-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50"
                     >
                         수정 완료
                     </button>

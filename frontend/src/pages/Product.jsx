@@ -34,14 +34,146 @@ const Product= ({ userProfile }) => {
     const [isLoggedIn, setIsLoggedIn] = useState(false);
     const [userId, setUserId] = useState(null);
     const [isinquiryOpen, setIsinquiryOpen] = useState(false);
+    const [isreviewOpen, setIsreviewOpen] = useState(false);
     const [userData, setUserData] = useState(null);
     const { id } = useParams();
     const [category, setCategory] = useState("");
     const [title, setTitle] = useState("");
+    const [rating, setRating] = useState(0);
     const [question, setQuestion] = useState("");
+    const [filePath, setFilePath] = useState('');
+    const [reviews, setReviews] = useState([]);
+    const [isPopupOpen, setIsPopupOpen] = useState(false); // 팝업 열기 상태
+    const [selectedInquiry, setSelectedInquiry] = useState(null); // 선택된 문의
+    const [ansertitle, setAnsertitle] = useState(''); // 답변 제목 상태
+    const [ansercontent, setAnsercontent] = useState(''); // 답변 내용 상태
+
+
+    const handleAnswer = (inquiry) => {
+        setSelectedInquiry(inquiry); // 선택된 문의를 상태로 설정
+        setIsPopupOpen(true); // 팝업 열기
+    };
+
+    const handleClosePopup = () => {
+        setIsPopupOpen(false); // 팝업 닫기
+    };
+
+    const handleSubmitAnswer = async () => {
+        // 문의글 num을 기준으로 답변 제목, 내용, 상태 업데이트
+        const updatedInquiry = {
+            num: selectedInquiry.num, // num 값을 이용해 해당 문의글을 찾습니다
+            ansertitle: ansertitle, // 답변 제목
+            ansercontent: ansercontent, // 답변 내용
+            status: '답변 완료', // 상태를 '답변 완료'로 변경
+        };
+
+        try {
+            // API 호출 (서버로 업데이트 요청)
+            const response = await axios.post('http://localhost:8080/api/answer', updatedInquiry);
+
+            if (response.status === 200) {
+                // 성공적으로 업데이트된 경우, 팝업 닫기 및 상태 업데이트
+                alert("답변이 제출되었습니다.");
+                handleClosePopup(); // 팝업 닫기
+                setAnsertitle(''); // 답변 제목 초기화
+                setAnsercontent(''); // 답변 내용 초기화
+                // 추가적으로 state나 UI 업데이트가 필요할 경우 작성
+                window.location.reload();
+            } else {
+                alert("답변 제출 실패");
+            }
+        } catch (error) {
+            console.error("답변 제출 중 오류가 발생했습니다:", error);
+            alert("서버 오류가 발생했습니다. 다시 시도해 주세요.");
+        }
+    };
 
     const handleinquiryToggle = () => {
         setIsinquiryOpen(!isinquiryOpen);
+    };
+
+    const handlereviewToggle = () => {
+        setIsreviewOpen(!isreviewOpen);
+    };
+
+    useEffect(() => {
+        // API 호출로 리뷰 데이터 가져오기
+        const fetchReviews = async () => {
+            try {
+                const response = await axios.get(`http://localhost:8080/api/review/${id}`);
+                setReviews(response.data);
+            } catch (error) {
+                console.error('Error fetching reviews:', error);
+            }
+        };
+
+        fetchReviews();
+    }, [id]);
+
+
+    const facilityNames = {
+        towel: '수건',
+        shower: '샤워시설',
+        wash: '세족시설',
+        wifi: 'Wi-Fi',
+        parking: '주차',
+        locker: '개인락커'
+    };
+
+    const handleReviewSubmit = async () => {
+
+        const createdate = new Date().toISOString().slice(0, 19).replace("T", " ");
+        // 리뷰 데이터 생성
+        const reviewData = {
+            userId: userId, // 사용자 ID
+            name: userData.name, // 사용자 이름
+            typeofuse: category, // 이용 유형
+            reviewtitle: title, // 문의 제목
+            rating: rating.toString(), // 평점
+            reviewcontent: question, // 문의 내용
+            prodid: id, // 상품 ID
+            imagePath: filePath, // 업로드된 이미지 경로
+            createdate
+        };
+
+        try {
+            const response = await axios.post('http://localhost:8080/reviewsubmit', reviewData);
+            if (response.data.success) {
+                alert('리뷰가 성공적으로 작성되었습니다.');
+                setIsreviewOpen(false); // 폼 닫기
+            } else {
+                alert('리뷰 작성에 실패했습니다.');
+            }
+        } catch (error) {
+            console.error('Error submitting review:', error);
+            alert('리뷰 작성 중 오류가 발생했습니다.');
+        }
+    };
+
+    const handleFileUpload = async (e) => {
+        const selectedFile = e.target.files[0];
+        if (!selectedFile) return;
+
+        // FormData 생성
+        const formData = new FormData();
+        formData.append('file', selectedFile);
+
+        try {
+            // 서버에 이미지 업로드 요청
+            const response = await axios.post('http://localhost:8080/reviewupload', formData, {
+                headers: {
+                    'Content-Type': 'multipart/form-data',
+                },
+            });
+
+            // 업로드 성공 시 데이터 처리
+            console.log('File uploaded:', response.data.filePath);
+            setFilePath(response.data.filePath); // 파일 경로 상태 업데이트
+            alert('사진이 성공적으로 업로드되었습니다!');
+        } catch (error) {
+            console.error('File upload failed:', error);
+            alert('사진 업로드에 실패했습니다.');
+        }
     };
 
     useEffect(() => {
@@ -93,6 +225,7 @@ const Product= ({ userProfile }) => {
             inqcontent: question,
             inqdate,
             id,
+            status: "미답변",
         };
 
         try {
@@ -151,8 +284,12 @@ const Product= ({ userProfile }) => {
         prodcontent3: "",
         prodcontent4: "",
         prodsmtitle: "",
-        facility_pictures: [] // Add a new field for facility pictures
+        facility_pictures: [],
+        selectedFacilities: [],
+        div1Bg: "",
+        userid: "",
     });
+
     useEffect(() => {
         // 데이터 요청
         axios.get(`http://localhost:8080/product/${id}`)
@@ -173,7 +310,10 @@ const Product= ({ userProfile }) => {
                     prodcontent3: response.data.prodcontent3,
                     prodcontent4: response.data.prodcontent4,
                     prodsmtitle: response.data.prodsmtitle,
-                    facility_pictures: response.data.facility_pictures || [] // Set facility_pictures if available
+                    facility_pictures: response.data.facility_pictures || [],
+                    selectedFacilities: response.data.selectedFacilities || [],
+                    div1Bg: response.data.div1Bg || "",
+                    userid: product.userid,
                 });
 
                 if (userProfile && userProfile.userId) {
@@ -318,7 +458,7 @@ const Product= ({ userProfile }) => {
                             {/* 첫 번째 카드 */}
                             <div
                                 className="flex flex-col rounded-3xl bg-white justify-center items-center h-[18rem] w-[18rem]">
-                                <a className="flex text-sm bg-yellow-200 border-[0.2rem] border-yellow-200 items-center justify-center rounded-xl w-[12rem] font-bold mt-[1.2rem]">
+                                <a className={`flex text-sm ${productData.div1Bg} items-center justify-center rounded-xl w-[12rem] font-bold mt-[1.2rem]`}>
                                     {productData.prodtitle}
                                 </a>
                                 <div className="flex items-center justify-center flex-col w-1/2">
@@ -326,7 +466,7 @@ const Product= ({ userProfile }) => {
                                         <img className="rounded-full" src={productData.iconpicture} alt="Product Logo"/>
                                     </div>
                                     <div
-                                        className="flex flex-col items-center p-2 justify-center bg-yellow-200 mt-[1rem] rounded-xl h-[5rem] w-[20rem]">
+                                        className={`flex flex-col items-center p-2 justify-center ${productData.div1Bg} mt-[1rem] rounded-xl h-[5rem] w-[20rem]`}>
                                         <a className="text-xs font-semibold whitespace-pre-wrap">{productData.description}</a>
                                     </div>
                                 </div>
@@ -337,7 +477,7 @@ const Product= ({ userProfile }) => {
                             {/* 두 번째 카드 */}
                             <div
                                 className="flex flex-col ml-[3.5rem] rounded-3xl bg-white items-center w-[18rem] h-[18rem]">
-                                <a className="flex text-sm bg-yellow-200 border-[0.2rem] border-yellow-200 items-center justify-center rounded-xl w-[12rem] font-bold mt-[1.2rem]">
+                                <a className={`flex text-sm ${productData.div1Bg} items-center justify-center rounded-xl w-[12rem] font-bold mt-[1.2rem]`}>
                                     운영 시간 및 이용 안내
                                 </a>
                                 <div className="flex flex-row justify-center mt-[2.8rem] w-[18rem] h-[18rem]">
@@ -363,30 +503,28 @@ const Product= ({ userProfile }) => {
                         className="flex mx-auto flex-col bg-gray-100 shadow-xl border-[0.1rem] border-gray-600 rounded-lg w-[50rem] h-[9rem]">
                         <a className="text-lg font-bold mt-[0.5rem] ml-[1rem]">편의 시설</a>
                         <div className="flex flex-row">
-                            <div className="flex flex-col">
-                                <GiTowel className="mt-[0.5rem] ml-[2.5rem] w-[3rem] h-[3rem]"/>
-                                <a className="font-bold text-sm mt-[0.4rem] ml-[3.1rem]">수건</a>
-                            </div>
-                            <div className="flex flex-col">
-                                <FaShower className="mt-[0.5rem] ml-[2.5rem] w-[3rem] h-[3rem]"/>
-                                <a className="font-bold text-sm mt-[0.4rem] ml-[2.2rem]">샤워시설</a>
-                            </div>
-                            <div className="flex flex-col">
-                                <FaHandsWash className="mt-[0.5rem] ml-[2.5rem] w-[3rem] h-[3rem]"/>
-                                <a className="font-bold text-sm mt-[0.4rem] ml-[2.2rem]">세족시설</a>
-                            </div>
-                            <div className="flex flex-col">
-                                <FaWifi className="mt-[0.5rem] ml-[2.5rem] w-[3rem] h-[3rem]"/>
-                                <a className="font-bold text-sm mt-[0.4rem] ml-[3.1rem]">Wifi</a>
-                            </div>
-                            <div className="flex flex-col">
-                                <FaParking className="mt-[0.5rem] ml-[2.5rem] w-[3rem] h-[3rem]"/>
-                                <a className="font-bold text-sm mt-[0.4rem] ml-[3rem]">주차</a>
-                            </div>
-                            <div ref={PhotoSectionRef} className="flex flex-col">
-                                <PiLockersFill className="mt-[0.5rem] ml-[2.5rem] w-[3rem] h-[3rem]"/>
-                                <a className="font-bold text-sm mt-[0.4rem] ml-[2.2rem]">개인락커</a>
-                            </div>
+                            {/* Map through facilities that exist in selectedFacilities */}
+                            {productData.selectedFacilities && productData.selectedFacilities.map(facility => (
+                                <div className="flex flex-col" key={facility}>
+                                    {/* Facility Icon */}
+                                    {facility === 'towel' &&
+                                        <GiTowel className="mt-[0.5rem] ml-[2.5rem] w-[3rem] h-[3rem]"/>}
+                                    {facility === 'shower' &&
+                                        <FaShower className="mt-[0.5rem] ml-[2.5rem] w-[3rem] h-[3rem]"/>}
+                                    {facility === 'wash' &&
+                                        <FaHandsWash className="mt-[0.5rem] ml-[2.5rem] w-[3rem] h-[3rem]"/>}
+                                    {facility === 'wifi' &&
+                                        <FaWifi className="mt-[0.5rem] ml-[2.5rem] w-[3rem] h-[3rem]"/>}
+                                    {facility === 'parking' &&
+                                        <FaParking className="mt-[0.5rem] ml-[2.5rem] w-[3rem] h-[3rem]"/>}
+                                    {facility === 'locker' &&
+                                        <PiLockersFill className="mt-[0.5rem] ml-[2.5rem] w-[3rem] h-[3rem]"/>}
+
+                                    <a className="font-bold text-sm mt-[0.4rem] ml-[2.2rem]">
+                                        {facilityNames[facility] || facility.charAt(0).toUpperCase() + facility.slice(1)} {/* 한글 변환 */}
+                                    </a>
+                                </div>
+                            ))}
                         </div>
                     </div>
                     <div className="flex divider divide-gray-600 ml-[4rem] w-[60rem]"></div>
@@ -502,101 +640,55 @@ const Product= ({ userProfile }) => {
                     <div className="mt-4 flex ">
                         {activeTab === '전체 리뷰' && (
                             <div>
-                                <div ref={ReviewSectionRef}
-                                     className="flex mx-auto flex-row items-center mt-[1rem] bg-gray-100 shadow-xl border-[0.1rem] border-gray-600 rounded-lg w-[50rem] h-[9rem]">
+                                {reviews.map((review, index) => (
                                     <div
-                                        className="flex flex-col h-[8rem] border-r-[0.1rem] border-gray-400 items-center w-[10rem]">
-                                        <FaCircleUser className="flex mt-[1.4rem] h-[4rem] w-[4rem]"/>
-                                        <a className="flex font-bold mt-[0.5rem] items-center text-xs">난 리치 클라이머</a>
-                                    </div>
-                                    <div className="flex flex-col w-[30rem]">
-                                        <div className="flex flex-row">
-                                            <a className="text-xs text-gray-500 ml-[1.6rem]">rlqo12*** | 2024.11.19</a>
-                                            <div className="flex flex-row cursor-pointer">
-                                                <PiSirenBold className="ml-[0.5rem]"/>
-                                                <a className="text-xs text-gray-500 mb-[0.1rem]">신고</a>
+                                        key={index}
+                                        ref={ReviewSectionRef}
+                                        className="flex mx-auto flex-row items-center mt-[1rem] bg-gray-100 shadow-xl border-[0.1rem] border-gray-600 rounded-lg w-[50rem] min-h-[9rem]"
+                                    >
+                                        <div className="flex flex-col h-[8rem] border-r-[0.1rem] border-gray-400 items-center w-[10rem]">
+                                            <FaCircleUser className="flex mt-[1.4rem] h-[4rem] w-[4rem]" />
+                                            <a className="flex font-bold mt-[0.5rem] items-center text-xs">{review.name}</a>
+                                        </div>
+                                        <div className="flex flex-col w-[30rem]">
+                                            <div className="flex flex-row">
+                                                <a className="text-xs text-gray-500 ml-[1.6rem]">
+                                                    {review.userid} |&nbsp;
+                                                    {new Date(review.createdate).toLocaleString('ko-KR', {
+                                                        year: 'numeric',
+                                                        month: '2-digit',
+                                                        day: '2-digit',
+                                                    })}
+                                                </a>
+                                                <div className="flex flex-row cursor-pointer">
+                                                    <PiSirenBold className="ml-[0.5rem]"/>
+                                                    <a className="text-xs text-gray-500 mb-[0.1rem]">신고</a>
+                                                </div>
                                             </div>
-                                        </div>
-                                        <div className="flex flex-row ml-[1.4rem]">
-                                            <LiaDumbbellSolid className="w-[1.5rem] h-[1.5rem] mt-[0.4rem] fill-black"/>
-                                            <LiaDumbbellSolid className="w-[1.5rem] h-[1.5rem] mt-[0.4rem] fill-black"/>
-                                            <LiaDumbbellSolid className="w-[1.5rem] h-[1.5rem] mt-[0.4rem] fill-black"/>
-                                            <LiaDumbbellSolid
-                                                className="w-[1.5rem] h-[1.5rem] mt-[0.4rem] fill-gray-300"/>
-                                        </div>
-                                        <a className="text-xs ml-[1.2rem] w-[4rem] text-center rounded-xl border-[0.1rem] border-gray-400 mt-[0.3rem] font-bold text-gray-700">일일이용</a>
-                                        <a className="text-xs ml-[1.4rem] mt-[0.5rem]">직원분들도 엄청 친절하고 시설이 깔끔하고 아주
-                                            좋았어요!</a>
-                                    </div>
-                                    <div className="flex w-[10rem] items-center justify-center h-[9rem]">
-                                        <img className="w-[7rem] h-[7rem] rounded-xl"
-                                             src="https://ifh.cc/g/yfCrXk.png"/>
-                                    </div>
-                                </div>
-                                <div
-                                    className="flex mx-auto flex-row items-center mt-[1rem] bg-gray-100 shadow-xl border-[0.1rem] border-gray-600 rounded-lg w-[50rem] h-[9rem]">
-                                    <div
-                                        className="flex flex-col h-[8rem] border-r-[0.1rem] border-gray-400 items-center w-[10rem]">
-                                        <FaCircleUser className="flex mt-[1.4rem] h-[4rem] w-[4rem]"/>
-                                        <a className="flex font-bold mt-[0.5rem] items-center text-xs">클라이밍 맨</a>
-                                    </div>
-                                    <div className="flex flex-col w-[30rem]">
-                                        <div className="flex flex-row">
-                                            <a className="text-xs text-gray-500 ml-[1.6rem]">world2** | 2024.10.08</a>
-                                            <div className="flex flex-row cursor-pointer">
-                                                <PiSirenBold className="ml-[0.5rem]"/>
-                                                <a className="text-xs text-gray-500 mb-[0.1rem]">신고</a>
+                                            <div className="flex flex-row ml-[1.4rem]">
+                                                {Array.from({length: 4}).map((_, idx) => (
+                                                    <LiaDumbbellSolid
+                                                        key={idx}
+                                                        className={`w-[1.5rem] h-[1.5rem] mt-[0.05rem] ${idx < review.rating ? 'fill-black' : 'fill-gray-300'}`}
+                                                    />
+                                                ))}
                                             </div>
+                                            <a className="text-xs ml-[1.2rem] w-[4rem] text-center rounded-xl border-[0.1rem] border-gray-400 mt-[0.3rem] font-bold text-gray-700">
+                                                {review.typeofuse}
+                                            </a>
+                                            <a className="text-sm ml-[1.4rem] mt-[0.3rem] text-start"><a className="text-red-400">제목 : </a>{review.reviewtitle}</a>
+                                            <a className="text-xs ml-[1.4rem] mt-[0.5rem] whitespace-pre-line break-words">{review.reviewcontent}</a>
                                         </div>
-                                        <div className="flex flex-row ml-[1.4rem]">
-                                            <LiaDumbbellSolid className="w-[1.5rem] h-[1.5rem] mt-[0.4rem] fill-black"/>
-                                            <LiaDumbbellSolid className="w-[1.5rem] h-[1.5rem] mt-[0.4rem] fill-black"/>
-                                            <LiaDumbbellSolid className="w-[1.5rem] h-[1.5rem] mt-[0.4rem] fill-black"/>
-                                            <LiaDumbbellSolid className="w-[1.5rem] h-[1.5rem] mt-[0.4rem] fill-black"/>
+                                        <div className="flex w-[10rem] items-center justify-center h-[9rem]">
+                                            <img className="w-[7rem] h-[7rem] rounded-xl" src={review.reviewpicture} />
                                         </div>
-                                        <a className="text-xs ml-[1.2rem] w-[4rem] text-center rounded-xl border-[0.1rem] border-gray-400 mt-[0.3rem] font-bold text-gray-700">일일이용</a>
-                                        <a className="text-xs ml-[1.4rem] mt-[0.5rem]">클라이밍 너무 좋아하는데 자주 올게요 ~</a>
                                     </div>
-                                    <div className="flex w-[10rem] items-center justify-center h-[9rem]">
-                                        <img className="w-[7rem] h-[7rem] rounded-xl"
-                                             src="https://ifh.cc/g/CoJTAC.png"/>
-                                    </div>
-                                </div>
-                                <div
-                                    className="flex mx-auto flex-row items-center mt-[1rem] bg-gray-100 shadow-xl border-[0.1rem] border-gray-600 rounded-lg w-[50rem] h-[9rem]">
-                                    <div
-                                        className="flex flex-col h-[8rem] border-r-[0.1rem] border-gray-400 items-center w-[10rem]">
-                                        <FaCircleUser className="flex mt-[1.4rem] h-[4rem] w-[4rem]"/>
-                                        <a className="flex font-bold mt-[0.5rem] items-center text-xs">지나가던 행인</a>
-                                    </div>
-                                    <div className="flex flex-col w-[30rem]">
-                                        <div className="flex flex-row">
-                                            <a className="text-xs text-gray-500 ml-[1.6rem]">want2*** | 2024.09.16</a>
-                                            <div className="flex flex-row cursor-pointer">
-                                                <PiSirenBold className="ml-[0.5rem]"/>
-                                                <a className="text-xs text-gray-500 mb-[0.1rem]">신고</a>
-                                            </div>
-                                        </div>
-                                        <div className="flex flex-row ml-[1.4rem]">
-                                            <LiaDumbbellSolid className="w-[1.5rem] h-[1.5rem] mt-[0.4rem] fill-black"/>
-                                            <LiaDumbbellSolid
-                                                className="w-[1.5rem] h-[1.5rem] mt-[0.4rem] fill-gray-300"/>
-                                            <LiaDumbbellSolid
-                                                className="w-[1.5rem] h-[1.5rem] mt-[0.4rem] fill-gray-300"/>
-                                            <LiaDumbbellSolid
-                                                className="w-[1.5rem] h-[1.5rem] mt-[0.4rem] fill-gray-300"/>
-                                        </div>
-                                        <a className="text-xs ml-[1.2rem] w-[4rem] text-center rounded-xl border-[0.1rem] border-gray-400 mt-[0.3rem] font-bold text-gray-700">일일이용</a>
-                                        <a className="text-xs ml-[1.4rem] mt-[0.5rem]">저랑은 안맞는 클라이밍 장 같네요</a>
-                                    </div>
-                                    <div className="flex w-[10rem] items-center justify-center h-[9rem]">
-                                        <img className="w-[7rem] h-[7rem] rounded-xl"
-                                             src="https://ifh.cc/g/yfCrXk.png"/>
-                                    </div>
-                                </div>
+                                ))}
                                 <div className="flex justify-end items-center mt-4 w-full h-[3rem]">
                                     <div
-                                        className="flex h-[3rem] w-[6rem] items-center justify-center rounded-xl border border-red-400 text-red-400 hover:bg-red-400 hover:text-white cursor-pointer hover:scale-110 transition-transform ease-in-out duration-500">
+                                        onClick={handlereviewToggle}
+                                        className="flex h-[3rem] w-[6rem] items-center justify-center rounded-xl border border-red-400 text-red-400 hover:bg-red-400 hover:text-white cursor-pointer hover:scale-110 transition-transform ease-in-out duration-500"
+                                    >
                                         <a className="flex">리뷰 작성하기</a>
                                     </div>
                                 </div>
@@ -620,8 +712,18 @@ const Product= ({ userProfile }) => {
                                                     <a className="flex text-xs font-semibold text-red-400 ml-[1.3rem]">{inquiry.category} •</a>
                                                     <a className="flex text-xs font-semibold text-red-400 mb-[0.2rem] ml-[0.2rem]">{inquiry.userid}</a>
                                                     <a className="flex text-xs font-bold text-red-400 ml-[0.2rem]">
-                                                        • {inquiry.status || '답변 대기 중'}
+                                                        • {inquiry.status}
                                                     </a>
+                                                    {inquiry.status === '미답변' && productData.prodid === inquiry.prodid && productData.userid === userId && (
+                                                        <div className="flex ml-[0.5rem] mb-[0.1rem]">
+                                                            <button
+                                                                onClick={() => handleAnswer(inquiry)} // 답변 버튼 클릭 시 팝업 열기
+                                                                className="flex h-[1rem] text-xs items-center justify-center bg-red-400 hover:scale-110 transition-transform ease-in-out duration-500 text-white hover:bg-white hover:text-red-400 cursor-pointer"
+                                                            >
+                                                                답변하기
+                                                            </button>
+                                                        </div>
+                                                    )}
                                                 </div>
                                                 <a className="flex text-sm font-bold ml-[1.3rem]">{inquiry.inqtitle}</a>
                                                 <a className="flex text-xs font-bold ml-[1.3rem] mt-[0.3rem]">{inquiry.inqcontent}</a>
@@ -646,7 +748,7 @@ const Product= ({ userProfile }) => {
                                                 )}
                                             </div>
                                         </div>
-                                        {expandedIndex === index && inquiry.ansertitle && inquiry.ansercontent && (
+                                        {expandedIndex === index && inquiry.status === '답변' && (
                                             <div
                                                 className="mt-[1rem] flex flex-col bg-gray-50 border-[0.1rem] border-gray-300 rounded-lg p-4 w-[48rem] mx-auto shadow-md">
                                                 <div className="flex items-center flex-row">
@@ -673,7 +775,6 @@ const Product= ({ userProfile }) => {
                                 </div>
                             </div>
                         )}
-
                     </div>
                 </div>
             </div>
@@ -690,14 +791,14 @@ const Product= ({ userProfile }) => {
                                 className="flex flex-row w-[15rem] h-full border border-red-400 rounded-xl items-center">
                                 <a className="text-red-400 items-start w-[6rem] ml-[1rem] flex">아이디</a>
                                 <div className="w-[10rem] flex items-center justify-center h-[2.5rem] rounded-lg">
-                                    <a className="flex w-full mb-[0.2rem]">{userId}</a>
+                                    <a className="flex w-full">{userId}</a>
                                 </div>
                             </div>
                             <div
                                 className="flex flex-row w-[20rem] h-full border border-red-400 rounded-xl items-center">
                                 <a className="text-red-400 items-start w-[5rem] ml-[1rem] flex">전화번호</a>
                                 <div className="w-[10rem] flex items-center justify-center h-[2.5rem] rounded-lg">
-                                    <a className="flex w-full mb-[0.2rem]">{userData.phonenumber}</a>
+                                    <a className="flex w-full">{userData.phonenumber}</a>
                                 </div>
                             </div>
                             <div
@@ -769,6 +870,195 @@ const Product= ({ userProfile }) => {
                     </div>
                 </div>
             )}
+            {isreviewOpen && (
+                <div
+                    className="fixed top-0 left-0 w-full h-full bg-black bg-opacity-50 flex items-center justify-center z-50">
+                    <div className="bg-white w-[50rem] p-6 rounded-lg shadow-lg">
+                        {/* Title */}
+                        <h2 className="text-2xl font-bold text-red-400">상품 문의</h2>
+                        <div className="w-full border-b-2 border-red-400 mt-4"></div>
+                        {/* Form */}
+                        <div className="space-y-4 p-6">
+                            <div className="flex flex-row">
+                                <div className="flex flex-col space-y-4">
+                                    <div
+                                        className="flex flex-row w-[14.2rem] h-full border border-red-400 rounded-xl items-center">
+                                        <a className="text-red-400 items-start w-[6rem] ml-[1rem] flex">아이디</a>
+                                        <div
+                                            className="w-[10rem] flex items-center justify-center h-[2.5rem] rounded-lg">
+                                            <a className="flex w-full">{userId}</a>
+                                        </div>
+                                    </div>
+                                    <div
+                                        className="flex flex-row w-[14.2rem] h-full border border-red-400 rounded-xl items-center">
+                                        <a className="text-red-400 items-start w-[5rem] ml-[1rem] flex">이름</a>
+                                        <div
+                                            className="w-[10rem] flex items-center justify-center h-[2.5rem] rounded-lg">
+                                            <a className="flex w-full">{userData.name}</a>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div
+                                    className="flex items-center justify-center ml-[0.5rem] w-full h-[6.5rem] border border-dashed border-red-400 rounded-xl">
+                                    <button
+                                        onClick={() => document.getElementById('fileInput').click()}
+                                        className="text-red-400 bg-white hover:text-red-700 transition-colors duration-300 px-2 py-1 rounded-lg"
+                                    >
+                                        사진 업로드
+                                    </button>
+                                    <input
+                                        id="fileInput"
+                                        type="file"
+                                        className="hidden"
+                                        onChange={handleFileUpload}
+                                        accept="image/*"
+                                    />
+                                </div>
+                            </div>
+                            <div className="flex flex-row space-x-2">
+                                <div
+                                    className="flex flex-row w-[15rem] h-full border border-red-400 rounded-xl items-center">
+                                    <a className="text-red-400 items-center w-[4rem] ml-[1rem] flex">이용 유형</a>
+                                    <select
+                                        id="category"
+                                        value={category} // 상태 바인딩
+                                        onChange={(e) => setCategory(e.target.value)}
+                                        className="w-[9rem] flex items-center border-none justify-center h-[2.5rem] rounded-xl">
+                                        <option value="" disabled selected>
+                                            이용유형 선택
+                                        </option>
+                                        <option value="일일 이용">일일 이용</option>
+                                        <option value="월간 이용">월간 이용</option>
+                                        <option value="연도 이용">연도 이용</option>
+                                    </select>
+                                </div>
+                                <div
+                                    className="flex flex-row w-full h-full border border-red-400 rounded-xl items-center">
+                                    <a className="text-red-400 items-start w-[5rem] ml-[1rem] flex">문의 제목</a>
+                                    <input
+                                        id="title"
+                                        type="text"
+                                        value={title} // 상태 바인딩
+                                        onChange={(e) => setTitle(e.target.value)}
+                                        className="w-full flex items-start border-none justify-center h-[2.5rem] rounded-xl"
+                                        placeholder="제목을 입력하세요"
+                                        required
+                                    />
+                                </div>
+                            </div>
+                            <div className="flex flex-row w-[20rem] h-full border border-red-400 p-2 rounded-xl">
+                                <a className="flex text-red-400 ml-[0.5rem]">평점 작성</a>
+                                <div className="flex flex-row ml-[1.4rem]">
+                                    {[1, 2, 3, 4, 5].map((value) => (
+                                        <LiaDumbbellSolid
+                                            key={value}
+                                            onClick={() => setRating(value)} // 클릭 시 평점 업데이트
+                                            className={`w-[1.5rem] h-[1.5rem] cursor-pointer ${
+                                                value <= rating ? 'fill-black' : 'fill-gray-300'
+                                            }`}
+                                        />
+                                    ))}
+                                </div>
+                                <div className="flex text-red-400 ml-[1rem] mt-[0.1rem]">
+                                    {rating === 1 && <p>매우 나쁨</p>}
+                                    {rating === 2 && <p>나쁨</p>}
+                                    {rating === 3 && <p>보통</p>}
+                                    {rating === 4 && <p>좋음</p>}
+                                    {rating === 5 && <p>매우 좋음</p>}
+                                </div>
+                            </div>
+                            {/* Question */}
+                            <div className="flex flex-col w-full h-full border border-red-400 rounded-xl items-center">
+                                <div className="flex flex-row w-full h-full">
+                                    <a className="text-red-400 w-[5rem] ml-[1rem] items-center flex">문의 내용</a>
+                                    <textarea
+                                        id="question"
+                                        rows="5"
+                                        value={question} // 상태 바인딩
+                                        onChange={(e) => setQuestion(e.target.value)}
+                                        className="w-full h-[13rem] flex border-none justify-center rounded-xl"
+                                        placeholder="문의 내용을 입력하세요"
+                                        required
+                                    ></textarea>
+                                </div>
+                            </div>
+                            <p className="text-xs text-gray-500">
+                                아래 영역을 드래그하여 입력창 크기를 조절할 수 있습니다.
+                            </p>
+
+                            {/* Buttons */}
+                            <div className="flex justify-end space-x-3">
+                                <button
+                                    className="px-4 py-2 border border-red-400 hover:scale-110 transition-transform ease-in-out duration-500 text-red-400 rounded-lg hover:bg-red-400 hover:text-white"
+                                    onClick={() => setIsreviewOpen(false)}
+                                >
+                                    닫기
+                                </button>
+                                <button
+                                    onClick={handleReviewSubmit}
+                                    className="px-4 py-2 bg-red-400 hover:scale-110 hover:text-red-400 hover:bg-white hover:border-red-400 hover:border transition-transform ease-in-out duration-500 text-white rounded-lg"
+                                >
+                                    작성완료
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
+            {isPopupOpen && selectedInquiry && (
+                <div className="fixed top-0 left-0 w-full h-full bg-black bg-opacity-50 flex items-center justify-center z-50">
+                    <div className="bg-white w-[50rem] p-6 rounded-lg shadow-lg">
+                        {/* Title */}
+                        <h2 className="text-2xl font-bold text-red-400">답변 작성</h2>
+                        <div className="w-full border-b-2 border-red-400 mt-4"></div>
+
+                        {/* Form */}
+                        <div className="space-y-4 p-6">
+                            {/* 답변 제목 */}
+                            <div className="flex flex-row w-full h-full border border-red-400 rounded-xl items-center">
+                                <a className="text-red-400 items-start w-[6rem] ml-[1rem] flex">답변 제목</a>
+                                <input
+                                    type="text"
+                                    value={ansertitle}
+                                    onChange={(e) => setAnsertitle(e.target.value)}
+                                    className="w-full p-2 border-none justify-center h-[2.5rem] rounded-xl"
+                                    placeholder="답변 제목을 입력하세요"
+                                    required
+                                />
+                            </div>
+
+                            {/* 답변 내용 */}
+                            <div className="flex flex-row w-full h-full border border-red-400 rounded-xl items-center">
+                                <a className="text-red-400 items-start w-[6rem] ml-[1rem] flex">답변 내용</a>
+                                <textarea
+                                    value={ansercontent}
+                                    onChange={(e) => setAnsercontent(e.target.value)}
+                                    className="w-full p-2 border-none h-[10rem] rounded-xl"
+                                    placeholder="답변 내용을 입력하세요"
+                                    required
+                                />
+                            </div>
+
+                            {/* 버튼들 */}
+                            <div className="flex justify-end space-x-3 mt-4">
+                                <button
+                                    onClick={handleClosePopup}
+                                    className="px-4 py-2 border border-red-400 text-red-400 hover:bg-red-400 hover:text-white transition-transform ease-in-out duration-500 rounded-lg"
+                                >
+                                    닫기
+                                </button>
+                                <button
+                                    onClick={handleSubmitAnswer}
+                                    className="px-4 py-2 bg-red-400 text-white hover:bg-white hover:text-red-400 hover:border-red-400 hover:border transition-transform ease-in-out duration-500 rounded-lg"
+                                >
+                                    제출
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
+
 
         </div>
 

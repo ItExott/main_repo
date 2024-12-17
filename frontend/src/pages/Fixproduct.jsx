@@ -1,5 +1,5 @@
 import React, {useState, useEffect, useRef} from "react";
-import {Link, useParams} from "react-router-dom";
+import {Link, useParams, useNavigate} from "react-router-dom";
 import {useRecoilValue} from "recoil";
 import axios from "axios";
 {/*아이콘 import문*/}
@@ -24,6 +24,7 @@ const Fixproduct = () => {
     const [userData, setUserData] = useState(null);
     const [showFullImages, setShowFullImages] = useState(false);
     const [isModalOpen, setIsModalOpen] = useState(false);
+    const navigate = useNavigate();
     const [selectedFacilities, setSelectedFacilities] = useState([]);
     const [currentFacility, setCurrentFacility] = useState('');
     const [facilityList, setFacilityList] = useState([]);
@@ -46,32 +47,6 @@ const Fixproduct = () => {
         const fetchedFacilities = ['towel', 'shower', 'wifi', 'parking', 'locker', 'wash']; // DB에서 가져온 데이터
         setFacilityList(fetchedFacilities);
     }, []);
-
-    const handleSaveFacilities = async () => {
-        try {
-            const updatedProductData = {
-                ...productData,
-                selectedFacilities: selectedFacilities // 선택된 편의시설만 저장
-            };
-
-            console.log("Updated Product Data:", updatedProductData); // 전송되는 데이터 확인
-
-            const response = await axios.put(`http://localhost:8080/api/product/update/${id}`, updatedProductData, {
-                withCredentials: true,
-            });
-
-            if (response.data.success) {
-                alert('편의시설 정보가 성공적으로 업데이트되었습니다.');
-            } else {
-                alert('편의시설 업데이트에 실패했습니다.');
-            }
-
-            setIsModalOpen(false);
-        } catch (error) {
-            console.error('Error saving facilities:', error);
-            alert('편의시설 저장 중 오류가 발생했습니다.');
-        }
-    };
 
     const handleOpenModal = (facility) => {
         setCurrentFacility(facility);
@@ -129,11 +104,17 @@ const Fixproduct = () => {
             try {
                 const response = await axios.get(`http://localhost:8080/product/${id}`);
                 setProductData(response.data);
-                const fetchedFacilities = JSON.parse(response.data.selectedFacilities);
+                let fetchedFacilities = response.data.selectedFacilities;
 
-                // 만약 parsedFacilities가 배열이라면, 상태에 설정
+                // selectedFacilities가 쉼표로 구분된 문자열이라면 이를 배열로 변환
+                if (typeof fetchedFacilities === 'string') {
+                    fetchedFacilities = fetchedFacilities.split(','); // 쉼표를 기준으로 배열로 변환
+                }
+
+                // 만약 fetchedFacilities가 배열이라면 상태에 설정
                 if (Array.isArray(fetchedFacilities)) {
                     setFacilityList(fetchedFacilities); // 편의시설 목록을 배열로 저장
+                    setSelectedFacilities(fetchedFacilities);
                 } else {
                     setFacilityList([]); // 만약 배열이 아니면 빈 배열로 초기화
                 }
@@ -288,6 +269,7 @@ const Fixproduct = () => {
 
             if (response.data.success) {
                 alert('상품 정보가 성공적으로 업데이트되었습니다.');
+                navigate("/");
             } else {
                 alert('상품 업데이트에 실패했습니다.');
             }
@@ -679,12 +661,6 @@ const Fixproduct = () => {
                                 onClick={() => setIsModalOpen(false)} // 취소 버튼 클릭 시 모달 닫기
                             >
                                 저장
-                            </button>
-                            <button
-                                className="mt-2 ml-4 bg-white border border-red-400 text-red-400 hover:scale-110 cursor-pointer transition-transform ease-in-out duration-500 hover:bg-red-400 hover:text-white rounded-lg"
-                                onClick={() => setIsModalOpen(false)} // 취소 버튼 클릭 시 모달 닫기
-                            >
-                                취소
                             </button>
                         </div>
                     </div>

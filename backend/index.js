@@ -109,6 +109,15 @@ app.get('/product/:id', (req, res) => {
             }
         }
 
+        if (product.selectedFacilities) {
+            try {
+                product.selectedFacilities = JSON.parse(product.selectedFacilities); // selectedFacilities JSON 파싱
+            } catch (e) {
+                console.error("Error parsing selectedFacilities:", e);
+                product.selectedFacilities = []; // 오류 시 빈 배열로 처리
+            }
+        }
+
         // 최근 본 제품에 추가
         if (userId) {
             const addRecentViewedQuery = `INSERT INTO recent_viewed_products (userId, prodid) VALUES (?, ?)`;
@@ -253,10 +262,10 @@ app.post('/api/check-userId', async (req, res) => {
 
 // 회원가입 API
 app.post('/api/signup', (req, res) => {
-    const { userId, userpw, name, email, phoneNumber, address, userType } = req.body;
+    const { userId, userpw, name, email, phoneNumber, address, userType, profileimg } = req.body;
 
-    const query = 'INSERT INTO users (userId, userpw, name, email, phoneNumber, address, userType, money) VALUES (?, ?, ?, ?, ?, ?, ?,0)';
-    db.query(query, [userId, userpw, name, email, phoneNumber, address, userType], (err) => {
+    const query = 'INSERT INTO users (userId, userpw, name, email, phoneNumber, address, userType, money, profileimg) VALUES (?, ?, ?, ?, ?, ?, ?,0, ?)';
+    db.query(query, [userId, userpw, name, email, phoneNumber, address, userType, profileimg], (err) => {
         if (err) {
             console.error("Error inserting user:", err);
             return res.json({ success: false, message: '회원가입 실패' });
@@ -1333,7 +1342,7 @@ app.delete("/api/users", (req, res) => {
 });
 
 app.post('/api/inquiry', (req, res) => {
-    const { userId, phone, category, inqtitle, inqcontent, inqdate, id } = req.body;
+    const { userId, phone, category, inqtitle, inqcontent, inqdate, id, status } = req.body;
     const name = req.session.name;
 
     // 모든 필드가 채워졌는지 확인
@@ -1343,11 +1352,11 @@ app.post('/api/inquiry', (req, res) => {
 
     // MySQL INSERT 쿼리 (product_inquiry에 데이터 추가)
     const sql = `
-        INSERT INTO product_inquiry (userid, phone, category, inqtitle, inqcontent, inqdate, prodid, name)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+        INSERT INTO product_inquiry (userid, phone, category, inqtitle, inqcontent, inqdate, prodid, name, status)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
     `;
 
-    db.query(sql, [userId, phone, category, inqtitle, inqcontent, inqdate, id, name], (err, results) => {
+    db.query(sql, [userId, phone, category, inqtitle, inqcontent, inqdate, id, name, status], (err, results) => {
         if (err) {
             console.error('문의 저장 중 오류 발생:', err);
             return res.status(500).json({ success: false, message: '서버 오류가 발생했습니다.' });
@@ -1418,10 +1427,8 @@ app.get('/api/product_inquiry/:id', (req, res) => {
             name, 
             ansertitle, 
             ansercontent,
-            CASE 
-                WHEN ansertitle IS NOT NULL AND ansercontent IS NOT NULL THEN '답변 완료'
-                ELSE '답변 대기 중'
-            END AS status
+            status,
+            num
         FROM product_inquiry
         WHERE prodid = ?
         ORDER BY inqdate DESC
@@ -1883,6 +1890,129 @@ app.post('/upload', upload.single('file'), (req, res) => {
         res.status(400).send('No file uploaded');
     }
 });
+
+app.delete('/product/admindelete', (req, res) => {
+    const { prodid } = req.query; // 쿼리에서 prodid를 가져옴
+
+    if (!prodid) {
+        return res.status(400).json({ error: 'Product ID is required' });
+    }
+
+    // product 테이블에서 prodid와 일치하는 열 삭제
+    const deleteProductQuery = 'DELETE FROM product WHERE prodid = ?';
+    db.query(deleteProductQuery, [prodid], (err, results) => {
+        if (err) {
+            console.error('Database query failed:', err);
+            return res.status(500).json({ error: 'Database query failed' });
+        }
+
+        if (results.affectedRows === 0) {
+            // prodid와 일치하는 열이 없을 경우
+            return res.status(404).json({ error: 'Product not found' });
+        }
+
+        // 성공적으로 삭제
+        res.status(200).json({ message: 'Product deleted successfully' });
+    });
+});
+
+app.post('/reviewupload', upload.single('file'), (req, res) => {
+    if (!req.file) {
+        return res.status(400).json({ success: false, message: 'No file uploaded' });
+    }
+
+    const filePath = `/uploads/${req.file.filename}`; // 경로 설정
+
+    // 파일 경로 반환
+    res.json({ success: true, filePath });
+});
+
+app.post('/reviewsubmit', (req, res) => {
+    const { userId, name, typeofuse, reviewtitle, rating, reviewcontent, prodid, imagePath, createdate } = req.body;
+
+    // MySQL 쿼리 작성
+    const query = `
+        INSERT INTO review (userid, name, typeofuse, reviewtitle, rating, reviewcontent, prodid, reviewpicture, createdate)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+    `;
+    const values = [userId, name, typeofuse, reviewtitle, rating, reviewcontent, prodid, imagePath, createdate];
+
+    // 쿼리 실행
+    db.query(query, values, (err, result) => {
+        if (err) {
+            console.error(err);
+            return res.status(500).json({ success: false, message: 'Failed to save review' });
+        }
+
+        return res.json({ success: true, message: 'Review saved successfully' });
+    });
+});
+
+app.get('/api/review/:id', (req, res) => {
+    const { id } = req.params;
+    const baseUrl = "http://localhost:8080"; // Base URL for image paths
+
+    const query = `
+        SELECT
+            userid, 
+            typeofuse, 
+            reviewtitle, 
+            reviewcontent, 
+            createdate, 
+            name,  
+            rating, 
+            reviewpicture
+        FROM review
+        WHERE prodid = ?
+        ORDER BY createdate DESC
+        LIMIT 3;
+    `;
+
+    db.query(query, [id], (err, results) => {
+        if (err) {
+            console.error('쿼리 실행 오류:', err);
+            res.status(500).json({ error: '데이터베이스 오류' });
+            return;
+        }
+
+        // Function to add the base URL to image paths if needed
+        const addBaseUrlIfNeeded = (url) => {
+            if (url && !url.startsWith("http://") && !url.startsWith("https://")) {
+                return `${baseUrl}${url}`;
+            }
+            return url;
+        };
+
+        // Add base URL to the reviewpicture field
+        const resultsWithImagePaths = results.map(review => ({
+            ...review,
+            reviewpicture: addBaseUrlIfNeeded(review.reviewpicture),
+        }));
+
+        res.json(resultsWithImagePaths); // Send the results with image URLs
+    });
+});
+
+app.post('/api/answer', (req, res) => {
+    const { num, ansertitle, ansercontent, status } = req.body;
+
+    // SQL 쿼리 작성 (num 값으로 해당 레코드 업데이트)
+    const query = `
+        UPDATE product_inquiry
+        SET ansertitle = ?, ansercontent = ?, status = ?
+        WHERE num = ?
+    `;
+
+    db.query(query, [ansertitle, ansercontent, status, num], (err, result) => {
+        if (err) {
+            console.error('DB 업데이트 오류:', err);
+            return res.status(500).send('서버 오류');
+        }
+        res.status(200).send('답변이 제출되었습니다.');
+    });
+});
+
+
 
 
 

@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
-import SearchCard from "../components/SearchCard.jsx";
 import userCard from "../components/userCard.jsx";
 import {useNavigate} from "react-router-dom";
 import {useRecoilSnapshot} from "recoil";
 import UserCard from "../components/userCard.jsx";
 import ReactPaginate from "react-paginate";
+import AdminCard from "../components/AdminCard.jsx";
 
 
 const AdminPage = () => {
@@ -28,6 +28,25 @@ const AdminPage = () => {
         setCurrentPage(selectedPage.selected);
     };
 
+    const handleDeleteProduct = async (prodid) => {
+        try {
+            const response = await axios.delete('http://localhost:8080/product/admindelete', {
+                params: { prodid },
+                withCredentials: true,
+            });
+
+            if (response.status === 200) {
+                alert('상품이 삭제되었습니다.');
+                // 삭제 후 상품 목록 업데이트
+                setProducts(prevProducts => prevProducts.filter(product => product.prodid !== prodid));
+            } else {
+                alert('상품 삭제 실패');
+            }
+        } catch (error) {
+            console.error('상품 삭제 실패:', error.response || error);
+            alert('상품 삭제에 실패했습니다.');
+        }
+    };
 
     // 제품 데이터 가져오기
     useEffect(() => {
@@ -83,7 +102,7 @@ const AdminPage = () => {
             <a className="flex items-center mt-[1rem] text-red-400 w-[62rem] font-bold text-xl justify-center">
                 관리자 페이지
             </a>
-            <div className="w-[56rem] border-b-2 border-red-400 mt-4"></div>
+            <div className="w-[56cd     rem] border-b-2 border-red-400 mt-4"></div>
             <div className="flex justify-start w-[54rem] mt-10">
                 <div className="flex flex-row justify-start items-start">
                     <div className="flex justify-center items-center flex-col mr-[1rem]">
@@ -112,7 +131,7 @@ const AdminPage = () => {
                                         <p>로딩 중...</p>
                                     ) : (
                                         currentItems.map((product) => (
-                                            <SearchCard
+                                            <AdminCard
                                                 key={product.prodid}
                                                 id={product.prodid}
                                                 prodtitle={product.prodtitle}
@@ -122,6 +141,7 @@ const AdminPage = () => {
                                                 iconpicture={product.iconpicture}
                                                 onClick={() => handleClickprodid(product.prodid)}
                                                 className="flex"
+                                                onDelete={handleDeleteProduct}
                                             />
                                         ))
                                     )}
