@@ -11,6 +11,7 @@ const AddProduct = ({userProfile}) => {
     const [icon, setIcon] = useState(null);
     const [logo, setLogo] = useState(null);
     const [category, setCategory] = useState("");
+    const [prodsmtitle, setprodsmtitle] = useState("");
     const [description, setDescription] = useState("");
     const [address, setAddress] = useState("");
     const [detailedAddress, setDetailedAddress] = useState("");
@@ -57,9 +58,10 @@ const AddProduct = ({userProfile}) => {
 
         formData.append("prodtitle", productName);
         formData.append("category", category);
-        formData.append("prodsmtitle", description);
+        formData.append("prodsmtitle", prodsmtitle);
         formData.append("prodaddress", address);
-        formData.append("address", detailedAddress);
+        formData.append("address", detailedAddress)
+        formData.append("description", description)
         formData.append("prodprice", pricing.oneMonth);
         formData.append("prodprice2", pricing.threeMonths);
         formData.append("prodprice3", pricing.sixMonths);
@@ -162,7 +164,15 @@ const AddProduct = ({userProfile}) => {
                         </select>
                     </div>
                 </div>
-
+                <div className="flex flex-col mb-4">
+                    <label className="font-semibold mb-1">운동 부 설명</label>
+                    <input
+                        value={prodsmtitle}
+                        onChange={(e) => setprodsmtitle(e.target.value)}
+                        className="p-2 border rounded-lg h-10"
+                        placeholder="운동 부 설명 입력"
+                    />
+                </div>
                 {/* 운동 시설 설명 및 주소 */}
                 <div className="flex flex-col mb-4">
                     <label className="font-semibold mb-1">운동 시설 설명</label>
@@ -216,7 +226,8 @@ const AddProduct = ({userProfile}) => {
                         );
                     })}
                 </div>
-                <div className="flex flex-row h-full justify-center items-center border border-gray-500 mb-4 w-full p-2 gap-8 rounded-xl">
+                <div
+                    className="flex flex-row h-full justify-center items-center border border-gray-500 mb-4 w-full p-2 gap-8 rounded-xl">
                     <div className="flex flex-col items-center">
                         <FaParking className="w-[2rem] h-[2rem]"/>
                         <input
