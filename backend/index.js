@@ -359,7 +359,7 @@ app.get('/api/userinfo', (req, res) => {
     if (req.session && req.session.userId) {
         const userId = req.session.userId;
 
-        const query = 'SELECT money,email,userpw, userType, alertlist FROM users WHERE userId = ?';
+        const query = 'SELECT money,email,userpw, userType, alertlist, address FROM users WHERE userId = ?';
 
         db.query(query, [userId], (err, results) => {
             if (err) {
@@ -372,6 +372,7 @@ app.get('/api/userinfo', (req, res) => {
                 const email = results[0].email;
                 const userpw = results[0].userpw;
                 const userType = results[0].userType;
+                const address = results[0].address;
                 const alertlist = results[0].alertlist ? JSON.parse(results[0].alertlist) : [];
                 const profileImgUrl = req.session.profileimg || '/uploads/default-profile.png';
                 res.json({
@@ -384,6 +385,7 @@ app.get('/api/userinfo', (req, res) => {
                     userpw: userpw,
                     email: email,
                     userType: userType,
+                    address: address,
                     alertlist: alertlist
                 });
             } else {

@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 
-const KakaoMap = () => {
+const KakaoMap = ({ onClose, onAddressSelect }) => {
     const mapContainerRef = useRef(null); // 지도 컨테이너에 대한 참조
     const mapRef = useRef(null); // 지도 객체를 저장할 ref
     const [address, setAddress] = useState(''); // 주소 상태
@@ -42,18 +42,21 @@ const KakaoMap = () => {
                                     // 상태와 결과를 로그로 출력
                                     console.log("Geocoder 호출 상태:", status);
                                     if (status === window.kakao.maps.services.Status.OK) {
-                                        const address = result[0].address.address_name; // 첫 번째 결과에서 주소 추출
-                                        setAddress(address); // 상태 업데이트
+                                        // 첫 번째 결과에서 주소 추출
+                                        const fullAddress = result[0].address.address_name;
+
+                                        // "구"와 "동"만 추출하기
+                                        const addressParts = fullAddress.split(' ');
+                                        // '구'와 '동'을 포함한 부분만 추출
+                                        const districtAddress = addressParts.slice(1, 3).join(' '); // 구와 동만 추출
+
+                                        setAddress(districtAddress); // 상태 업데이트
+
+                                        // 주소 선택시 부모 컴포넌트로 주소 전달
+                                        onAddressSelect(districtAddress);
                                     } else {
-                                        // 상태 코드가 OK가 아닐 때 오류 메시지 출력
                                         console.error("주소를 찾을 수 없습니다. 상태:", status);
-                                        if (status === window.kakao.maps.services.Status.ZERO_RESULT) {
-                                            setAddress('해당 좌표에 주소 정보가 없습니다.');
-                                        } else if (status === window.kakao.maps.services.Status.ERROR) {
-                                            setAddress('주소 정보 조회에 실패했습니다.');
-                                        } else {
-                                            setAddress('알 수 없는 오류가 발생했습니다.');
-                                        }
+                                        setAddress('주소를 찾을 수 없습니다.');
                                     }
                                 });
                             } catch (error) {
@@ -79,15 +82,18 @@ const KakaoMap = () => {
         return () => {
             document.head.removeChild(script);
         };
-    }, []);
+    }, [onAddressSelect]);
 
     return (
-        <div className="relative justify-center items-center w-full h-full">
-            <div
-                ref={mapContainerRef} // 지도 컨테이너에 ref 연결
-                className="w-[40rem] h-[40rem] rounded-lg shadow-lg"
-            ></div>
-            {address && <div className="mt-4 text-lg">선택한 주소: {address}</div>} {/* 선택한 주소 출력 */}
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
+            <div className="relative w-[40rem] h-[40rem] flex flex-col justify-center items-center bg-white rounded-lg shadow-lg">
+                <div
+                    ref={mapContainerRef} // 지도 컨테이너에 ref 연결
+                    className="w-full h-full rounded-lg"
+                ></div>
+                {address && <div className="mt-4 text-lg">{address}</div>} {/* 선택한 주소 출력 */}
+                <button onClick={onClose} className="absolute top-2 right-2 text-white bg-red-500 p-2 rounded-full">닫기</button> {/* 지도 닫기 버튼 */}
+            </div>
         </div>
     );
 };

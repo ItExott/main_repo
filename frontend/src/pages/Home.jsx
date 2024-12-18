@@ -18,15 +18,18 @@ import { FaLocationDot } from "react-icons/fa6";
 {/*컴포넌트 동기화문*/}
 import Attendance from "../popup/Attendance";
 import SearchCard from "../components/SearchCard.jsx";
+import KakaoMap from "../popup/kakaoMap.jsx";
 
 
 const Home = ({loginStatus}) => {
+    const [selectedAddress, setSelectedAddress] = useState(''); // 선택된 주소
     const suggestionsRef = useRef(null);
     const [isCalendarOpen, setIsCalendarOpen] = useState(false); // 출석체크 달력 팝업 상태
     const [activeTab, setActiveTab] = useState('weight');
     const [dontShowToday, setDontShowToday] = useState(false); // "오늘 하루 보지 않기" 상태
     const location = useLocation();
     const { openLoginModal: locationOpenLoginModal = false } = location.state || {};
+    const [showMap, setShowMap] = useState(false);
     const [category_products, setcategory_Products] = useState([]);
     const navigate = useNavigate();
     const [userType, setUserType] = useState("individual");
@@ -38,8 +41,18 @@ const Home = ({loginStatus}) => {
 
     // 로그인 상태 확인 db문
     const [userId, setUserId] = useState(null);
+    const [Useraddress, setUseraddress] = useState(null);
 
     const [packageProducts, setPackageProducts] = useState([]);
+
+    const handleAddressSelect = (address) => {
+        setSelectedAddress(address); // 선택된 주소 상태 업데이트
+        setShowMap(false); // 지도 닫기
+    };
+
+    const handleCloseMap = () => {
+        setShowMap(false); // 지도 닫기
+    };
 
     useEffect(() => {
         const fetchPackageProducts = async () => {
@@ -82,6 +95,7 @@ const Home = ({loginStatus}) => {
                     if (response.data.success) {
                         setUserId(response.data.userId);
                         setUserType(response.data.userType);
+                        setUseraddress(response.data.address);
 
                         // userType이 'individual'일 때만 출석 체크 확인
                         if (response.data.userType === 'individual') {
@@ -247,6 +261,10 @@ const Home = ({loginStatus}) => {
         };
     }, []);
 
+    const showKamap = () =>{
+        setShowMap(true);
+    }
+
     return (
         <div className="flex flex-col h-full w-full items-center justify-center">
             {userType === "individual" && (
@@ -258,29 +276,41 @@ const Home = ({loginStatus}) => {
                 />
             )}
             {/* 검색창 */}
+            {showMap && (
+                <KakaoMap
+                    onClose={handleCloseMap}  // 지도 닫기 함수 전달
+                    onAddressSelect={handleAddressSelect}  // 주소 선택 시 호출할 함수 전달
+                />
+            )}
+
 
             <div className="flex flex-row h-14 w-[35rem] items-center justify-center shadow-md rounded-xl relative">
-                <div className="flex flex-row w-1/5 cursor-pointer">
-                    <FaLocationDot size="20" className="ml-3 cursor-pointer mt-[0.05rem]"/>
-                    <p className="text-sm text-nowrap ml-[0.5rem]">송파구 마천동</p>
-                </div>
-                <div className="flex flex-row w-4/5 ml-2">
-                    <input
-                        ref={inputRef}
-                        type="text"
-                        className="grow border-0 text-center mt-1"
-                        placeholder="검색"
-                        value={query}
-                        onChange={handleChangesearch} // 텍스트 입력 시
-                    />
+                <div className="flex flex-row h-14 w-[35rem] items-center justify-center shadow-md rounded-xl relative">
+                    <div className="flex flex-row w-1/5 cursor-pointer" onClick={showKamap}>
+                        <FaLocationDot size="20" className="ml-3 cursor-pointer mt-[0.05rem]"/>
+                        <p className="text-sm text-nowrap ml-[0.5rem]">
+                            {selectedAddress || Useraddress} {/* selectedAddress가 없으면 기본값 "강남구 서초동" 출력 */}
+                        </p>
+                    </div>
+                    <div className="flex flex-row w-4/5 ml-2">
+                        <input
+                            ref={inputRef}
+                            type="text"
+                            className="grow border-0 text-center mt-1"
+                            placeholder="검색"
+                            value={query}
+                            onChange={handleChangesearch} // 텍스트 입력 시
+                        />
+                    </div>
                 </div>
                 <BiSearch size="20"
                           className="mr-3 mt-1 cursor-pointer hover:scale-150 transition-transform ease-in-out duration-500"/>
 
                 {/* 추천 검색어 박스 */}
                 {showSuggestions && (
-                    <div className="absolute top-14 w-[49rem] bg-white border bg-opacity-70 rounded-xl shadow-lg z-10 mt-2"
-                         ref={suggestionsRef}>
+                    <div
+                        className="absolute top-14 w-[49rem] bg-white border bg-opacity-70 rounded-xl shadow-lg z-10 mt-2"
+                        ref={suggestionsRef}>
                         <div className="flex justify-between items-center mx-3 mt-2">
                             <p className="flex-grow ml-[4rem] text-center">추천 검색어</p>
                             <p
@@ -330,7 +360,7 @@ const Home = ({loginStatus}) => {
                     loop // 반복 재생
                 >
                     <SwiperSlide>
-                        <img
+                    <img
                             className="w-full h-full object-fill rounded-md"
                             src="https://ifh.cc/g/dt71lm.png"
                             alt="Ad Banner 1"
