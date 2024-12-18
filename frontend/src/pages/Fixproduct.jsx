@@ -423,10 +423,9 @@ const Fixproduct = () => {
 
                                         <div
                                             className={`flex flex-col items-center justify-center ${productData.div1Bg} mt-[1rem] rounded-xl h-[5rem] w-[20rem]`}
-                                            onClick={() => handleDivClick('div1Bg')}
                                         >
                                         <textarea
-                                            className="text-xs whitespace-pre-wrap h-[3rem] w-full font-bold text-center"
+                                            className="text-xs whitespace-pre-wrap p-2 h-[3rem] w-full font-bold text-center"
                                             onChange={(e) => handleInputChange(e, 'description')}
                                             placeholder={productData.description}
                                         />
