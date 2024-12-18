@@ -118,8 +118,9 @@ const Login = ({ setLoginStatus }) => {
 
                 <div
                     className="flex w-[16rem] h-[3rem] mt-[0.3rem] cursor-pointer hover:scale-105 transition-transform ease-in-out duration-500 bg-white border-[0.1rem] border-gray-400 items-center justify-center"
+                    onClick={JoinUs}
                 >
-                    <a onClick={JoinUs} className="text-[1rem]">
+                    <a className="text-[1rem]">
                         JOIN US
                     </a>
                 </div>

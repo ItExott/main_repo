@@ -29,6 +29,7 @@
     import UserEditAdm from "./pages/UserEditAdm.jsx";
     import fixproduct from "./pages/Fixproduct.jsx";
     import Fixproduct from "./pages/Fixproduct.jsx";
+    import KakaoMap from "./popup/kakaoMap.jsx";
 
     function App() {
         const [loginStatus, setLoginStatus] = useState(false);
@@ -150,6 +151,7 @@
                     <Route path="/AddProduct" element={<AddProduct userProfile={userProfile}/>}/>
                     <Route path="/ProductManage" element={<ProductManage />} />  {/* 회원가입 끝 */}
                     <Route path="/FAQPage" element={<FAQPage/>}/>
+                    <Route path="/kakaomap" element={<KakaoMap/>}/>
                     <Route path="/Fixproduct/:id" element={<Fixproduct userProfile={userProfile}/>}/>
                 </Routes>
                 <Footer/>
