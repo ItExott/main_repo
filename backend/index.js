@@ -1431,8 +1431,7 @@ app.get('/api/product_inquiry/:id', (req, res) => {
             num
         FROM product_inquiry
         WHERE prodid = ?
-        ORDER BY inqdate DESC
-        LIMIT 3;
+        ORDER BY inqdate DESC;
     `;
 
     db.query(query, [id], (err, results) => {

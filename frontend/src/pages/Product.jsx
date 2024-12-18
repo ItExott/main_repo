@@ -2,6 +2,7 @@ import React, {useState, useEffect, useRef} from "react";
 import {Link, useParams} from "react-router-dom";
 import {useRecoilValue} from "recoil";
 import axios from "axios";
+import ReactPaginate from "react-paginate";
 {/*아이콘 import문*/}
 import { FaLocationDot } from "react-icons/fa6";
 import { GiTowel } from "react-icons/gi";
@@ -24,6 +25,7 @@ import BottomBox from "../components/BottomBox.jsx";
 
 const Product= ({ userProfile }) => {
     const PhotoSectionRef = useRef(null);
+    const [currentPage, setCurrentPage] = useState(0);
     const ReviewSectionRef = useRef(null);
     const InfoSectionRef = useRef(null);
     const RestSectionRef = useRef(null);
@@ -47,6 +49,32 @@ const Product= ({ userProfile }) => {
     const [selectedInquiry, setSelectedInquiry] = useState(null); // 선택된 문의
     const [ansertitle, setAnsertitle] = useState(''); // 답변 제목 상태
     const [ansercontent, setAnsercontent] = useState(''); // 답변 내용 상태
+    const [currentItems, setCurrentItems] = useState([]);
+    const itemsPerPage = 3;
+    const [pageCount, setPageCount] = useState(0); // 전체 페이지 수
+
+    useEffect(() => {
+        setPageCount(Math.ceil(reviews.length / itemsPerPage)); // 리뷰 페이지 수
+    }, [reviews]);
+
+    useEffect(() => {
+        setPageCount(Math.ceil(inquiries.length / itemsPerPage)); // 문의 페이지 수
+    }, [inquiries]);
+
+    const handleInquiryPageClick = (data) => {
+        const selectedPage = data.selected;
+        setCurrentPage(selectedPage); // 페이지 변경
+    };
+
+    // 리뷰 페이지네이션 핸들러
+    const handleReviewPageClick = (data) => {
+        const selectedPage = data.selected;
+        setCurrentPage(selectedPage); // 페이지 변경
+    };
+
+    const displayReviews = reviews.slice(currentPage * itemsPerPage, (currentPage + 1) * itemsPerPage);
+    // 현재 페이지에 맞는 문의 항목만 표시
+    const displayInquiries = inquiries.slice(currentPage * itemsPerPage, (currentPage + 1) * itemsPerPage);
 
 
     const handleAnswer = (inquiry) => {
@@ -340,6 +368,8 @@ const Product= ({ userProfile }) => {
     const toggleShowImages = () => {
         setShowFullImages(!showFullImages);
     };
+
+
     const scrollToPhotoSection = () => {
 
         if (PhotoSectionRef.current) {
@@ -638,86 +668,119 @@ const Product= ({ userProfile }) => {
                     </div>
 
                     <div className="mt-4 flex ">
-                        {activeTab === '전체 리뷰' && (
+                        {activeTab === "전체 리뷰" && (
                             <div>
-                                {reviews.map((review, index) => (
+                                {displayReviews.map((review, index) => (
                                     <div
                                         key={index}
                                         ref={ReviewSectionRef}
-                                        className="flex mx-auto flex-row items-center mt-[1rem] bg-gray-100 shadow-xl border-[0.1rem] border-gray-600 rounded-lg w-[50rem] min-h-[9rem]"
+                                        className="flex mx-auto items-center mt-4 bg-gray-100 shadow-xl border border-gray-600 rounded-lg w-[50rem] min-h-[9rem]"
                                     >
-                                        <div className="flex flex-col h-[8rem] border-r-[0.1rem] border-gray-400 items-center w-[10rem]">
-                                            <FaCircleUser className="flex mt-[1.4rem] h-[4rem] w-[4rem]" />
-                                            <a className="flex font-bold mt-[0.5rem] items-center text-xs">{review.name}</a>
+                                        {/* 유저 정보 */}
+                                        <div className="flex flex-col items-center w-[10rem] h-[8rem] border-r border-gray-400">
+                                            <FaCircleUser className="mt-6 w-[4rem] h-[4rem]" />
+                                            <span className="mt-2 font-bold text-xs">{review.name}</span>
                                         </div>
-                                        <div className="flex flex-col w-[30rem]">
-                                            <div className="flex flex-row">
-                                                <a className="text-xs text-gray-500 ml-[1.6rem]">
-                                                    {review.userid} |&nbsp;
-                                                    {new Date(review.createdate).toLocaleString('ko-KR', {
-                                                        year: 'numeric',
-                                                        month: '2-digit',
-                                                        day: '2-digit',
-                                                    })}
-                                                </a>
-                                                <div className="flex flex-row cursor-pointer">
-                                                    <PiSirenBold className="ml-[0.5rem]"/>
-                                                    <a className="text-xs text-gray-500 mb-[0.1rem]">신고</a>
+
+                                        {/* 리뷰 내용 */}
+                                        <div className="flex flex-col w-[30rem] px-4 py-2">
+                                            {/* 상단 정보 */}
+                                            <div className="flex justify-between text-xs text-gray-500">
+              <span>
+                {review.userid} |{" "}
+                  {new Date(review.createdate).toLocaleString("ko-KR", {
+                      year: "numeric",
+                      month: "2-digit",
+                      day: "2-digit",
+                  })}
+              </span>
+                                                <div className="flex items-center cursor-pointer">
+                                                    <PiSirenBold className="ml-2" />
+                                                    <span>신고</span>
                                                 </div>
                                             </div>
-                                            <div className="flex flex-row ml-[1.4rem]">
-                                                {Array.from({length: 4}).map((_, idx) => (
+
+                                            {/* 별점 */}
+                                            <div className="flex mt-2">
+                                                {Array.from({ length: 5 }).map((_, idx) => (
                                                     <LiaDumbbellSolid
                                                         key={idx}
-                                                        className={`w-[1.5rem] h-[1.5rem] mt-[0.05rem] ${idx < review.rating ? 'fill-black' : 'fill-gray-300'}`}
+                                                        className={`w-[1.5rem] h-[1.5rem] ${idx < review.rating ? "fill-black" : "fill-gray-300"}`}
                                                     />
                                                 ))}
                                             </div>
-                                            <a className="text-xs ml-[1.2rem] w-[4rem] text-center rounded-xl border-[0.1rem] border-gray-400 mt-[0.3rem] font-bold text-gray-700">
-                                                {review.typeofuse}
-                                            </a>
-                                            <a className="text-sm ml-[1.4rem] mt-[0.3rem] text-start"><a className="text-red-400">제목 : </a>{review.reviewtitle}</a>
-                                            <a className="text-xs ml-[1.4rem] mt-[0.5rem] whitespace-pre-line break-words">{review.reviewcontent}</a>
+
+                                            {/* 사용 유형 */}
+                                            <span className="inline-block mt-2 w-[4rem] text-center text-xs font-bold text-gray-700 border border-gray-400 rounded-xl">
+              {review.typeofuse}
+            </span>
+
+                                            {/* 리뷰 제목 및 내용 */}
+                                            <div className="mt-2">
+                                                <p className="text-sm">
+                                                    <span className="text-red-400">제목: </span>
+                                                    {review.reviewtitle}
+                                                </p>
+                                                <p className="mt-2 text-xs whitespace-pre-line break-words">{review.reviewcontent}</p>
+                                            </div>
                                         </div>
-                                        <div className="flex w-[10rem] items-center justify-center h-[9rem]">
-                                            <img className="w-[7rem] h-[7rem] rounded-xl" src={review.reviewpicture} />
+
+                                        {/* 리뷰 이미지 */}
+                                        <div className="flex items-center justify-center w-[10rem] h-[9rem]">
+                                            <img className="w-[7rem] h-[7rem] rounded-xl" src={review.reviewpicture} alt="리뷰 이미지" />
                                         </div>
                                     </div>
                                 ))}
-                                <div className="flex justify-end items-center mt-4 w-full h-[3rem]">
-                                    <div
+
+                                {/* 페이지네이션 */}
+                                <div className="flex justify-between items-center mt-4 w-full h-[3rem]">
+                                    <ReactPaginate
+                                        previousLabel="이전"
+                                        nextLabel="다음"
+                                        breakLabel="..."
+                                        pageCount={pageCount}
+                                        marginPagesDisplayed={1}
+                                        pageRangeDisplayed={3}
+                                        onPageChange={handleReviewPageClick}
+                                        containerClassName="flex items-center"
+                                        pageClassName="mx-1 px-2 py-1 border rounded hover:bg-gray-200 cursor-pointer"
+                                        activeClassName="bg-red-400 text-white"
+                                        previousClassName="px-2 py-1 border rounded hover:bg-gray-200 cursor-pointer"
+                                        nextClassName="px-2 py-1 border rounded hover:bg-gray-200 cursor-pointer"
+                                        breakClassName="px-2 py-1"
+                                    />
+                                    <button
                                         onClick={handlereviewToggle}
-                                        className="flex h-[3rem] w-[6rem] items-center justify-center rounded-xl border border-red-400 text-red-400 hover:bg-red-400 hover:text-white cursor-pointer hover:scale-110 transition-transform ease-in-out duration-500"
+                                        className="flex whitespace-nowrap ml-[1rem] h-[3rem] w-[6rem] items-center justify-center rounded-xl border border-red-400 text-red-400 hover:bg-red-400 hover:text-white cursor-pointer hover:scale-110 transition-transform ease-in-out duration-500"
                                     >
-                                        <a className="flex">리뷰 작성하기</a>
-                                    </div>
+                                        리뷰 작성하기
+                                    </button>
                                 </div>
                             </div>
                         )}
+
+                        {/* 상품 문의 탭 */}
                         {activeTab === '상품 문의' && (
                             <div className="flex flex-col">
-                                {inquiries.map((inquiry, index) => (
+                                {displayInquiries.map((inquiry, index) => (
                                     <div key={index} className="flex flex-col">
                                         <div
                                             onClick={() => setExpandedIndex(expandedIndex === index ? null : index)}
                                             className="flex mx-auto flex-row items-center mt-[1rem] hover:bg-gray-200 cursor-pointer bg-gray-100 shadow-xl border-[0.1rem] border-gray-600 rounded-lg w-[50rem] h-full"
                                         >
-                                            <div
-                                                className="flex flex-col h-[6rem] border-r-[0.1rem] border-gray-400 items-center w-[10rem]">
-                                                <FaCircleUser className="flex mt-[0.6rem] h-[4rem] w-[4rem]"/>
-                                                <a className="flex font-bold mt-[0.5rem] items-center text-xs">{inquiry.name}</a>
+                                            <div className="flex flex-col h-[6rem] border-r-[0.1rem] border-gray-400 items-center w-[10rem]">
+                                                <FaCircleUser className="flex mt-[0.6rem] h-[4rem] w-[4rem]" />
+                                                <span className="flex font-bold mt-[0.5rem] items-center text-xs">{inquiry.name}</span>
                                             </div>
                                             <div className="flex flex-col h-full w-[30rem] mt-[2rem]">
                                                 <div className="flex flex-row items-center h-[1rem]">
-                                                    <a className="flex text-xs font-semibold text-red-400 ml-[1.3rem]">{inquiry.category} •</a>
-                                                    <a className="flex text-xs font-semibold text-red-400 mb-[0.2rem] ml-[0.2rem]">{inquiry.userid}</a>
-                                                    <a className="flex text-xs font-bold text-red-400 ml-[0.2rem]">
-                                                        • {inquiry.status}
-                                                    </a>
+                                                    <span className="flex text-xs font-semibold text-red-400 ml-[1.3rem]">{inquiry.category} •</span>
+                                                    <span className="flex text-xs font-semibold text-red-400 mb-[0.2rem] ml-[0.2rem]">{inquiry.userid}</span>
+                                                    <span className="flex text-xs font-bold text-red-400 ml-[0.2rem]">• {inquiry.status}</span>
                                                     {inquiry.status === '미답변' && productData.prodid === inquiry.prodid && productData.userid === userId && (
                                                         <div className="flex ml-[0.5rem] mb-[0.1rem]">
                                                             <button
-                                                                onClick={() => handleAnswer(inquiry)} // 답변 버튼 클릭 시 팝업 열기
+                                                                onClick={() => handleAnswer(inquiry)}
                                                                 className="flex h-[1rem] text-xs items-center justify-center bg-red-400 hover:scale-110 transition-transform ease-in-out duration-500 text-white hover:bg-white hover:text-red-400 cursor-pointer"
                                                             >
                                                                 답변하기
@@ -725,10 +788,10 @@ const Product= ({ userProfile }) => {
                                                         </div>
                                                     )}
                                                 </div>
-                                                <a className="flex text-sm font-bold ml-[1.3rem]">{inquiry.inqtitle}</a>
-                                                <a className="flex text-xs font-bold ml-[1.3rem] mt-[0.3rem]">{inquiry.inqcontent}</a>
-                                                <a className="flex text-xs font-bold ml-[1.3rem] mt-[0.3rem]">
-                                                    작성 일자 : {new Date(inquiry.inqdate).toLocaleString('ko-KR', {
+                                                <span className="flex text-sm font-bold ml-[1.3rem]">{inquiry.inqtitle}</span>
+                                                <span className="flex text-xs font-bold ml-[1.3rem] mt-[0.3rem]">{inquiry.inqcontent}</span>
+                                                <span className="flex text-xs font-bold ml-[1.3rem] mt-[0.3rem]">
+                작성 일자 : {new Date(inquiry.inqdate).toLocaleString('ko-KR', {
                                                     year: 'numeric',
                                                     month: '2-digit',
                                                     day: '2-digit',
@@ -736,41 +799,51 @@ const Product= ({ userProfile }) => {
                                                     minute: '2-digit',
                                                     hour12: false,
                                                 })}
-                                                </a>
+              </span>
                                             </div>
                                             <div className="flex">
                                                 {expandedIndex === index ? (
-                                                    <FaAngleUp
-                                                        className="flex items-center justify-center w-[2rem] h-[2rem] ml-[5rem]"/>
+                                                    <FaAngleUp className="flex items-center justify-center w-[2rem] h-[2rem] ml-[5rem]" />
                                                 ) : (
-                                                    <FaAngleDown
-                                                        className="flex items-center justify-center w-[2rem] h-[2rem] ml-[5rem]"/>
+                                                    <FaAngleDown className="flex items-center justify-center w-[2rem] h-[2rem] ml-[5rem]" />
                                                 )}
                                             </div>
                                         </div>
                                         {expandedIndex === index && inquiry.status === '답변' && (
-                                            <div
-                                                className="mt-[1rem] flex flex-col bg-gray-50 border-[0.1rem] border-gray-300 rounded-lg p-4 w-[48rem] mx-auto shadow-md">
+                                            <div className="mt-[1rem] flex flex-col bg-gray-50 border-[0.1rem] border-gray-300 rounded-lg p-4 w-[48rem] mx-auto shadow-md">
                                                 <div className="flex items-center flex-row">
-                                                    <FaCheckCircle/>
-                                                    <a className="text-xm ml-[0.3rem] text-gray-700">답변 내용</a>
-                                                    <a className="text-xm ml-[14rem] text-gray-700">
-                                                        {inquiry.ansertitle}
-                                                    </a>
+                                                    <FaCheckCircle />
+                                                    <span className="text-xm ml-[0.3rem] text-gray-700">답변 내용</span>
+                                                    <span className="text-xm ml-[14rem] text-gray-700">{inquiry.ansertitle}</span>
                                                 </div>
-                                                <a className="text-sm mt-2 text-gray-700">
-                                                    {inquiry.ansercontent}
-                                                </a>
+                                                <span className="text-sm mt-2 text-gray-700">{inquiry.ansercontent}</span>
                                             </div>
                                         )}
                                     </div>
                                 ))}
-                                <div className="flex justify-end items-center mt-4 w-full h-[3rem]">
+
+                                {/* 페이지네이션 */}
+                                <div className="flex justify-between items-center mt-4 w-full h-[3rem]">
+                                    <ReactPaginate
+                                        previousLabel={"이전"}
+                                        nextLabel={"다음"}
+                                        breakLabel={"..."}
+                                        pageCount={pageCount}
+                                        marginPagesDisplayed={1}
+                                        pageRangeDisplayed={3}
+                                        onPageChange={handleInquiryPageClick}
+                                        containerClassName={"flex items-center"}
+                                        pageClassName={"mx-1 px-2 py-1 border rounded hover:bg-gray-200 cursor-pointer"}
+                                        activeClassName={"bg-red-400 text-white"}
+                                        previousClassName={"px-2 py-1 border rounded hover:bg-gray-200 cursor-pointer"}
+                                        nextClassName={"px-2 py-1 border rounded hover:bg-gray-200 cursor-pointer"}
+                                        breakClassName={"px-2 py-1"}
+                                    />
                                     <div
                                         onClick={handleinquiryToggle}
-                                        className="flex h-[3rem] w-[6rem] items-center justify-center rounded-xl border border-red-400 text-red-400 hover:bg-red-400 hover:text-white cursor-pointer hover:scale-110 transition-transform ease-in-out duration-500"
+                                        className="flex h-[3rem] ml-[1rem] w-[6rem] items-center justify-center rounded-xl border border-red-400 text-red-400 hover:bg-red-400 hover:text-white cursor-pointer hover:scale-110 transition-transform ease-in-out duration-500"
                                     >
-                                        <a className="flex">문의 작성하기</a>
+                                        <span className="flex">문의 작성하기</span>
                                     </div>
                                 </div>
                             </div>
