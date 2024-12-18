@@ -48,16 +48,13 @@ const AddProduct = ({userProfile}) => {
     const handleSubmit = async (e) => {
         e.preventDefault();
 
-        // 필수 입력 값들이 모두 채워졌는지 확인
         if (!productName || !category || !address || !detailedAddress || !pricing.oneMonth) {
             alert("모든 제품 정보를 입력해 주세요.");
             return;
         }
 
-        // FormData 생성
         const formData = new FormData();
 
-        // 텍스트 필드 추가
         formData.append("prodtitle", productName);
         formData.append("category", category);
         formData.append("prodsmtitle", description);
@@ -68,18 +65,17 @@ const AddProduct = ({userProfile}) => {
         formData.append("prodprice3", pricing.sixMonths);
         formData.append("prodprice4", pricing.twelveMonths);
 
-        // 파일 추가
         if (icon) formData.append("iconpicture", icon);
         if (logo) formData.append("prodpicture", logo);
 
-        // 제품 소개 이미지 추가
         introductionImages.forEach((img, index) => {
             formData.append(`prodcontent${index + 1}`, img);
         });
 
-        // 시설 사진 JSON 배열 생성
-        const facilityImagesArray = facilityImages.map((img) => `/uploads/${img.name}`);
-        formData.append("facility_pictures", JSON.stringify(facilityImagesArray));
+        // 시설 사진을 업로드하는 방식 (여러 개의 이미지)
+        facilityImages.forEach((img) => {
+            formData.append("facility_pictures", img);
+        });
 
         formData.append("facilities", JSON.stringify(selectedFacilities));
 
@@ -88,7 +84,6 @@ const AddProduct = ({userProfile}) => {
         }
 
         try {
-            // 서버로 데이터 전송
             const response = await fetch("http://localhost:8080/api/products", {
                 method: "POST",
                 body: formData,
@@ -105,7 +100,6 @@ const AddProduct = ({userProfile}) => {
             alert("서버와 통신 중 문제가 발생했습니다.");
         }
     };
-
 
     return (
         <div className="flex flex-col mt-[1rem] h-full items-center justify-center mx-28">

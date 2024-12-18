@@ -298,7 +298,6 @@ const Product= ({ userProfile }) => {
         checkLoginStatus();
     }, []);
 
-    // 상품 정보 가져오는 db문
     const [productData, setProductData] = useState({
         iconpicture: "",
         prodid: "",
@@ -325,32 +324,43 @@ const Product= ({ userProfile }) => {
                 const product = response.data;
 
                 console.log("Fetched product data:", product);
+
+                // 이미지 경로에 http://localhost:8080을 추가하는 함수
+                const addBaseUrlIfNeeded = (url) => {
+                    if (url && !url.startsWith("http://") && !url.startsWith("https://")) {
+                        return `http://localhost:8080${url}`;
+                    }
+                    return url;
+                };
+
                 setProductData({
-                    prodid: response.data.prodid,
-                    iconpicture: response.data.iconpicture,
-                    prodtitle: response.data.prodtitle,
-                    description : response.data.description,
-                    prodrating: response.data.prodrating,
-                    address: response.data.address,
-                    prodpicture: response.data.prodpicture,
-                    prodcontent1: response.data.prodcontent1,
-                    prodcontent2: response.data.prodcontent2,
-                    prodcontent3: response.data.prodcontent3,
-                    prodcontent4: response.data.prodcontent4,
-                    prodsmtitle: response.data.prodsmtitle,
-                    facility_pictures: response.data.facility_pictures || [],
-                    selectedFacilities: response.data.selectedFacilities || [],
-                    div1Bg: response.data.div1Bg || "",
+                    prodid: product.prodid,
+                    iconpicture: addBaseUrlIfNeeded(product.iconpicture),
+                    prodtitle: product.prodtitle,
+                    description: product.description,
+                    prodrating: product.prodrating,
+                    address: product.address,
+                    prodpicture: addBaseUrlIfNeeded(product.prodpicture),
+                    prodcontent1: addBaseUrlIfNeeded(product.prodcontent1),
+                    prodcontent2: addBaseUrlIfNeeded(product.prodcontent2),
+                    prodcontent3: addBaseUrlIfNeeded(product.prodcontent3),
+                    prodcontent4: addBaseUrlIfNeeded(product.prodcontent4),
+                    prodsmtitle: product.prodsmtitle,
+                    // facility_pictures 경로에 http://localhost:8080을 추가
+                    facility_pictures: product.facility_pictures ?
+                        product.facility_pictures.map(pic => addBaseUrlIfNeeded(pic)) : [],
+                    selectedFacilities: product.selectedFacilities || [],
+                    div1Bg: product.div1Bg || "",
                     userid: product.userid,
                 });
 
                 if (userProfile && userProfile.userId) {
                     axios
                         .post("http://localhost:8080/recently-viewed", {
-                            productId: response.data.prodid,
+                            productId: product.prodid,
                             userId: userProfile.userId,
                         }, { withCredentials: true })
-                .then((response) => {
+                        .then((response) => {
                             console.log("Product saved to recently viewed:", response.data);
                         })
                         .catch((error) => {
@@ -497,7 +507,7 @@ const Product= ({ userProfile }) => {
                                     </div>
                                     <div
                                         className={`flex flex-col items-center p-2 justify-center ${productData.div1Bg} mt-[1rem] rounded-xl h-[5rem] w-[20rem]`}>
-                                        <a className="text-xs font-semibold whitespace-pre-wrap">{productData.description}</a>
+                                        <a className="text-xs p-2 font-semibold whitespace-pre-wrap">{productData.description}</a>
                                     </div>
                                 </div>
                             </div>
@@ -567,12 +577,14 @@ const Product= ({ userProfile }) => {
                                     <div
                                         key={index}
                                         className="flex justify-center items-center w-[11rem] h-[10rem] hover:scale-125 transition-transform ease-in-out duration-500">
-                                        <img className="rounded-xl" src={imageUrl} alt={`Facility ${index + 1}`}/>
+                                        {/* 콘솔 로그는 삭제, 디버깅용 로그는 필요없음 */}
+                                        <img className="rounded-xl" src={imageUrl} alt={`Facility ${index + 1}`} />
                                     </div>
                                 ))
                             ) : (
                                 <p>사진 데이터가 없습니다.</p>
                             )}
+
                         </div>
                     </div>
                     <div className="flex divider divide-gray-600 ml-[4rem] w-[60rem]"></div>

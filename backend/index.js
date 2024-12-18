@@ -65,7 +65,7 @@ db.connect(err => {
     console.log('Connected to database.');
 });
 
-// 특정 제품 상세 조회 API
+// 상품 정보 가져오는 db문
 app.get('/product/:id', (req, res) => {
     const prodid = req.params.id;
     const userId = req.session.userId;
@@ -81,7 +81,7 @@ app.get('/product/:id', (req, res) => {
         }
 
         const product = results[0];
-        const baseUrl = "http://localhost:8080";
+        const baseUrl = "http://localhost:8080"; // 서버 기본 URL
 
         // URL이 상대 경로인 경우 baseUrl 추가
         const addBaseUrlIfNeeded = (url) => {
@@ -91,6 +91,7 @@ app.get('/product/:id', (req, res) => {
             return url; // URL이 이미 전체 경로라면 그대로 반환
         };
 
+        // 상품의 사진들에 대해 baseUrl 추가
         product.iconpicture = addBaseUrlIfNeeded(product.iconpicture);
         product.prodpicture = addBaseUrlIfNeeded(product.prodpicture);
         product.prodcontent1 = addBaseUrlIfNeeded(product.prodcontent1);
@@ -98,17 +99,18 @@ app.get('/product/:id', (req, res) => {
         product.prodcontent3 = addBaseUrlIfNeeded(product.prodcontent3);
         product.prodcontent4 = addBaseUrlIfNeeded(product.prodcontent4);
 
-        // facility_pictures 처리
+        // facility_pictures 처리: JSON 파싱 후 각 URL에 baseUrl 추가
         if (product.facility_pictures) {
             try {
-                const pictures = JSON.parse(product.facility_pictures);
-                product.facility_pictures = pictures.map(addBaseUrlIfNeeded);
+                const pictures = JSON.parse(product.facility_pictures); // JSON 문자열을 배열로 파싱
+                product.facility_pictures = pictures.map(addBaseUrlIfNeeded); // 각 경로에 baseUrl 추가
             } catch (e) {
                 console.error("Error parsing facility_pictures:", e);
-                product.facility_pictures = [];
+                product.facility_pictures = []; // 오류 발생 시 빈 배열로 설정
             }
         }
 
+        // selectedFacilities 처리: JSON 파싱
         if (product.selectedFacilities) {
             try {
                 product.selectedFacilities = JSON.parse(product.selectedFacilities); // selectedFacilities JSON 파싱
@@ -1488,7 +1490,7 @@ app.post('/api/products', upload.fields([
     { name: 'prodcontent2' },
     { name: 'prodcontent3' },
     { name: 'prodcontent4' },
-    { name: 'facility_pictures' }
+    { name: 'facility_pictures' }  // 시설 사진도 여러 개 처리하도록 변경
 ]), (req, res) => {
     // Body와 File로부터 값을 가져옴
     const { prodtitle, category, prodsmtitle, prodaddress, address, prodprice, prodprice2, prodprice3, prodprice4, userId, description, facilities } = req.body;
@@ -1502,9 +1504,12 @@ app.post('/api/products', upload.fields([
         req.files.prodcontent3 ? `/uploads/${req.files.prodcontent3[0].filename}` : null,
         req.files.prodcontent4 ? `/uploads/${req.files.prodcontent4[0].filename}` : null,
     ];
-    const facilityPictures = req.body.facility_pictures ? JSON.parse(req.body.facility_pictures) : [];
+
+    // 시설 사진 처리 (여러 개의 사진을 배열로 받음)
+    const facilityPictures = req.files.facility_pictures ? req.files.facility_pictures.map(file => `/uploads/${file.filename}`) : [];
 
     const selectedFacilities = facilities ? JSON.parse(facilities) : [];
+
     // MySQL에 데이터 삽입
     const sql = `
     INSERT INTO product (
